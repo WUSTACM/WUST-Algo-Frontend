@@ -20,7 +20,10 @@
                         <div class="title">
                             <!-- <img :src="activity.avatar ? activity.avatar : '/images/defaultAvatar.png'"
                                 @click="router.push('profile?id=' + activity.userId)" class="avatar"> -->
-                            <span>{{ activity.title }}</span>
+                            <span>
+                                <router-link :to="`/profile?id=${activity.userId}`" class="name-link">{{ activity.name }}</router-link>
+                                {{ activity.title }}
+                            </span>
                             <a :href="activity.link" target="_blank">{{ activity.status }}</a>
                         </div>
                         <div class="time">{{ activity.time }}</div>
@@ -89,6 +92,7 @@ const users = ref<User[]>([]);
 
 
 interface ActivityItem {
+    name: string;
     title: string;
     status: string;
     link: string;
@@ -139,7 +143,8 @@ const getNewSubmit = async (currentCursor: number) => {
             const user = await getUserInfo(item.userId);
 
             newActivities.push({
-                title: `${user.name} 在 ${platform} 使用 ${lang} 解决 ${problem || contest}：`,
+                name: user.name,
+                title: ` 在 ${platform} 使用 ${lang} 解决 ${problem || contest}：`,
                 status: status,
                 link: Link.getSubmitLink(platform, contest, item.submitId),
                 time: time,
@@ -338,6 +343,15 @@ onUnmounted(() => {
             align-items: center;
             width: 80%;
             font-size: var(--text-sm);
+
+            .name-link {
+                color: var(--neon-cyan);
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
 
             >.avatar {
                 width: 40px;

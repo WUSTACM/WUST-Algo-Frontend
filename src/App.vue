@@ -58,6 +58,18 @@
           <div class="item-indicator">▶</div>
         </router-link>
 
+        <router-link to="/allActivities" class="section navigation-item" active-class="active">
+          <font-awesome-icon icon="fa-solid fa-newspaper" class="item-icon" />
+          <div class="item-content">
+            <div class="item-title">
+              <span class="zh">动态</span>
+              <span class="en">Activities</span>
+            </div>
+            <div class="item-description">查看近期动态</div>
+          </div>
+          <div class="item-indicator">▶</div>
+        </router-link>
+
         <router-link to="/profile" class="section navigation-item" active-class="active" v-if="isLogin">
           <font-awesome-icon icon="fa-solid fa-user" class="item-icon" />
           <div class="item-content">
