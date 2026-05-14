@@ -279,18 +279,20 @@ ${rainbowInfo.string}
 `, ...rainbowText.format, ...rainbowInfo.format);
 
 // 主题系统
-type ThemeName = 'nordic' | 'github' | 'wxu-purple'
+type ThemeName = 'nordic' | 'github' | 'wxu-purple' | 'sakura'
 
 const themeOptions: { key: ThemeName; label: string }[] = [
   { key: 'github', label: '专业' },
   { key: 'nordic', label: '极客' },
   { key: 'wxu-purple', label: '锡院紫' },
+  { key: 'sakura', label: '樱花' },
 ]
 
 const themePreviewColors: Record<ThemeName, string> = {
   nordic: '#88C0D0',
   github: '#0070F3',
   'wxu-purple': '#7928CA',
+  sakura: '#FF6B8A',
 }
 
 const validThemes = new Set<string>(themeOptions.map(t => t.key))

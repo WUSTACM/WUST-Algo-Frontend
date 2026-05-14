@@ -16,6 +16,7 @@
       <div class="content">
         <div style="position: relative;">
           <LoadingOverlay :show="loading" />
+          <template v-if="bulletins.length > 0">
           <table>
             <thead>
               <tr>
@@ -49,6 +50,8 @@
               </tr>
             </tbody>
           </table>
+          </template>
+          <div v-else-if="!loading" class="empty-placeholder">暂无公告</div>
         </div>
         <div class="pageNavigation" v-if="bulletins.length > 0">
           <div class="group">
@@ -92,7 +95,15 @@
           </div>
           <div class="form-group">
             <label>内容（支持HTML）</label>
-            <textarea v-model="form.content" placeholder="请输入公告内容" rows="8"></textarea>
+            <div class="editor-toolbar">
+              <button type="button" class="toolbar-btn" @click="insertTag('b')" title="加粗"><b>B</b></button>
+              <button type="button" class="toolbar-btn" @click="insertTag('i')" title="斜体"><i>I</i></button>
+              <button type="button" class="toolbar-btn" @click="insertTag('u')" title="下划线"><u>U</u></button>
+              <button type="button" class="toolbar-btn" @click="insertTag('s')" title="删除线"><s>S</s></button>
+              <button type="button" class="toolbar-btn" @click="insertLink" title="链接">🔗</button>
+              <button type="button" class="toolbar-btn" @click="insertTag('h3')" title="标题">H</button>
+            </div>
+            <textarea ref="textareaRef" v-model="form.content" placeholder="请输入公告内容" rows="10"></textarea>
           </div>
           <div class="form-group-checkbox">
             <label>
@@ -132,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import API, { type BulletinInfo } from '@/utils/api'
 import Toast from '@/utils/toast'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
@@ -194,6 +205,39 @@ const openEditModal = (item: BulletinInfo) => {
 const closeModal = () => {
   showModal.value = false
   editingId.value = null
+}
+
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
+
+const insertTag = (tag: string) => {
+  const ta = textareaRef.value
+  if (!ta) return
+  const start = ta.selectionStart
+  const end = ta.selectionEnd
+  const text = form.value.content
+  const selected = text.slice(start, end)
+  const replacement = `<${tag}>${selected || ''}</${tag}>`
+  form.value.content = text.slice(0, start) + replacement + text.slice(end)
+  nextTick(() => {
+    ta.focus()
+    ta.setSelectionRange(start + 2 + tag.length, start + replacement.length - 3 - tag.length)
+  })
+}
+
+const insertLink = () => {
+  const ta = textareaRef.value
+  if (!ta) return
+  const start = ta.selectionStart
+  const end = ta.selectionEnd
+  const text = form.value.content
+  const selected = text.slice(start, end) || '链接文字'
+  const url = prompt('请输入链接地址', 'https://')
+  if (!url) return
+  const replacement = `<a href="${url}" target="_blank">${selected}</a>`
+  form.value.content = text.slice(0, start) + replacement + text.slice(end)
+  nextTick(() => {
+    ta.focus()
+  })
 }
 
 const handleSubmit = async () => {
@@ -479,6 +523,33 @@ onMounted(() => {
   }
 }
 
+.editor-toolbar {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  .toolbar-btn {
+    min-width: 28px;
+    height: 28px;
+    padding: 0 6px;
+    font-size: var(--text-sm);
+    border: 1px solid var(--divider-color);
+    border-radius: 4px;
+    background-color: var(--background-color-1);
+    color: var(--text-default-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+
+    &:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+  }
+}
+
 .form-group-checkbox {
   label {
     font-size: var(--text-sm);
@@ -529,5 +600,11 @@ onMounted(() => {
 
 .modal-footer .btn-danger:hover {
   opacity: 0.9;
+}
+.empty-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light-color);
+    font-size: var(--text-base);
 }
 </style>

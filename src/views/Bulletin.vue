@@ -18,7 +18,7 @@
           :key="item.id"
           class="bulletin-card"
           :class="{ pinned: item.isPinned, expanded: expandedId === item.id }"
-          @click="toggleExpand(item.id)"
+          @click="handleCardClick($event, item.id)"
         >
           <div class="card-header">
             <div class="card-title-row">
@@ -109,7 +109,10 @@ const fetchBulletins = async (page: number) => {
   loading.value = false
 }
 
-const toggleExpand = (id: number) => {
+const handleCardClick = (event: MouseEvent, id: number) => {
+  // 点击链接时不收起卡片，让浏览器处理导航
+  // 使用 composedPath 因为 event.target 可能是 a 标签内的文本节点
+  if (event.composedPath().some(el => el instanceof HTMLAnchorElement)) return
   expandedId.value = expandedId.value === id ? null : id
 }
 
@@ -191,6 +194,10 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+}
+
+.bulletin-card.expanded {
+  cursor: auto;
 }
 
 .bulletin-card:hover {

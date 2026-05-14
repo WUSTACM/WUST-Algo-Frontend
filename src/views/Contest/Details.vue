@@ -13,11 +13,19 @@
                     <div class="btn def" :class="loadingInfo ? 'dis' : ''" @click="toContest(info.contestUrl)">跳转到比赛主页</div>
                 </div>
             </div>
+            <div class="group-filter" v-if="groups.length > 0">
+                <span class="filter-label">分组筛选：</span>
+                <span class="filter-tab" :class="{ active: selectedGroupId === -1 }" @click="switchGroup(-1)">全部</span>
+                <span class="filter-tab" v-for="g in groups" :key="g.id" :class="{ active: selectedGroupId === g.id }" @click="switchGroup(g.id)">{{ g.name }}</span>
+            </div>
             <div style="position: relative;">
                 <LoadingOverlay :show="loadingRank" />
-                <Rank :data="rankData" title="比赛排行榜" :is-joined="false"></Rank>
+                <template v-if="rankData.data.length > 0">
+                    <Rank :data="rankData" title="比赛排行榜" :is-joined="false"></Rank>
+                </template>
+                <div v-else-if="!loadingRank" class="empty-placeholder">暂无排行数据</div>
             </div>
-            <div class="pageNavigation" v-if="data">
+            <div class="pageNavigation" v-if="data && rankData.data.length > 0">
                 <div class="group">
                     <button class="page-nav-btn" :disabled="data.currentPage <= 1"
                         @click="getRankData(data.currentPage - 1)">上一页</button>
@@ -107,13 +115,32 @@ const pages = computed(() => {
     return [currentPage - 1, currentPage, currentPage + 1];
 })
 
+const selectedGroupId = ref<number>(-1)
+const groups = ref<{ id: number; name: string }[]>([])
+
+const loadGroups = async () => {
+    const resp = await API.user.group.list(1)
+    if (resp.success) {
+        groups.value = resp.data.list.map((g: any) => ({ id: g.id, name: g.name }))
+    }
+}
+
+const switchGroup = (groupId: number) => {
+    if (selectedGroupId.value === groupId) return
+    selectedGroupId.value = groupId
+    // 重置分页状态，避免空数据导致 totalPage=0 阻塞请求
+    data.value.totalPage = 1
+    data.value.currentPage = 0
+    getRankData(1)
+}
+
 const getRankData = async (page: number) => {
     if (!id) {
         router.back();
         return;
     }
 
-    if (page > data.value.totalPage || page < 1 || page === data.value.currentPage) {
+    if (page > data.value.totalPage || page < 1) {
         return;
     }
 
@@ -125,11 +152,16 @@ const getRankData = async (page: number) => {
     const limit = 10
     const offset = (page - 1) * limit
 
-    const response = await API.core.contest.ranking({
+    const request: any = {
         contestId: id.toString(),
         limit,
         offset,
-    })
+    }
+    if (selectedGroupId.value !== -1) {
+        request.groupId = selectedGroupId.value
+    }
+
+    const response = await API.core.contest.ranking(request)
     Toast.stdResponse(response, false)
 
     if (response.success) {
@@ -191,6 +223,7 @@ const toContest = (url: string) => {
 }
 
 onMounted(() => {
+    loadGroups()
     getRankData(1);
 })
 </script>
@@ -229,6 +262,43 @@ onMounted(() => {
     }
 }
 
+.group-filter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 20px;
+
+    .filter-label {
+        font-size: var(--text-sm);
+        color: var(--text-light-color);
+    }
+
+    .filter-tab {
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: var(--text-sm);
+        color: var(--text-light-color);
+        background-color: var(--section-background-color);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        -webkit-user-select: none;
+        user-select: none;
+
+        &:hover {
+            color: var(--text-default-color);
+            border-color: var(--divider-color);
+        }
+
+        &.active {
+            background-color: var(--neon-cyan);
+            color: var(--background-color-1);
+            font-weight: 500;
+        }
+    }
+}
+
 .btn {
     margin: 0 5px;
     padding: 5px 10px;
@@ -257,5 +327,12 @@ onMounted(() => {
     &.dis{
         cursor: not-allowed;
     }
+}
+
+.empty-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-light-color);
+    font-size: var(--text-base);
 }
 </style>

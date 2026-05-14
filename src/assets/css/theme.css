@@ -82,6 +82,33 @@
     --gradient-cyber: linear-gradient(135deg, #0070F3 0%, #7928CA 50%, #0070F3 100%);
 }
 
+/* 樱花粉 — 柔和暖色主题 */
+[data-theme="sakura"] {
+    --background-color-1: #FFF8F8;
+    --background-color-2: #FFF0F3;
+    --background-color-3: #FFE4E8;
+    --background-header: linear-gradient(45deg, rgba(255, 107, 138, 0.08) 0%, #FFF0F3 100px, #FFF0F3 calc(100% - 100px), rgba(255, 107, 138, 0.08) 100%);
+    --background-color-header: #FFF0F3;
+    --background-color-content: #FFF8F8;
+    --divider-color: #FFDCE5;
+    --section-background-color: rgba(255, 107, 138, 0.05);
+    --section-active-color: #FF6B8A;
+    --section-default-color: #9B7B84;
+
+    --text-default-color: #2D1B24;
+    --text-light-color: #8B6B78;
+    --text-reverse-color: #ffffff;
+
+    --text-link-color: #FF6B8A;
+    --input-active-color: #FF6B8A;
+
+    --card-icon-background-color: #FFE4E8;
+
+    --neon-cyan: #FF6B8A;
+
+    --gradient-cyber: linear-gradient(135deg, #FF85A2 0%, #FF6B8A 50%, #FF4070 100%);
+}
+
 /* 锡院紫 — 清华紫浅色，参考 Gemini 对比度建议 */
 [data-theme="wxu-purple"] {
     --background-color-1: #FFFFFF;

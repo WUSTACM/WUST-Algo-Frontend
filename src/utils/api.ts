@@ -311,6 +311,7 @@ export interface CoreContestRankingRequest {
     contestId: string;
     limit: number;
     offset: number;
+    groupId?: number;
 }
 
 export interface CoreContestRankingResponse {
@@ -824,7 +825,12 @@ export default class API {
             ranking: async (request: CoreContestRankingRequest): Promise<stdResponse<CoreContestRankingResponse>> => {
                 return apiCall<CoreContestRankingResponse>(
                     () => axios.get<CoreContestRankingResponse>('/api/core/contest/ranking', {
-                        params: request
+                        params: {
+                            contest_id: request.contestId,
+                            limit: request.limit,
+                            offset: request.offset,
+                            groupId: request.groupId,
+                        }
                     }),
                     (response) => {
                         if (response.data.code !== "0") return { message: "获取比赛排名失败" };
