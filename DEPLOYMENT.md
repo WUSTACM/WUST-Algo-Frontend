@@ -6,6 +6,8 @@ This repository contains the Vue/Vite frontend deployment files for WUST Algo.
 
 Run the backend deployment first so the gateway is available at `127.0.0.1:8080`.
 
+The default deployment user is `acm_tracker`, matching the backend deployment templates.
+
 ## One-Time Deployment
 
 ```bash
