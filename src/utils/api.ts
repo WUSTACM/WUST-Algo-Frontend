@@ -444,10 +444,16 @@ export default class API {
                     return stdRes;
                 }
 
-                request.password = hashPassword(request.password);
+                const payload = {
+                    username: request.username,
+                    password: hashPassword(request.password),
+                    name: request.name,
+                    email: request.email,
+                    groupId: request.groupId
+                };
 
                 try {
-                    const response = await axios.post<UserAuthRegisterResponse>('/api/user/auth/register', request);
+                    const response = await axios.post<UserAuthRegisterResponse>('/api/user/auth/register', payload);
                     if (response.data.success) {
                         stdRes.success = true;
                         stdRes.message = response.data.message || "注册成功";
@@ -538,12 +544,12 @@ export default class API {
                     return stdRes;
                 }
 
-                if (request.password) {
-                    request.password = hashPassword(request.password);
-                }
+                const payload = request.password
+                    ? { ...request, password: hashPassword(request.password) }
+                    : { ...request };
 
                 try {
-                    const response = await axios.post<UserProfileGetByIdResponse>("/api/user/profile/update", request, {
+                    const response = await axios.post<UserProfileGetByIdResponse>("/api/user/profile/update", payload, {
                         headers: {
                             Authorization: `Bearer ${JWT.token}`
                         }
