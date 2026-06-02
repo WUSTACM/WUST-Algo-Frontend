@@ -1070,27 +1070,28 @@ onBeforeUnmount(() => {
 
   .ranking-switch button {
     min-width: 86px;
-    padding: 8px 12px;
+    padding: 5px 10px;
     border: 1px solid var(--divider-color);
-    border-radius: 8px;
-    color: var(--text-light-color);
-    background-color: var(--section-background-color);
+    border-radius: 5px;
+    color: var(--text-default-color);
+    background-color: var(--background-color-1);
     cursor: pointer;
     font-family: inherit;
     font-size: var(--text-sm);
-    transition: all 0.2s ease;
+    outline: none;
+    transition: border-color 0.3s ease, background-color 0.2s ease, color 0.2s ease;
   }
 
   .ranking-switch button:hover {
-    border-color: var(--neon-cyan);
+    border-color: var(--input-active-color);
     color: var(--text-default-color);
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.16);
+    background-color: var(--background-color-1);
   }
 
   .ranking-switch button.active {
-    border-color: var(--neon-cyan);
+    border-color: var(--input-active-color);
     color: var(--text-default-color);
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.16);
+    background-color: var(--background-color-1);
   }
 
   .ranking-section {
@@ -1390,8 +1391,8 @@ onBeforeUnmount(() => {
 
     .ranking-switch button {
       flex-basis: calc(50% - 4px);
-      padding: 7px 10px;
-      border-radius: 8px;
+      padding: 5px 10px;
+      border-radius: 5px;
       font-size: var(--text-xs);
     }
 

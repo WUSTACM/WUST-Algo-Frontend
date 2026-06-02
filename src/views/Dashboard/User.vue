@@ -624,11 +624,13 @@ onMounted(() => {
     border: 1px solid var(--divider-color);
     color: var(--text-default-color);
     background-color: var(--background-color-1);
-    transition: background-color 0.2s ease;
+    font-family: inherit;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
   }
 
   .btn-primary:hover {
+    border-color: var(--input-active-color);
     background-color: var(--background-color-2);
   }
 
@@ -725,23 +727,25 @@ onMounted(() => {
     }
 
     .role-option {
-      padding: 8px 16px;
+      padding: 7px 14px;
       border: 1px solid var(--divider-color);
       border-radius: 6px;
       cursor: pointer;
+      font-family: inherit;
       font-size: var(--text-sm);
-      transition: all 0.2s;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
       background-color: var(--background-color-1);
       color: var(--text-default-color);
 
       &:hover {
+        border-color: var(--input-active-color);
         background-color: var(--background-color-2);
       }
 
       &.active {
-        background-color: var(--neon-cyan);
-        color: var(--background-color-1);
-        border-color: var(--neon-cyan);
+        background-color: var(--background-color-2);
+        color: var(--text-default-color);
+        border-color: var(--input-active-color);
       }
     }
   }
@@ -752,6 +756,31 @@ onMounted(() => {
     gap: 8px;
     padding: 16px;
     border-top: 1px solid var(--divider-color);
+
+    .btn {
+      min-width: 72px;
+      padding: 6px 12px;
+      border: 1px solid var(--divider-color);
+      border-radius: 6px;
+      color: var(--text-default-color);
+      background-color: var(--background-color-1);
+      font-family: inherit;
+      font-size: var(--text-sm);
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn:hover,
+    .btn-primary:hover {
+      border-color: var(--input-active-color);
+      color: var(--text-default-color);
+      background-color: var(--background-color-2);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
   }
 }
 </style>
