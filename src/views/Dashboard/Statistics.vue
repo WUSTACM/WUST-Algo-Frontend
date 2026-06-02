@@ -368,7 +368,7 @@ import API, {
 } from "@/utils/api";
 import Toast from "@/utils/toast";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 // 导入 ECharts 相关
@@ -500,6 +500,11 @@ const getGroupCount = async () => {
 
 const acDataDaily = ref<DailyData[]>([]);
 const submitDataDaily = ref<DailyData[]>([]);
+const isCompactScreen = ref(false);
+
+const syncScreenSize = () => {
+  isCompactScreen.value = window.innerWidth <= 640;
+};
 
 const padZero = (num: number): string => {
   return num < 10 ? "0" + num : num.toString();
@@ -575,15 +580,18 @@ const chartOption = computed(() => {
     },
     legend: {
       data: ["AC", "提交"],
-      top: 0,
-      left: "left",
+      top: isCompactScreen.value ? 4 : 0,
+      left: isCompactScreen.value ? "center" : "left",
     },
     grid: {
-      left: "3%",
-      right: "4%",
+      top: isCompactScreen.value ? 42 : 48,
+      left: isCompactScreen.value ? 8 : "3%",
+      right: isCompactScreen.value ? 8 : "4%",
+      bottom: isCompactScreen.value ? 52 : 74,
       containLabel: true,
     },
     toolbox: {
+      show: !isCompactScreen.value,
       feature: {
         saveAsImage: {},
       },
@@ -594,6 +602,8 @@ const chartOption = computed(() => {
         boundaryGap: false,
         data: dates,
         axisLabel: {
+          hideOverlap: true,
+          interval: isCompactScreen.value ? "auto" : 0,
           formatter: function (value: string) {
             const date = new Date(value);
             return date.getMonth() + 1 + "-" + date.getDate();
@@ -619,6 +629,7 @@ const chartOption = computed(() => {
         end: endPercent,
       },
       {
+        show: !isCompactScreen.value,
         start: startPercent,
         end: endPercent,
         handleSize: "110%",
@@ -882,6 +893,8 @@ const getRankingData = async () => {
 };
 
 onMounted(async () => {
+  syncScreenSize();
+  window.addEventListener("resize", syncScreenSize);
   loadingStats.value = true;
   loadingChart.value = true;
   loadingRanking.value = true;
@@ -895,19 +908,26 @@ onMounted(async () => {
   loadingChart.value = false;
   await getRankingData();
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", syncScreenSize);
+});
 </script>
 
 <style scoped>
 .dashboardContent {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   height: 100%;
   border: 1px solid var(--divider-color);
   color: var(--text-default-color);
-  padding: clamp(8px, 1.5vw, 14px);
+  padding: clamp(10px, 1.6vw, 18px);
   overflow-x: hidden;
 
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: clamp(10px, 1.5vw, 20px);
     margin-top: 8px;
   }
@@ -916,17 +936,18 @@ onMounted(async () => {
     border: 1px solid var(--divider-color);
     position: relative;
     min-width: 0;
-    padding: clamp(12px, 1.8vw, 20px);
+    padding: clamp(12px, 1.8vw, 18px);
     border-radius: 12px;
     overflow: hidden;
     transition: all 0.3s ease;
+    background-color: var(--background-color-content);
   }
 
   .card-header {
     display: flex;
     align-items: center;
     gap: clamp(10px, 1.4vw, 16px);
-    margin-bottom: clamp(12px, 1.6vw, 20px);
+    margin-bottom: clamp(10px, 1.5vw, 18px);
   }
 
   .card-icon {
@@ -954,11 +975,11 @@ onMounted(async () => {
   }
 
   .card-data {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
   .data-value {
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 800;
     line-height: 1;
     margin-bottom: 4px;
@@ -976,7 +997,8 @@ onMounted(async () => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
+    gap: 10px;
+    padding-top: 10px;
     border-top: 1px solid var(--divider-color);
   }
 
@@ -1011,8 +1033,14 @@ onMounted(async () => {
 
   .chart-container {
     width: 100%;
-    height: clamp(280px, 48vh, 500px);
+    min-width: 0;
+    height: clamp(280px, 46vh, 500px);
     margin-top: clamp(12px, 1.6vw, 20px);
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    padding: clamp(8px, 1.4vw, 14px);
+    box-sizing: border-box;
+    background-color: var(--background-color-content);
   }
 
   .chart {
@@ -1076,12 +1104,14 @@ onMounted(async () => {
 
   .ranking-table-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .ranking-table {
     width: 100%;
-    min-width: 720px;
+    min-width: 680px;
     border-collapse: collapse;
   }
 
@@ -1109,7 +1139,7 @@ onMounted(async () => {
   }
 
   .rank-col {
-    width: 84px;
+    width: 76px;
     text-align: center;
   }
 
@@ -1186,11 +1216,13 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
   }
 
   .rank-name {
     color: var(--text-default-color);
     font-weight: 700;
+    overflow-wrap: anywhere;
   }
 
   .rank-username {
@@ -1235,6 +1267,7 @@ onMounted(async () => {
     color: var(--text-light-color);
     background-color: var(--section-background-color);
     cursor: pointer;
+    font-family: inherit;
     transition: all 0.2s ease;
   }
 
@@ -1252,6 +1285,7 @@ onMounted(async () => {
     border: 1px solid var(--divider-color);
     border-radius: 8px;
     color: var(--text-default-color);
+    font-family: inherit;
     background-color: var(--background-color-2);
   }
 
@@ -1263,9 +1297,21 @@ onMounted(async () => {
 
 @media (max-width: 900px) {
   .dashboardContent {
+    padding: 12px;
+
+    h2 {
+      font-size: 1.2rem;
+      margin: 18px 0 12px;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .ranking-heading {
       align-items: flex-start;
       flex-direction: column;
+      gap: 10px;
     }
 
     .ranking-switch {
@@ -1287,27 +1333,236 @@ onMounted(async () => {
 
 @media (max-width: 560px) {
   .dashboardContent {
+    width: 100%;
     border-left: none;
     border-right: none;
+    padding: 10px;
 
     .stats-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .stat-card {
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .card-header {
+      margin-bottom: 8px;
+    }
+
+    .title-main {
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .data-value {
+      font-size: clamp(1.35rem, 8vw, 2rem);
+      line-height: 1.1;
     }
 
     .card-footer {
       align-items: flex-start;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
+      padding-top: 8px;
+    }
+
+    .footer-trend,
+    .footer-info {
+      font-size: 0.72rem;
+    }
+
+    .chart-container {
+      height: 320px;
+      padding: 6px;
+      border-radius: 10px;
+    }
+
+    .ranking-heading {
+      margin-top: 16px;
+    }
+
+    .ranking-switch {
+      gap: 8px;
+    }
+
+    .ranking-switch button {
+      flex-basis: calc(50% - 4px);
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: var(--text-xs);
+    }
+
+    .ranking-section {
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    .ranking-table-wrapper {
+      overflow: visible;
     }
 
     .ranking-table {
-      min-width: 640px;
+      min-width: 0;
+      display: block;
+    }
+
+    .ranking-table thead {
+      display: none;
+    }
+
+    .ranking-table tbody {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ranking-table tr {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px 12px;
+      padding: 12px;
+      border: 1px solid var(--divider-color);
+      border-radius: 12px;
+      background-color: var(--background-color-content);
+    }
+
+    .ranking-table tbody tr:hover {
+      background-color: var(--background-color-content);
+    }
+
+    .ranking-table td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+      padding: 0;
+      border-bottom: none;
+      font-size: var(--text-sm);
+    }
+
+    .ranking-table td::before {
+      color: var(--text-light-color);
+      font-size: var(--text-xs);
+      white-space: nowrap;
+    }
+
+    .ranking-table td:nth-child(1) {
+      grid-row: span 4;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 2px;
+    }
+
+    .ranking-table td:nth-child(1)::before {
+      content: "";
+    }
+
+    .ranking-table td:nth-child(2) {
+      justify-content: flex-start;
+    }
+
+    .ranking-table td:nth-child(2)::before {
+      content: "";
+    }
+
+    .ranking-table td:nth-child(3)::before {
+      content: "刷题数";
+    }
+
+    .ranking-table td:nth-child(4)::before {
+      content: "提交数";
+    }
+
+    .ranking-table td:nth-child(5)::before {
+      content: "最后提交";
+    }
+
+    .rank-col {
+      width: auto;
+    }
+
+    .rank-badge {
+      min-width: 34px;
+      height: 34px;
+      padding: 0 8px;
+    }
+
+    .rank-user,
+    .rank-team {
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .rank-user img,
+    .team-avatar {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+    }
+
+    .rank-user-info {
+      min-width: 0;
+    }
+
+    .rank-username {
+      overflow-wrap: anywhere;
+    }
+
+    .empty-ranking {
+      display: block !important;
+      text-align: center;
+    }
+
+    .empty-ranking::before {
+      content: "";
+      display: none;
+    }
+
+    .pageNavigation {
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .pageNavigation .group {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .pageButtons {
+      justify-content: center;
+    }
+
+    .pageInput {
+      width: 100%;
+      justify-content: center;
     }
 
     .pageButtons button,
     .pageInput button,
     .pageInput input {
       padding: 7px 10px;
+      border-radius: 8px;
+      font-size: var(--text-xs);
+    }
+
+    .pageInput input {
+      width: 68px;
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboardContent {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+      padding: 12px;
     }
   }
 }
