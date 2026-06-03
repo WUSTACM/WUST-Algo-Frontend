@@ -15,6 +15,10 @@ WUST Algo Frontend 是 WUST ACM 算法训练数据平台的前端项目，基于
 - 后台管理：用户管理、角色/分组调整、密码重置、系统邀请码配置。
 - 主题与布局：支持多主题、响应式统计页、统一页脚。
 
+## 当前功能边界
+
+当前版本不包含“两人数据对比”页面，左侧栏没有数据对比入口，个人资料页也不提供“与 TA 对比”按钮。若访问 `/compare`，前端会进入通用 NotFound 页面。
+
 ## 技术栈
 
 - Vue 3
@@ -101,6 +105,15 @@ npm run build
 sudo nginx -t
 sudo systemctl reload nginx
 ```
+
+部署后可验证：
+
+```bash
+curl -I http://127.0.0.1:8088/
+curl -I http://127.0.0.1:8088/compare
+```
+
+由于 Vue Router history fallback，`/compare` 可能仍返回静态站点 `200`，但页面内容应由前端路由渲染为 NotFound，且构建产物中不应包含数据对比入口。
 
 如果更新后浏览器仍显示旧页面，请强制刷新或清理浏览器缓存。
 

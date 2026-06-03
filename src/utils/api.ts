@@ -175,45 +175,6 @@ export interface CoreStatisticPlatformPeriodItem {
   [property: string]: any;
 }
 
-export interface CoreStatisticCompareRequest {
-  leftUserId: number;
-  rightUserId: number;
-  startDate: string;
-  endDate: string;
-}
-
-export interface CoreStatisticCompareResponse {
-  code: number;
-  data: CoreStatisticCompareData;
-  message?: string;
-  [property: string]: any;
-}
-
-export interface CoreStatisticCompareData {
-  left: CoreStatisticCompareSide;
-  right: CoreStatisticCompareSide;
-  overlap: CoreStatisticCompareOverlap;
-}
-
-export interface CoreStatisticCompareSide {
-  userId: number;
-  period: CoreStatisticPeriodData;
-  platformPeriod: CoreStatisticPlatformPeriodItem[];
-  heatmapSubmit: Datum[];
-  heatmapAc: Datum[];
-  recentSubmits: CoreStatisticCompareSubmitLogData[];
-}
-
-export interface CoreStatisticCompareSubmitLogData extends Omit<CoreSubmitLogGetByIdData, "time"> {
-  time: string | number;
-}
-
-export interface CoreStatisticCompareOverlap {
-  commonAcCount: number;
-  leftOnlyAcCount: number;
-  rightOnlyAcCount: number;
-}
-
 export interface CoreStatisticPeriodData {
   ac: CoreStatisticPeriodItem;
   submit: CoreStatisticPeriodItem;
@@ -1446,70 +1407,6 @@ export default class API {
           },
           "获取平台统计数据失败",
           { code: "", data: [] },
-        );
-      },
-      compare: async (
-        request: CoreStatisticCompareRequest,
-      ): Promise<stdResponse<CoreStatisticCompareResponse>> => {
-        const emptyComparePeriodItem = {
-          lastMonth: 0,
-          lastWeek: 0,
-          lastYear: 0,
-          thisMonth: 0,
-          thisWeek: 0,
-          thisYear: 0,
-          today: 0,
-          total: 0,
-        };
-        return apiCall<CoreStatisticCompareResponse>(
-          () =>
-            axios.get<CoreStatisticCompareResponse>(
-              "/api/core/statistic/compare",
-              {
-                params: request,
-              },
-            ),
-          (response) => {
-            if (response.status !== 200)
-              return { message: "获取对比数据失败" };
-            return {
-              data: response.data,
-              message: response.data.message || "获取对比数据成功",
-            };
-          },
-          "获取对比数据失败",
-          {
-            code: 0,
-            data: {
-              left: {
-                userId: 0,
-                period: {
-                  ac: emptyComparePeriodItem,
-                  submit: emptyComparePeriodItem,
-                },
-                platformPeriod: [],
-                heatmapSubmit: [],
-                heatmapAc: [],
-                recentSubmits: [],
-              },
-              right: {
-                userId: 0,
-                period: {
-                  ac: emptyComparePeriodItem,
-                  submit: emptyComparePeriodItem,
-                },
-                platformPeriod: [],
-                heatmapSubmit: [],
-                heatmapAc: [],
-                recentSubmits: [],
-              },
-              overlap: {
-                commonAcCount: 0,
-                leftOnlyAcCount: 0,
-                rightOnlyAcCount: 0,
-              },
-            },
-          },
         );
       },
     },

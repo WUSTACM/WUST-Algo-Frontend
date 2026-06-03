@@ -94,18 +94,6 @@
           <div class="item-indicator">▶</div>
         </router-link>
 
-        <router-link to="/compare" class="section navigation-item" active-class="active">
-          <font-awesome-icon icon="fa-solid fa-chart-line" class="item-icon" />
-          <div class="item-content">
-            <div class="item-title">
-              <span class="zh">数据对比</span>
-              <span class="en">Compare</span>
-            </div>
-            <div class="item-description">对比两名用户</div>
-          </div>
-          <div class="item-indicator">▶</div>
-        </router-link>
-
         <!-- <router-link to="/problem" class="section navigation-item" active-class="active">
           <font-awesome-icon icon="fa-solid fa-list" class="item-icon" />
           <div class="item-content">

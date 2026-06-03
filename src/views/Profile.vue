@@ -47,13 +47,10 @@
                             <a class="item" v-if="user.links.QOJ" target="_blank" :href="user.links.QOJ">QOJ</a>
                         </div>
                     </div>
-                    <div class="actions" v-if="isSelfProfile">
+                    <div class="actions" :class="{ placeholder: currentUserId !== Number(user.userId) }">
                         <button class="btn def" @click="showUpdateConfirm">更新OJ数据</button>
                         <button class="btn def" @click="router.push('/changeprofile')">编辑个人资料</button>
                         <button class="btn dan" @click="showLogoutConfirm">退出登录</button>
-                    </div>
-                    <div class="actions" v-else-if="currentUserId">
-                        <button class="btn def" @click="compareWithUser">与 TA 对比</button>
                     </div>
                     <div class="team-card" style="position: relative;">
                         <LoadingOverlay :show="loadingTeam" />
@@ -303,13 +300,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="moblie-actions" v-if="isSelfProfile">
+                    <div class="moblie-actions" v-if="currentUserId === Number(user.userId)">
                         <button class="btn def" @click="showUpdateConfirm">更新OJ数据</button>
                         <button class="btn def" @click="router.push('/changeprofile')">编辑个人资料</button>
                         <button class="btn dan" @click="showLogoutConfirm">退出登录</button>
-                    </div>
-                    <div class="moblie-actions" v-else-if="currentUserId">
-                        <button class="btn def" @click="compareWithUser">与 TA 对比</button>
                     </div>
                 </div>
             </div>
@@ -1142,19 +1136,6 @@ const showUpdateConfirm = () => {
 
 const doUpdateLog = () => {
     updateLog()
-}
-
-const compareWithUser = () => {
-    if (!currentUserId.value || !user.value.userId || currentUserId.value === Number(user.value.userId)) {
-        return;
-    }
-    router.push({
-        path: '/compare',
-        query: {
-            left: currentUserId.value,
-            right: user.value.userId,
-        },
-    });
 }
 
 const contests = ref<CoreContestListData[]>([])
