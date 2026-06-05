@@ -189,7 +189,7 @@
       <!-- 状态栏 -->
       <div class="sidebar-footer">
         <div class="system-info">
-          <span class="info-item">v1.0.0</span>
+          <span class="info-item">v1.1.0</span>
           <span class="info-divider">|</span>
           <span class="info-item">{{ currentTime }}</span>
         </div>

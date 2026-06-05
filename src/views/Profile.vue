@@ -348,7 +348,6 @@
                                     </div>
                                 </div>
                                 <div class="weekly-advice">{{ weeklyReport.advice }}</div>
-                                <div class="weekly-version">v1.1</div>
                             </div>
                         </div>
                     </div>
@@ -2481,17 +2480,6 @@ onBeforeUnmount(() => {
 .weekly-title span:first-child {
     color: var(--text-default-color);
     font-size: var(--text-xl);
-    font-weight: 900;
-}
-
-.weekly-version {
-    align-self: flex-start;
-    padding: 4px 8px;
-    border: 1px solid var(--divider-color);
-    border-radius: 8px;
-    color: var(--neon-cyan);
-    background-color: var(--background-color-2);
-    font-size: var(--text-xs);
     font-weight: 900;
 }
 
