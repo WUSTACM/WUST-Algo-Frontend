@@ -274,6 +274,37 @@
 
       <div class="dashboard-grid">
         <div class="grid-left">
+          <div class="section-secondary weekly-home-section">
+            <div class="section-header">
+              <div class="header-title">
+                <span class="title-icon">
+                  <font-awesome-icon icon="fa-solid fa-calendar-days" />
+                </span>
+                <span class="title-text">训练周报</span>
+              </div>
+            </div>
+
+            <div class="section-secondary-container" style="position: relative">
+              <LoadingOverlay :show="loadingWeekly || loadingStats" />
+              <div class="weekly-card" v-if="weeklyReport">
+                <div class="weekly-title">{{ weeklyReport.title }}</div>
+                <div class="weekly-summary">{{ weeklyReport.summary }}</div>
+                <div class="weekly-metrics">
+                  <div
+                    class="weekly-metric"
+                    v-for="metric in weeklyReport.metrics"
+                    :key="metric.label"
+                  >
+                    <strong>{{ metric.value }}</strong>
+                    <span>{{ metric.label }}</span>
+                    <em>{{ metric.hint }}</em>
+                  </div>
+                </div>
+                <div class="weekly-advice">{{ weeklyReport.advice }}</div>
+              </div>
+              <div class="weekly-empty" v-else>登录后查看你的训练周报。</div>
+            </div>
+          </div>
           <div class="section-secondary">
             <div class="section-header">
               <div class="header-title">
@@ -480,6 +511,7 @@ import Calendar from "@/components/Calendar.vue";
 // import Rank from '@/components/Rank.vue';
 import JWT from "@/utils/jwt";
 import API, {
+  type CoreSubmitLogGetByIdData,
   type CoreStatisticHeatmapRequest,
   type CoreStatisticPeriodData,
   type CoreStatisticPeriodItem,
@@ -490,6 +522,7 @@ import Analyse from "@/utils/analyse";
 import { useUserStore } from "@/stores/user";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
 import BulletinBoard from "@/components/BulletinBoard.vue";
+import { buildWeeklyReport, type WeeklyReport } from "@/utils/v11Features";
 
 const userStore = useUserStore();
 const isLogin = computed(() => userStore.isLogin);
@@ -497,6 +530,7 @@ const isLogin = computed(() => userStore.isLogin);
 const loadingStats = ref(true);
 const loadingHeatmap = ref(true);
 const loadingAi = ref(true);
+const loadingWeekly = ref(false);
 
 interface HeatmapData {
   date: string;
@@ -508,6 +542,7 @@ const aiSummary = ref<string[]>([]);
 
 const submitData = ref<HeatmapData[]>([]);
 const acData = ref<HeatmapData[]>([]);
+const recentSubmitLogs = ref<CoreSubmitLogGetByIdData[]>([]);
 
 const dynamicYear = ref<number>(new Date().getFullYear());
 
@@ -617,6 +652,11 @@ const currentPeriodData = computed<CoreStatisticPeriodItem>(() => {
   return periodData.value[mode.value];
 });
 
+const weeklyReport = computed<WeeklyReport | null>(() => {
+  if (!isLogin.value) return null;
+  return buildWeeklyReport(periodData.value, recentSubmitLogs.value);
+});
+
 const formatRate = (ac: number, submit: number): string => {
   if (!submit) return "0.00%";
   return `${((ac / submit) * 100).toFixed(2)}%`;
@@ -652,6 +692,36 @@ const getPeriodData = async () => {
   Toast.stdResponse(platformResponse, false);
   if (platformResponse.success) {
     platformPeriodData.value = platformResponse.data.data;
+  }
+};
+
+const getWeeklySubmitLogs = async () => {
+  if (!isLogin.value) return;
+  loadingWeekly.value = true;
+  const userId = JWT.getUserInfo()?.userId || 0;
+  const logs: CoreSubmitLogGetByIdData[] = [];
+  let cursor = -1;
+  const pageSize = 300;
+  const maxLogs = 1000;
+  const minTime = Math.floor(Date.now() / 1000) - 21 * 86400;
+
+  try {
+    while (logs.length < maxLogs) {
+      const response = await API.core.submitLog.getById(userId, cursor, pageSize);
+      Toast.stdResponse(response, false);
+      if (!response.success) break;
+
+      const pageLogs = response.data.data || [];
+      logs.push(...pageLogs);
+      if (pageLogs.length === 0 || pageLogs.length < pageSize) break;
+
+      const lastLog = pageLogs[pageLogs.length - 1];
+      cursor = Number(lastLog?.time || 0);
+      if (!cursor || cursor < minTime) break;
+    }
+    recentSubmitLogs.value = logs;
+  } finally {
+    loadingWeekly.value = false;
   }
 };
 
@@ -706,6 +776,7 @@ const getTrend = (curr: number, prev: number): string => {
 onMounted(() => {
   getHeatmapData();
   getPeriodData();
+  getWeeklySubmitLogs();
   getAiSummary();
 });
 </script>
@@ -1076,6 +1147,61 @@ onMounted(() => {
   border-radius: 5px;
 }
 
+.weekly-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.weekly-title {
+  color: var(--text-default-color);
+  font-size: var(--text-xl);
+  font-weight: 900;
+}
+
+.weekly-summary,
+.weekly-advice,
+.weekly-empty {
+  color: var(--text-light-color);
+  font-size: var(--text-base);
+  line-height: 1.7;
+}
+
+.weekly-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.weekly-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 12px;
+  background-color: var(--section-background-color);
+}
+
+.weekly-metric strong {
+  color: var(--active-color);
+  font-size: var(--text-xl);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-metric span {
+  color: var(--text-default-color);
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+.weekly-metric em {
+  color: var(--text-light-color);
+  font-size: var(--text-xs);
+  font-style: normal;
+}
+
 .analyseItem {
   font-size: var(--text-base);
 }
@@ -1169,6 +1295,10 @@ onMounted(() => {
     gap: 16px;
   }
 
+  .weekly-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .ranking-card {
     height: 250px;
   }
@@ -1193,6 +1323,10 @@ onMounted(() => {
 
   .data-value {
     font-size: 2rem;
+  }
+
+  .weekly-metrics {
+    grid-template-columns: 1fr;
   }
 }
 

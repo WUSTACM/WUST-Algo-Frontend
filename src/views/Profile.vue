@@ -324,33 +324,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="section weekly-section" style="position: relative;">
-                        <LoadingOverlay :show="loadingActivities || loadingStats" />
-                        <div class="header">
-                            <div class="header-title">
-                                <span class="title-icon">
-                                    <font-awesome-icon icon="fa-solid fa-calendar-days" />
-                                </span>
-                                <span class="title-text">训练周报</span>
-                            </div>
-                        </div>
-                        <div class="content">
-                            <div class="weekly-card">
-                                <div class="weekly-title">
-                                    <span>{{ weeklyReport.title }}</span>
-                                </div>
-                                <div class="weekly-summary">{{ weeklyReport.summary }}</div>
-                                <div class="weekly-metrics">
-                                    <div class="weekly-metric" v-for="metric in weeklyReport.metrics" :key="metric.label">
-                                        <strong>{{ metric.value }}</strong>
-                                        <span>{{ metric.label }}</span>
-                                        <em>{{ metric.hint }}</em>
-                                    </div>
-                                </div>
-                                <div class="weekly-advice">{{ weeklyReport.advice }}</div>
-                            </div>
-                        </div>
-                    </div>
                     <div class="section achievement-section" style="position: relative;">
                         <LoadingOverlay :show="loadingActivities || loadingStats" />
                         <div class="header">
@@ -360,8 +333,9 @@
                                 </span>
                                 <span class="title-text">成就徽章</span>
                             </div>
-                            <div class="header-tabs">
+                            <div class="header-tabs achievement-header-actions">
                                 <span class="tab active">{{ unlockedAchievements.length }}/{{ achievements.length }}</span>
+                                <button class="achievement-view-all" @click="showAchievementDrawer = true">查看全部 &gt;</button>
                             </div>
                         </div>
                         <div class="content">
@@ -381,29 +355,6 @@
                             <div class="achievement-more" v-if="achievements.length > visibleAchievements.length">
                                 只展示精选成就，还有 {{ achievements.length - visibleAchievements.length }} 个成就等你解锁。
                             </div>
-                        </div>
-                    </div>
-                    <div class="section" style="position: relative;">
-                        <LoadingOverlay :show="loadingHeatmap" />
-                        <div class="header">
-                            <div class="header-title">
-                                <span class="title-icon">
-                                    <font-awesome-icon icon="fa-solid fa-chart-line" />
-                                </span>
-                                <span class="title-text">热力图</span>
-                            </div>
-                            <div class="header-tabs">
-                                <span class="tab" @click="currentCalendar = 0"
-                                    :class="currentCalendar === 0 ? 'active' : ''">提交热力图</span>
-                                <span class="tab" @click="currentCalendar = 1"
-                                    :class="currentCalendar === 1 ? 'active' : ''">AC热力图</span>
-                            </div>
-                        </div>
-                        <div class="content">
-                            <Calendar :data="submitData" style="width: 100%;" v-if="currentCalendar === 0"
-                                :year="dynamicYear" @changeYear="handleYearChange"></Calendar>
-                            <Calendar :data="acData" style="width: 100%;" v-else :year="dynamicYear"
-                                @changeYear="handleYearChange"></Calendar>
                         </div>
                     </div>
                     <div class="section" style="position: relative;">
@@ -490,12 +441,55 @@
             <div class="bottom">
             </div>
         </div>
+        <div v-if="showAchievementDrawer" class="achievement-drawer-mask" @click="showAchievementDrawer = false">
+            <aside class="achievement-drawer" @click.stop>
+                <div class="achievement-drawer-header">
+                    <div>
+                        <div class="achievement-drawer-kicker">Achievements</div>
+                        <h2>成就徽章</h2>
+                    </div>
+                    <div class="achievement-drawer-count">{{ unlockedAchievements.length }}/{{ achievements.length }}</div>
+                    <button class="achievement-drawer-close" @click="showAchievementDrawer = false">×</button>
+                </div>
+                <div class="achievement-drawer-tabs">
+                    <button
+                        v-for="filter in achievementFilters"
+                        :key="filter.key"
+                        :class="{ active: achievementFilter === filter.key }"
+                        @click="achievementFilter = filter.key"
+                    >
+                        {{ filter.label }}
+                    </button>
+                </div>
+                <div class="achievement-drawer-list">
+                    <div
+                        class="achievement-detail-card"
+                        v-for="badge in filteredAchievements"
+                        :key="`drawer-${badge.key}`"
+                        :class="[{ locked: !badge.unlocked }, `tone-${badge.tone}`]"
+                    >
+                        <div class="achievement-icon achievement-detail-icon">{{ achievementIcon(badge) }}</div>
+                        <div class="achievement-detail-info">
+                            <div class="achievement-detail-top">
+                                <span>{{ achievementLabel(badge) }}</span>
+                                <em>{{ achievementRarity(badge) }}</em>
+                            </div>
+                            <p>{{ achievementDescription(badge) }}</p>
+                            <div class="achievement-detail-progress">
+                                <div><span :style="{ width: badge.progress + '%' }"></span></div>
+                                <b>{{ badge.unlocked ? '已解锁' : badge.hidden ? '进度隐藏' : `${badge.progress}%` }}</b>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="achievement-empty" v-if="filteredAchievements.length === 0">暂无成就记录。</div>
+                </div>
+            </aside>
+        </div>
     </BaseLayout>
 </template>
 
 <script setup lang="ts">
 import BaseLayout from '@/components/BaseLayout.vue'
-import Calendar from '@/components/Calendar.vue';
 import { computed, ref, onBeforeUnmount, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import JWT from '../utils/jwt';
@@ -512,11 +506,9 @@ import { buildTrainingPortrait, buildTrainingStatuses, type TrainingPortrait, ty
 import {
     buildAchievementBadges,
     buildTeamDashboard,
-    buildWeeklyReport,
     type AchievementBadge,
     type TeamDashboard,
     type TeamDashboardMember,
-    type WeeklyReport,
 } from '@/utils/v11Features';
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
@@ -544,7 +536,6 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 
-const currentCalendar = ref(0);
 const currentData = ref(0)
 
 const jwtUserInfo = JWT.getUserInfo();
@@ -680,11 +671,34 @@ const achievements = computed<AchievementBadge[]>(() => {
 })
 
 const unlockedAchievements = computed(() => achievements.value.filter((item) => item.unlocked))
+type AchievementFilter = 'all' | 'unlocked' | 'progress' | 'hidden'
+const showAchievementDrawer = ref(false)
+const achievementFilter = ref<AchievementFilter>('all')
+const achievementFilters: { key: AchievementFilter; label: string }[] = [
+    { key: 'all', label: '全部' },
+    { key: 'unlocked', label: '已解锁' },
+    { key: 'progress', label: '进行中' },
+    { key: 'hidden', label: '隐藏' },
+]
 const visibleAchievements = computed(() => {
-    const unlocked = achievements.value.filter((item) => item.unlocked);
-    const lockedVisible = achievements.value.filter((item) => !item.unlocked && !item.hidden);
-    const lockedHidden = achievements.value.filter((item) => !item.unlocked && item.hidden).slice(0, 1);
-    return [...unlocked, ...lockedVisible, ...lockedHidden].slice(0, 6);
+    const picked: AchievementBadge[] = [];
+    const pushUnique = (items: AchievementBadge[]) => {
+        for (const item of items) {
+            if (picked.length >= 6) break;
+            if (!picked.some((pickedItem) => pickedItem.key === item.key)) picked.push(item);
+        }
+    }
+
+    pushUnique(achievements.value.filter((item) => item.unlocked).slice(0, 3));
+    pushUnique(
+        achievements.value
+            .filter((item) => !item.unlocked && !item.hidden)
+            .sort((a, b) => b.progress - a.progress)
+            .slice(0, 2)
+    );
+    pushUnique(achievements.value.filter((item) => !item.unlocked && item.hidden).slice(0, 1));
+    pushUnique(achievements.value);
+    return picked;
 })
 
 const achievementLabel = (badge: AchievementBadge) => {
@@ -699,9 +713,20 @@ const achievementIcon = (badge: AchievementBadge) => {
     return badge.hidden && !badge.unlocked ? '???' : badge.icon;
 }
 
-const weeklyReport = computed<WeeklyReport>(() => {
-    return buildWeeklyReport(profilePeriodData.value, recentSubmitLogs.value);
+const filteredAchievements = computed(() => {
+    if (achievementFilter.value === 'unlocked') return achievements.value.filter((item) => item.unlocked);
+    if (achievementFilter.value === 'progress') return achievements.value.filter((item) => !item.unlocked && !item.hidden);
+    if (achievementFilter.value === 'hidden') return achievements.value.filter((item) => item.hidden);
+    return achievements.value;
 })
+
+const achievementRarity = (badge: AchievementBadge) => {
+    if (badge.hidden) return badge.unlocked ? '隐藏' : '未知';
+    if (badge.tone === 'gold') return '史诗';
+    if (badge.tone === 'red') return '痛苦';
+    if (badge.progress >= 80 && !badge.unlocked) return '临门一脚';
+    return badge.unlocked ? '已收集' : '进行中';
+}
 
 const teamDashboard = computed<TeamDashboard>(() => {
     return buildTeamDashboard(teamInfo.value.members as TeamDashboardMember[]);
@@ -1033,16 +1058,8 @@ interface HeatmapData {
     count: number;
 }
 
-const submitData = ref<HeatmapData[]>([])
-const acData = ref<HeatmapData[]>([])
 const submitTrendData = ref<HeatmapData[]>([])
 const acTrendData = ref<HeatmapData[]>([])
-
-const dynamicYear = ref<number>(new Date().getFullYear())
-
-const handleYearChange = (year: number) => {
-    dynamicYear.value = year
-}
 
 const padZero = (num: number): string => {
     return num < 10 ? '0' + num : num.toString();
@@ -1063,7 +1080,6 @@ const getHeatmapData = async () => {
 
     if (response1.success) {
         submitTrendData.value = response1.data.data;
-        submitData.value = response1.data.data.filter(item => item.count > 0);
     }
 
     const response2 = await API.core.statistic.heatmap({
@@ -1076,7 +1092,6 @@ const getHeatmapData = async () => {
 
     if (response2.success) {
         acTrendData.value = response2.data.data;
-        acData.value = response2.data.data.filter(item => item.count > 0);
     }
     loadingHeatmap.value = false;
 }
@@ -2557,12 +2572,45 @@ onBeforeUnmount(() => {
     gap: 10px;
 }
 
+.achievement-header-actions {
+    align-items: center;
+    gap: 8px;
+}
+
+.achievement-view-all,
+.achievement-drawer-tabs button,
+.achievement-drawer-close {
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--text-default-color);
+    background-color: var(--background-color-1);
+    font-family: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.achievement-view-all {
+    padding: 7px 10px;
+    font-size: var(--text-xs);
+}
+
+.achievement-view-all:hover,
+.achievement-drawer-tabs button:hover,
+.achievement-drawer-tabs button.active,
+.achievement-drawer-close:hover {
+    color: var(--text-reverse-color);
+    border-color: var(--active-color);
+    background-color: var(--active-color);
+}
+
 .achievement-card {
     display: grid;
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
     gap: 10px;
     align-items: center;
-    padding: 12px;
+    min-height: 72px;
+    padding: 10px;
     border: 1px solid var(--divider-color);
     border-radius: 12px;
     background-color: var(--section-background-color);
@@ -2583,8 +2631,8 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 14px;
     color: var(--text-reverse-color);
     background-color: var(--neon-cyan);
@@ -2628,7 +2676,11 @@ onBeforeUnmount(() => {
     color: var(--text-light-color);
     font-size: var(--text-xs);
     line-height: 1.5;
-    min-height: 2.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    min-height: 0;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .achievement-progress {
@@ -2643,6 +2695,179 @@ onBeforeUnmount(() => {
     height: 100%;
     border-radius: inherit;
     background-color: var(--neon-cyan);
+}
+
+.achievement-more {
+    margin-top: 10px;
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+}
+
+.achievement-drawer-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 2100;
+    display: flex;
+    justify-content: flex-end;
+    background-color: rgba(0, 0, 0, 0.36);
+    backdrop-filter: blur(4px);
+}
+
+.achievement-drawer {
+    width: min(520px, 100vw);
+    height: 100%;
+    padding: 22px;
+    overflow-y: auto;
+    border-left: 1px solid var(--divider-color);
+    background-color: var(--background-color-content);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.22);
+}
+
+.achievement-drawer-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.achievement-drawer-kicker {
+    color: var(--active-color);
+    font-size: var(--text-xs);
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.achievement-drawer-header h2 {
+    margin: 4px 0 0;
+    color: var(--text-default-color);
+    font-size: var(--text-xl);
+}
+
+.achievement-drawer-count {
+    padding: 7px 10px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--active-color);
+    background-color: var(--background-color-1);
+    font-size: var(--text-sm);
+    font-weight: 900;
+}
+
+.achievement-drawer-close {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-xl);
+    line-height: 1;
+}
+
+.achievement-drawer-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0;
+}
+
+.achievement-drawer-tabs button {
+    padding: 8px 12px;
+    font-size: var(--text-sm);
+}
+
+.achievement-drawer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.achievement-detail-card {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: 14px;
+    background-color: var(--section-background-color);
+}
+
+.achievement-detail-card.locked {
+    opacity: 0.68;
+}
+
+.achievement-detail-card.tone-gold .achievement-detail-icon {
+    background-color: #f59e0b;
+}
+
+.achievement-detail-card.tone-blue .achievement-detail-icon {
+    background-color: var(--active-color);
+}
+
+.achievement-detail-card.tone-red .achievement-detail-icon {
+    background-color: #ef4444;
+}
+
+.achievement-detail-card.tone-muted .achievement-detail-icon,
+.achievement-detail-card.locked .achievement-detail-icon {
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+}
+
+.achievement-detail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.achievement-detail-top span {
+    color: var(--text-default-color);
+    font-size: var(--text-base);
+    font-weight: 900;
+}
+
+.achievement-detail-top em {
+    flex: none;
+    color: var(--active-color);
+    font-size: var(--text-xs);
+    font-style: normal;
+    font-weight: 900;
+}
+
+.achievement-detail-info p {
+    margin: 6px 0 10px;
+    color: var(--text-light-color);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+}
+
+.achievement-detail-progress {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.achievement-detail-progress div {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background-color: var(--background-color-1);
+}
+
+.achievement-detail-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background-color: var(--neon-cyan);
+}
+
+.achievement-detail-progress b {
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+}
+
+.achievement-empty {
+    padding: 28px 0;
+    color: var(--text-light-color);
+    text-align: center;
 }
 
 .activities {
@@ -3208,6 +3433,36 @@ onBeforeUnmount(() => {
                 padding: 0;
             }
         }
+    }
+
+    .achievement-drawer-mask {
+        align-items: flex-end;
+    }
+
+    .achievement-drawer {
+        width: 100%;
+        height: min(86vh, 760px);
+        padding: 18px;
+        border-left: none;
+        border-radius: 18px 18px 0 0;
+    }
+
+    .achievement-drawer-header {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .achievement-drawer-close {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .achievement-drawer-count {
+        justify-self: flex-start;
+    }
+
+    .achievement-detail-card {
+        grid-template-columns: 40px minmax(0, 1fr);
+        padding: 10px;
     }
 }
 </style>
