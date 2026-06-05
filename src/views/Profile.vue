@@ -338,7 +338,6 @@
                             <div class="weekly-card">
                                 <div class="weekly-title">
                                     <span>{{ weeklyReport.title }}</span>
-                                    <span>v1.1</span>
                                 </div>
                                 <div class="weekly-summary">{{ weeklyReport.summary }}</div>
                                 <div class="weekly-metrics">
@@ -349,6 +348,7 @@
                                     </div>
                                 </div>
                                 <div class="weekly-advice">{{ weeklyReport.advice }}</div>
+                                <div class="weekly-version">v1.1</div>
                             </div>
                         </div>
                     </div>
@@ -367,7 +367,7 @@
                         </div>
                         <div class="content">
                             <div class="achievement-grid">
-                                <div class="achievement-card" v-for="badge in achievements.slice(0, 8)" :key="badge.key"
+                                <div class="achievement-card" v-for="badge in achievements" :key="badge.key"
                                     :class="[{ locked: !badge.unlocked }, `tone-${badge.tone}`]">
                                     <div class="achievement-icon">{{ badge.icon }}</div>
                                     <div class="achievement-info">
@@ -1776,6 +1776,7 @@ onBeforeUnmount(() => {
             /* margin: 0 auto;
             width: 100%; */
             max-width: 1200px;
+            width: calc(100% - 360px);
             gap: 20px;
         }
     }
@@ -2469,10 +2470,7 @@ onBeforeUnmount(() => {
 }
 
 .weekly-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    display: block;
 }
 
 .weekly-title span:first-child {
@@ -2481,7 +2479,8 @@ onBeforeUnmount(() => {
     font-weight: 900;
 }
 
-.weekly-title span:last-child {
+.weekly-version {
+    align-self: flex-start;
     padding: 4px 8px;
     border: 1px solid var(--divider-color);
     border-radius: 8px;
@@ -2540,7 +2539,7 @@ onBeforeUnmount(() => {
 
 .achievement-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 10px;
 }
 
@@ -2946,7 +2945,7 @@ onBeforeUnmount(() => {
     }
 }
 
-@media (max-width:1600px) {
+@media (max-width:1000px) {
     .container {
         width: calc(100% - 40px);
         padding: 0 20px;
