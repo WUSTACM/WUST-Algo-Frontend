@@ -366,17 +366,20 @@
                         </div>
                         <div class="content">
                             <div class="achievement-grid">
-                                <div class="achievement-card" v-for="badge in achievements" :key="badge.key"
+                                <div class="achievement-card" v-for="badge in visibleAchievements" :key="badge.key"
                                     :class="[{ locked: !badge.unlocked }, `tone-${badge.tone}`]">
-                                    <div class="achievement-icon">{{ badge.icon }}</div>
+                                    <div class="achievement-icon">{{ achievementIcon(badge) }}</div>
                                     <div class="achievement-info">
-                                        <div class="achievement-name">{{ badge.label }}</div>
-                                        <div class="achievement-desc">{{ badge.description }}</div>
+                                        <div class="achievement-name">{{ achievementLabel(badge) }}</div>
+                                        <div class="achievement-desc">{{ achievementDescription(badge) }}</div>
                                         <div class="achievement-progress">
                                             <div :style="{ width: badge.progress + '%' }"></div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="achievement-more" v-if="achievements.length > visibleAchievements.length">
+                                只展示精选成就，还有 {{ achievements.length - visibleAchievements.length }} 个成就等你解锁。
                             </div>
                         </div>
                     </div>
@@ -677,6 +680,24 @@ const achievements = computed<AchievementBadge[]>(() => {
 })
 
 const unlockedAchievements = computed(() => achievements.value.filter((item) => item.unlocked))
+const visibleAchievements = computed(() => {
+    const unlocked = achievements.value.filter((item) => item.unlocked);
+    const lockedVisible = achievements.value.filter((item) => !item.unlocked && !item.hidden);
+    const lockedHidden = achievements.value.filter((item) => !item.unlocked && item.hidden).slice(0, 1);
+    return [...unlocked, ...lockedVisible, ...lockedHidden].slice(0, 6);
+})
+
+const achievementLabel = (badge: AchievementBadge) => {
+    return badge.hidden && !badge.unlocked ? '？？？' : badge.label;
+}
+
+const achievementDescription = (badge: AchievementBadge) => {
+    return badge.hidden && !badge.unlocked ? '隐藏成就，解锁后显示。' : badge.description;
+}
+
+const achievementIcon = (badge: AchievementBadge) => {
+    return badge.hidden && !badge.unlocked ? '???' : badge.icon;
+}
 
 const weeklyReport = computed<WeeklyReport>(() => {
     return buildWeeklyReport(profilePeriodData.value, recentSubmitLogs.value);

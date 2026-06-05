@@ -12,6 +12,7 @@ export interface AchievementBadge {
   unlocked: boolean;
   progress: number;
   tone: "cyan" | "blue" | "gold" | "red" | "muted";
+  hidden?: boolean;
 }
 
 export interface WeeklyReportMetric {
@@ -67,6 +68,25 @@ const isAccepted = (status: string): boolean => {
   );
 };
 
+const isCompileError = (status: string): boolean => {
+  const normalized = status.trim().toLowerCase();
+  return (
+    normalized === "ce" ||
+    normalized.includes("compile") ||
+    normalized.includes("compilation") ||
+    normalized.includes("编译")
+  );
+};
+
+const isWrongAnswer = (status: string): boolean => {
+  const normalized = status.trim().toLowerCase();
+  return (
+    normalized === "wa" ||
+    normalized.includes("wrong answer") ||
+    normalized.includes("答案错误")
+  );
+};
+
 const problemKey = (log: CoreSubmitLogGetByIdData): string => {
   const platform = String(log.platform || "Unknown").trim();
   const problem = String(log.problem || "").trim();
@@ -102,15 +122,6 @@ const activeDayCount = (logs: CoreSubmitLogGetByIdData[]): number => {
   ).size;
 };
 
-const nightSubmitRatio = (logs: CoreSubmitLogGetByIdData[]): number => {
-  if (logs.length === 0) return 0;
-  const nightCount = logs.filter((log) => {
-    const hour = new Date(toNumber(log.time) * 1000).getHours();
-    return hour >= 23 || hour < 6;
-  }).length;
-  return nightCount / logs.length;
-};
-
 const topPlatform = (logs: CoreSubmitLogGetByIdData[]): string => {
   const counts = new Map<string, number>();
   logs.forEach((log) => {
@@ -120,24 +131,129 @@ const topPlatform = (logs: CoreSubmitLogGetByIdData[]): string => {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "暂无平台";
 };
 
-const consecutiveTrainingDays = (logs: CoreSubmitLogGetByIdData[]): number => {
-  const days = new Set(
-    logs.map((log) => new Date(toNumber(log.time) * 1000).toISOString().slice(0, 10)),
-  );
-  let streak = 0;
-  const cursor = new Date();
-  for (;;) {
-    const key = cursor.toISOString().slice(0, 10);
-    if (!days.has(key)) break;
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-};
-
 const clampProgress = (value: number, target: number) => {
   if (target <= 0) return 0;
   return Math.max(0, Math.min(100, Math.round((value / target) * 100)));
+};
+
+const groupLogsByProblem = (logs: CoreSubmitLogGetByIdData[]) => {
+  const groups = new Map<string, CoreSubmitLogGetByIdData[]>();
+  logs.forEach((log) => {
+    const key = problemKey(log);
+    if (!key) return;
+    const list = groups.get(key) || [];
+    list.push(log);
+    groups.set(key, list);
+  });
+  groups.forEach((list) => list.sort((a, b) => toNumber(a.time) - toNumber(b.time)));
+  return groups;
+};
+
+const hasWaThenAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>, minWa: number) => {
+  for (const logs of groups.values()) {
+    const firstAcIndex = logs.findIndex((log) => isAccepted(log.status));
+    if (firstAcIndex <= 0) continue;
+    const waBeforeAc = logs.slice(0, firstAcIndex).filter((log) => isWrongAnswer(log.status)).length;
+    if (waBeforeAc >= minWa) return true;
+  }
+  return false;
+};
+
+const hasManySubmitsInWindow = (groups: Map<string, CoreSubmitLogGetByIdData[]>, limit: number, seconds: number) => {
+  for (const logs of groups.values()) {
+    for (let left = 0, right = 0; right < logs.length; right += 1) {
+      const rightLog = logs[right];
+      if (!rightLog) continue;
+      const rightTime = toNumber(rightLog.time);
+      let leftLog = logs[left];
+      while (leftLog && rightTime - toNumber(leftLog.time) > seconds) {
+        left += 1;
+        leftLog = logs[left];
+      }
+      if (right - left + 1 >= limit) return true;
+    }
+  }
+  return false;
+};
+
+const hasLongFightAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>, seconds: number) => {
+  for (const logs of groups.values()) {
+    const first = logs[0];
+    const firstAc = logs.find((log) => isAccepted(log.status));
+    if (first && firstAc && toNumber(firstAc.time) - toNumber(first.time) >= seconds) return true;
+  }
+  return false;
+};
+
+const hasFirstTryAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>) => {
+  for (const logs of groups.values()) {
+    const first = logs[0];
+    if (first && isAccepted(first.status)) return true;
+  }
+  return false;
+};
+
+const hasAcInHourRange = (logs: CoreSubmitLogGetByIdData[], startHour: number, endHour: number, endMinute = 60) => {
+  return logs.some((log) => {
+    if (!isAccepted(log.status)) return false;
+    const date = new Date(toNumber(log.time) * 1000);
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    if (startHour === endHour) return hour === startHour && minute < endMinute;
+    return hour >= startHour && hour < endHour;
+  });
+};
+
+const maxAcInOneHour = (logs: CoreSubmitLogGetByIdData[]) => {
+  const acTimes = logs
+    .filter((log) => isAccepted(log.status))
+    .map((log) => toNumber(log.time))
+    .sort((a, b) => a - b);
+  let best = 0;
+  for (let left = 0, right = 0; right < acTimes.length; right += 1) {
+    const rightTime = acTimes[right];
+    if (rightTime === undefined) continue;
+    let leftTime = acTimes[left];
+    while (leftTime !== undefined && rightTime - leftTime > 3600) {
+      left += 1;
+      leftTime = acTimes[left];
+    }
+    best = Math.max(best, right - left + 1);
+  }
+  return best;
+};
+
+const maxWaInOneHour = (logs: CoreSubmitLogGetByIdData[]) => {
+  const waTimes = logs
+    .filter((log) => isWrongAnswer(log.status))
+    .map((log) => toNumber(log.time))
+    .sort((a, b) => a - b);
+  let best = 0;
+  for (let left = 0, right = 0; right < waTimes.length; right += 1) {
+    const rightTime = waTimes[right];
+    if (rightTime === undefined) continue;
+    let leftTime = waTimes[left];
+    while (leftTime !== undefined && rightTime - leftTime > 3600) {
+      left += 1;
+      leftTime = waTimes[left];
+    }
+    best = Math.max(best, right - left + 1);
+  }
+  return best;
+};
+
+const hasRetirementFailed = (logs: CoreSubmitLogGetByIdData[]) => {
+  const sortedAc = logs
+    .filter((log) => isAccepted(log.status))
+    .sort((a, b) => toNumber(a.time) - toNumber(b.time));
+  for (let index = 1; index < sortedAc.length; index += 1) {
+    const current = sortedAc[index];
+    const previous = sortedAc[index - 1];
+    if (current && previous && toNumber(current.time) - toNumber(previous.time) >= 30 * 86400) {
+      return true;
+    }
+  }
+  return false;
 };
 
 export const buildAchievementBadges = (
@@ -146,32 +262,37 @@ export const buildAchievementBadges = (
   platformStats: CoreStatisticPlatformPeriodItem[],
 ): AchievementBadge[] => {
   const totalAc = toNumber(period?.ac?.total);
-  const totalSubmit = toNumber(period?.submit?.total);
-  const thisWeekAc = toNumber(period?.ac?.thisWeek);
-  const thisMonthAc = toNumber(period?.ac?.thisMonth);
-  const acRate = totalSubmit > 0 ? totalAc / totalSubmit : 0;
-  const recent30 = logsInDays(recentLogs, 30);
-  const recent7 = logsInDays(recentLogs, 7);
   const platformCount = platformStats.filter((item) => toNumber(item.ac?.total) > 0).length;
-  const activeDays7 = activeDayCount(recent7);
-  const activeDays30 = activeDayCount(recent30);
-  const streak = consecutiveTrainingDays(recentLogs);
-  const nightRatio = nightSubmitRatio(recent30);
+  const problemGroups = groupLogsByProblem(recentLogs);
+  const compileErrorCount = recentLogs.filter((log) => isCompileError(log.status)).length;
+  const lastLog = [...recentLogs].sort((a, b) => toNumber(b.time) - toNumber(a.time))[0];
+  const lastSubmitAc = Boolean(lastLog && isAccepted(lastLog.status));
+  const acInOneHour = maxAcInOneHour(recentLogs);
+  const waInOneHour = maxWaInOneHour(recentLogs);
 
   const badges: AchievementBadge[] = [
     {
       key: "first-ac",
-      label: "初次 AC",
-      description: "完成第一道通过题，训练旅程启动。",
+      label: "Hello AC",
+      description: "你提交了一发，世界开始运转。",
       icon: "✓",
       unlocked: totalAc >= 1,
       progress: clampProgress(totalAc, 1),
       tone: "cyan",
     },
     {
+      key: "ten-ac",
+      label: "AC 小登",
+      description: "初入江湖，代码还有点青涩。",
+      icon: "10",
+      unlocked: totalAc >= 10,
+      progress: clampProgress(totalAc, 10),
+      tone: "blue",
+    },
+    {
       key: "hundred-ac",
       label: "百题斩",
-      description: "累计真实 AC 达到 100 题。",
+      description: "你已经不是来玩的了。",
       icon: "100",
       unlocked: totalAc >= 100,
       progress: clampProgress(totalAc, 100),
@@ -179,84 +300,145 @@ export const buildAchievementBadges = (
     },
     {
       key: "thousand-ac",
-      label: "千题收藏家",
-      description: "累计真实 AC 达到 1000 题。",
+      label: "千题修罗",
+      description: "题单见你都绕路走。",
       icon: "1K",
       unlocked: totalAc >= 1000,
       progress: clampProgress(totalAc, 1000),
       tone: "gold",
     },
     {
-      key: "weekly-runner",
-      label: "本周冲刺",
-      description: "本周 AC 达到 10 题。",
-      icon: "7D",
-      unlocked: thisWeekAc >= 10,
-      progress: clampProgress(thisWeekAc, 10),
-      tone: "blue",
-    },
-    {
-      key: "monthly-builder",
-      label: "月度建设者",
-      description: "本月 AC 达到 50 题。",
-      icon: "30",
-      unlocked: thisMonthAc >= 50,
-      progress: clampProgress(thisMonthAc, 50),
-      tone: "cyan",
-    },
-    {
-      key: "multi-platform",
-      label: "多平台开荒",
-      description: "在至少 3 个 OJ 平台有 AC 记录。",
+      key: "oj-wanderer",
+      label: "OJ 流浪汉",
+      description: "哪里有题，哪里就是家。",
       icon: "OJ",
       unlocked: platformCount >= 3,
       progress: clampProgress(platformCount, 3),
       tone: "blue",
     },
     {
-      key: "stable-week",
-      label: "稳定训练中",
-      description: "近 7 天至少 5 天有提交。",
-      icon: "稳",
-      unlocked: activeDays7 >= 5,
-      progress: clampProgress(activeDays7, 5),
+      key: "cross-server",
+      label: "跨服作战",
+      description: "你已经开始打跨平台排位了。",
+      icon: "5OJ",
+      unlocked: platformCount >= 5,
+      progress: clampProgress(platformCount, 5),
       tone: "cyan",
     },
     {
-      key: "streak",
-      label: "连续训练",
-      description: "连续训练 7 天。",
-      icon: "连",
-      unlocked: streak >= 7,
-      progress: clampProgress(streak, 7),
+      key: "wa-until-dawn",
+      label: "WA 到天亮",
+      description: "你不是不会，你只是太倔了。",
+      icon: "WA",
+      unlocked: hasWaThenAc(problemGroups, 10),
+      progress: hasWaThenAc(problemGroups, 10) ? 100 : 0,
+      tone: "red",
+    },
+    {
+      key: "penalty-sitter",
+      label: "罚坐选手",
+      description: "这题陪你过夜了。",
+      icon: "24H",
+      unlocked: hasLongFightAc(problemGroups, 24 * 3600),
+      progress: hasLongFightAc(problemGroups, 24 * 3600) ? 100 : 0,
+      tone: "red",
+    },
+    {
+      key: "red-temperature",
+      label: "红温战士",
+      description: "冷静？不存在的。",
+      icon: "热",
+      unlocked: hasManySubmitsInWindow(problemGroups, 8, 30 * 60),
+      progress: hasManySubmitsInWindow(problemGroups, 8, 30 * 60) ? 100 : 0,
+      tone: "red",
+    },
+    {
+      key: "compiler-victim",
+      label: "编译器受害者",
+      description: "代码没跑，人先麻了。",
+      icon: "CE",
+      unlocked: compileErrorCount >= 10,
+      progress: clampProgress(compileErrorCount, 10),
+      tone: "red",
+    },
+    {
+      key: "last-submit-soul",
+      label: "最后一发入魂",
+      description: "关电脑前，世界原谅了你。",
+      icon: "终",
+      unlocked: lastSubmitAc,
+      progress: lastSubmitAc ? 100 : 0,
       tone: "gold",
     },
     {
-      key: "night-owl",
-      label: "夜间训练型",
-      description: "近 30 天深夜提交占比超过 30%。",
-      icon: "夜",
-      unlocked: recent30.length >= 20 && nightRatio >= 0.3,
-      progress: clampProgress(nightRatio, 0.3),
+      key: "first-try-soul",
+      label: "一发入魂",
+      description: "没调试，不解释。",
+      icon: "???",
+      unlocked: hasFirstTryAc(problemGroups),
+      progress: hasFirstTryAc(problemGroups) ? 100 : 0,
+      tone: "gold",
+      hidden: true,
+    },
+    {
+      key: "zero-legend",
+      label: "零点传说",
+      description: "新的一天，从 AC 开始。",
+      icon: "???",
+      unlocked: hasAcInHourRange(recentLogs, 0, 0, 10),
+      progress: hasAcInHourRange(recentLogs, 0, 0, 10) ? 100 : 0,
       tone: "blue",
+      hidden: true,
     },
     {
-      key: "efficient",
-      label: "高效选手",
-      description: "总提交不少于 50 且真实 AC / 提交达到 40%。",
-      icon: "准",
-      unlocked: totalSubmit >= 50 && acRate >= 0.4,
-      progress: clampProgress(acRate, 0.4),
-      tone: "cyan",
+      key: "luogu-at-four",
+      label: "凌晨四点的洛谷",
+      description: "这不是自律，这是故事。",
+      icon: "???",
+      unlocked: recentLogs.some((log) => String(log.platform).toLowerCase().includes("luogu") && new Date(toNumber(log.time) * 1000).getHours() === 4),
+      progress: recentLogs.some((log) => String(log.platform).toLowerCase().includes("luogu") && new Date(toNumber(log.time) * 1000).getHours() === 4) ? 100 : 0,
+      tone: "blue",
+      hidden: true,
     },
     {
-      key: "active-month",
-      label: "月活达人",
-      description: "近 30 天至少 15 天有提交。",
-      icon: "活",
-      unlocked: activeDays30 >= 15,
-      progress: clampProgress(activeDays30, 15),
+      key: "hands-on",
+      label: "手感来了",
+      description: "今天键盘很听话。",
+      icon: "???",
+      unlocked: acInOneHour >= 5,
+      progress: clampProgress(acInOneHour, 5),
       tone: "cyan",
+      hidden: true,
+    },
+    {
+      key: "hands-off",
+      label: "手感没了",
+      description: "今天评测机不太给面子。",
+      icon: "???",
+      unlocked: waInOneHour >= 8,
+      progress: clampProgress(waInOneHour, 8),
+      tone: "red",
+      hidden: true,
+    },
+    {
+      key: "last-stand",
+      label: "绝地翻盘",
+      description: "你差点放弃，但没有。",
+      icon: "???",
+      unlocked: hasWaThenAc(problemGroups, 7),
+      progress: hasWaThenAc(problemGroups, 7) ? 100 : 0,
+      tone: "gold",
+      hidden: true,
+    },
+    {
+      key: "retirement-failed",
+      label: "退役失败",
+      description: "嘴上退役，身体很诚实。",
+      icon: "???",
+      unlocked: hasRetirementFailed(recentLogs),
+      progress: hasRetirementFailed(recentLogs) ? 100 : 0,
+      tone: "gold",
+      hidden: true,
     },
   ];
 
