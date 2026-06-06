@@ -29,7 +29,7 @@
     font-size: var(--text-sm);
     text-align: center;
     border: 1px solid var(--divider-color);
-    border-radius: 5px;
+    border-radius: var(--control-radius);
     padding: 5px 10px;
     background-color: var(--background-color-1);
     color: var(--text-default-color);
@@ -50,40 +50,48 @@
 .pageButtons button {
     width: max-content;
     font-size: var(--text-sm);
+    font-weight: 800;
     text-align: center;
     border: 1px solid var(--divider-color);
-    border-radius: 5px;
+    border-radius: var(--control-radius);
     padding: 5px 10px;
-    background-color: var(--background-color-1);
-    color: var(--text-default-color);
+    background-color: var(--background-color-2);
+    color: var(--text-secondary-color);
     outline: none;
-    transition: border-color 0.3s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .pageInput button:hover,
 .pageButtons button:hover {
-    border-color: var(--input-active-color)
+    color: white;
+    border-color: var(--input-active-color);
+    background-color: var(--input-active-color);
 }
 
 .pageButtons button.active {
-    border-color: var(--input-active-color)
+    color: white;
+    border-color: var(--input-active-color);
+    background-color: var(--input-active-color);
 }
 
 .page-nav-btn {
     font-size: var(--text-sm);
+    font-weight: 800;
     text-align: center;
     border: 1px solid var(--divider-color);
-    border-radius: 5px;
+    border-radius: var(--control-radius);
     padding: 5px 10px;
-    background-color: var(--background-color-1);
-    color: var(--text-default-color);
+    background-color: var(--background-color-2);
+    color: var(--text-secondary-color);
     outline: none;
     cursor: pointer;
-    transition: border-color 0.3s ease, opacity 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 .page-nav-btn:hover:not(:disabled) {
+    color: white;
     border-color: var(--input-active-color);
+    background-color: var(--input-active-color);
 }
 
 .page-nav-btn:disabled {

@@ -26,6 +26,10 @@
 
     --text-secondary-color: var(--text-light-color);
     --border-color: var(--divider-color);
+    --control-radius: 8px;
+    --control-height: 32px;
+    --control-padding-x: 12px;
+    --control-padding-y: 6px;
 }
 
 /* 极客 — Nord 暗色主题 */
@@ -141,6 +145,63 @@ body {
     background-color: var(--background-color-1);
     color: var(--text-default-color);
     transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: inherit;
+}
+
+button {
+    min-height: var(--control-height);
+    padding: var(--control-padding-y) var(--control-padding-x);
+    border: 1px solid var(--divider-color);
+    border-radius: var(--control-radius);
+    color: var(--text-secondary-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-sm);
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+    color: white;
+    border-color: var(--neon-cyan);
+    background-color: var(--neon-cyan);
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+input,
+textarea,
+select {
+    border: 1px solid var(--divider-color);
+    border-radius: var(--control-radius);
+    color: var(--text-default-color);
+    background-color: var(--background-color-1);
+    font-size: var(--text-base);
+    outline: none;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--input-active-color);
 }
 
 a {

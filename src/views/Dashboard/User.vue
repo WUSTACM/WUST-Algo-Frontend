@@ -892,19 +892,23 @@ onMounted(() => {
 
   .btn {
     font-size: var(--text-sm);
-    padding: 6px 12px;
-    border-radius: 6px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 10px;
+    border-radius: var(--control-radius);
     border: 1px solid var(--divider-color);
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
+    color: var(--text-secondary-color);
+    background-color: var(--background-color-2);
     font-family: inherit;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
   }
 
+  .btn:hover,
   .btn-primary:hover {
     border-color: var(--input-active-color);
-    background-color: var(--background-color-2);
+    color: white;
+    background-color: var(--input-active-color);
   }
 
   .btn-danger:hover {
@@ -1044,16 +1048,24 @@ onMounted(() => {
   }
 
   .modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--control-radius);
+    background-color: var(--background-color-2);
+    font-family: inherit;
+    font-size: var(--text-base);
+    font-weight: 800;
     cursor: pointer;
     color: var(--text-light-color);
-    padding: 0;
     line-height: 1;
 
     &:hover {
-      color: var(--text-default-color);
+      color: white;
+      border-color: var(--neon-cyan);
+      background-color: var(--neon-cyan);
     }
   }
 
@@ -1081,7 +1093,7 @@ onMounted(() => {
       box-shadow: 0 0 0px 100px var(--background-color-1) inset;
       padding: 10px 12px;
       background-color: var(--background-color-1);
-      border-radius: 6px;
+      border-radius: var(--control-radius);
       font-family: inherit;
       font-size: var(--text-sm);
     }
@@ -1115,24 +1127,27 @@ onMounted(() => {
     }
 
     .role-option {
-      padding: 7px 14px;
+      padding: 6px 12px;
       border: 1px solid var(--divider-color);
-      border-radius: 6px;
+      border-radius: var(--control-radius);
       cursor: pointer;
       font-family: inherit;
       font-size: var(--text-sm);
+      font-weight: 800;
+      line-height: 1;
       transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-      background-color: var(--background-color-1);
-      color: var(--text-default-color);
+      background-color: var(--background-color-2);
+      color: var(--text-secondary-color);
 
       &:hover {
         border-color: var(--input-active-color);
-        background-color: var(--background-color-2);
+        background-color: var(--input-active-color);
+        color: white;
       }
 
       &.active {
-        background-color: var(--background-color-2);
-        color: var(--text-default-color);
+        background-color: var(--input-active-color);
+        color: white;
         border-color: var(--input-active-color);
       }
     }
@@ -1147,13 +1162,15 @@ onMounted(() => {
 
     .btn {
       min-width: 72px;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border: 1px solid var(--divider-color);
-      border-radius: 6px;
-      color: var(--text-default-color);
-      background-color: var(--background-color-1);
+      border-radius: var(--control-radius);
+      color: var(--text-secondary-color);
+      background-color: var(--background-color-2);
       font-family: inherit;
       font-size: var(--text-sm);
+      font-weight: 800;
+      line-height: 1;
       cursor: pointer;
       transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
@@ -1161,8 +1178,8 @@ onMounted(() => {
     .btn:hover,
     .btn-primary:hover {
       border-color: var(--input-active-color);
-      color: var(--text-default-color);
-      background-color: var(--background-color-2);
+      color: white;
+      background-color: var(--input-active-color);
     }
 
     .btn:disabled {

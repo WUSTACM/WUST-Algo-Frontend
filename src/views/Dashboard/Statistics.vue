@@ -1115,26 +1115,28 @@ onBeforeUnmount(() => {
     min-width: 86px;
     padding: 5px 10px;
     border: 1px solid var(--divider-color);
-    border-radius: 5px;
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
+    border-radius: var(--control-radius);
+    color: var(--text-secondary-color);
+    background-color: var(--background-color-2);
     cursor: pointer;
     font-family: inherit;
     font-size: var(--text-sm);
+    font-weight: 800;
+    line-height: 1;
     outline: none;
-    transition: border-color 0.3s ease, background-color 0.2s ease, color 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
   }
 
   .ranking-switch button:hover {
+    color: white;
     border-color: var(--input-active-color);
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
+    background-color: var(--input-active-color);
   }
 
   .ranking-switch button.active {
+    color: white;
     border-color: var(--input-active-color);
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
+    background-color: var(--input-active-color);
   }
 
   .ranking-section {

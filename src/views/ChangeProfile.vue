@@ -388,18 +388,24 @@ const handleOjConfirm = async () => {
   }
 
   button {
-    font-size: var(--text-base);
     width: 100px;
     height: 40px;
-    color: var(--text-default-color);
+    color: var(--text-secondary-color);
     border: 1px solid var(--divider-color);
-    background-color: var(--background-color-1);
-    border-radius: 5px;
+    background-color: var(--background-color-2);
+    border-radius: var(--control-radius);
     cursor: pointer;
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 800;
+    line-height: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
   }
 
   button:hover {
-    background-color: var(--background-color-2);
+    color: white;
+    border-color: var(--neon-cyan);
+    background-color: var(--neon-cyan);
   }
 
   > .avatar {

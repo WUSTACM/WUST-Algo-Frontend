@@ -523,22 +523,29 @@ if (inputTimer) {
 
     .btn {
         font-size: var(--text-sm);
-        padding: 6px 12px;
-        border-radius: 6px;
+        font-weight: 800;
+        line-height: 1;
+        padding: 5px 10px;
+        border-radius: var(--control-radius);
         border: 1px solid var(--divider-color);
-        color: var(--text-default-color);
-        background-color: var(--background-color-1);
-
-        transition: all 0.2s ease;
+        color: var(--text-secondary-color);
+        background-color: var(--background-color-2);
+        font-family: inherit;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
 
+    .btn:hover,
     .btn-default:hover {
-        background-color: var(--background-color-2);
+        color: white;
+        border-color: var(--neon-cyan);
+        background-color: var(--neon-cyan);
     }
 
     .btn-primary:hover {
         background-color: var(--neon-cyan);
-        color: var(--background-color-1);
+        color: white;
+        border-color: var(--neon-cyan);
     }
 
     .btn-danger:hover {

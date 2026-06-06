@@ -318,14 +318,18 @@ onMounted(() => {
 
 .btn {
     margin: 0 5px;
-    padding: 5px 10px;
+    min-height: 30px;
+    padding: 4px 10px;
     background-color: var(--background-color-2);
     color: var(--text-secondary-color);
     border: 1px solid var(--divider-color);
-    border-radius: 6px;
+    border-radius: var(--control-radius);
     cursor: pointer;
+    font-family: inherit;
     font-size: var(--text-sm);
-    transition: all 0.2s ease;
+    font-weight: 800;
+    line-height: 1;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     -webkit-user-select: none;
     user-select: none;
 
@@ -337,7 +341,7 @@ onMounted(() => {
 
     &.def:hover {
         background-color: var(--neon-cyan);
-        color: black;
+        color: white;
         border-color: var(--neon-cyan);
     }
 

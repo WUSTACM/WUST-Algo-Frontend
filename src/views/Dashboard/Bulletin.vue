@@ -400,17 +400,23 @@ onMounted(() => {
 
   .btn {
     font-size: var(--text-sm);
-    padding: 6px 12px;
-    border-radius: 6px;
+    font-weight: 800;
+    line-height: 1;
+    padding: 5px 10px;
+    border-radius: var(--control-radius);
     border: 1px solid var(--divider-color);
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
-    transition: background-color 0.2s ease;
+    color: var(--text-secondary-color);
+    background-color: var(--background-color-2);
+    font-family: inherit;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     cursor: pointer;
   }
 
+  .btn:hover,
   .btn-primary:hover {
-    background-color: var(--background-color-2);
+    color: white;
+    border-color: var(--neon-cyan);
+    background-color: var(--neon-cyan);
   }
 
   .btn-danger:hover {
@@ -460,16 +466,24 @@ onMounted(() => {
   }
 
   .modal-close {
-    background: none;
-    border: none;
-    font-size: 24px;
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--control-radius);
+    background-color: var(--background-color-2);
+    font-family: inherit;
+    font-size: var(--text-base);
+    font-weight: 800;
     cursor: pointer;
     color: var(--text-light-color);
-    padding: 0;
     line-height: 1;
 
     &:hover {
-      color: var(--text-default-color);
+      color: white;
+      border-color: var(--neon-cyan);
+      background-color: var(--neon-cyan);
     }
   }
 
@@ -569,17 +583,22 @@ onMounted(() => {
 
 .modal-footer .btn {
   font-size: var(--text-sm);
-  padding: 8px 16px;
-  border-radius: 6px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: var(--control-radius);
   border: 1px solid var(--divider-color);
-  color: var(--text-default-color);
-  background-color: var(--background-color-1);
-  transition: background-color 0.2s ease;
+  color: var(--text-secondary-color);
+  background-color: var(--background-color-2);
+  font-family: inherit;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   cursor: pointer;
 }
 
 .modal-footer .btn:hover {
-  background-color: var(--background-color-2);
+  color: white;
+  border-color: var(--neon-cyan);
+  background-color: var(--neon-cyan);
 }
 
 .modal-footer .btn-primary {

@@ -125,23 +125,31 @@ defineExpose({
 }
 
 .action {
-    padding: 8px 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    min-height: 30px;
+    padding: 4px 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--control-radius);
+    color: var(--text-secondary-color);
+    background-color: var(--background-color-2);
     cursor: pointer;
-    font-size: 14px;
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 800;
+    line-height: 1;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 .action.y {
-    background-color: #007bff;
+    background-color: var(--neon-cyan);
     color: white;
-    border-color: #007bff;
+    border-color: var(--neon-cyan);
 }
 
+.action:hover,
 .action.y:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    color: white;
 }
 
 .action.n {
