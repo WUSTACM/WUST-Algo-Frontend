@@ -4,6 +4,14 @@ WUST Algo Frontend 是 WUST ACM 算法训练数据平台的前端项目，基于
 
 后端仓库：`https://github.com/everlastingQAQ/WUST-Algo-tracker`
 
+当前稳定版本：`v1.1.2`。版本变更记录见 [CHANGELOG.md](./CHANGELOG.md)。
+
+版本规则：
+
+- 小修小补：`v1.1.2 -> v1.1.3`
+- 一组新功能：`v1.1.2 -> v1.2.0`
+- 大改架构：`v1.x.x -> v2.0.0`
+
 ## 功能概览
 
 - 首页统计：总 AC、今日/本周/本月/今年数据，以及 AtCoder、牛客、洛谷、CodeForces、QOJ 平台拆分统计。
