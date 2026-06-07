@@ -559,7 +559,6 @@
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'submit' }" @click="switchPlatformDetailMode('submit')">提交记录</button>
                 </div>
-                <div class="detail-scroll-hint">表格可左右拖动查看更多字段</div>
                 <div class="detail-table-wrap">
                     <table class="detail-table" v-if="platformDetail && detailModal.mode === 'ac'">
                         <thead>
@@ -3472,26 +3471,19 @@ onBeforeUnmount(() => {
 .detail-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
-}
-
-.detail-scroll-hint {
-    margin-bottom: 10px;
-    color: var(--text-light-color);
-    font-size: var(--text-xs);
+    margin-bottom: 14px;
 }
 
 .detail-table-wrap {
     width: 100%;
     overflow-x: auto;
-    overflow-y: auto;
-    max-height: min(58dvh, 620px);
+    overflow-y: hidden;
     border: 1px solid var(--divider-color);
     border-radius: 12px;
-    overscroll-behavior: contain;
+    overscroll-behavior-x: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-gutter: stable both-edges;
-    touch-action: pan-x pan-y;
+    touch-action: pan-x;
 }
 
 .detail-table-wrap::-webkit-scrollbar {
