@@ -1705,7 +1705,12 @@ export default class API {
             axios.post<CodeSpiderUpdateResponse>(
               "/api/core/spider/update",
               { userId, platform },
-              { headers: { Authorization: `Bearer ${JWT.token}` } },
+              {
+                headers: {
+                  Authorization: `Bearer ${JWT.token}`,
+                  ...(platform ? { "X-Spider-Platform": platform } : {}),
+                },
+              },
             ),
           (response) => {
             if (response.status !== 200) return { message: "更新数据失败" };
