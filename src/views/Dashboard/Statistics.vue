@@ -1,6 +1,16 @@
 <template>
   <div class="dashboardContent">
     <h2>数据统计</h2>
+    <div class="stat-scope-note">
+      <strong>{{ statisticExplanation.title || "统计口径说明" }}</strong>
+      <span>{{ statisticExplanation.summary || "本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。" }}</span>
+      <button @click="showStatisticExplanation = !showStatisticExplanation">
+        {{ showStatisticExplanation ? "收起" : "查看说明" }}
+      </button>
+    </div>
+    <div v-if="showStatisticExplanation" class="stat-scope-details">
+      <div v-for="item in statisticExplanation.bullets" :key="item">{{ item }}</div>
+    </div>
     <div style="position: relative">
       <LoadingOverlay :show="loadingStats" />
       <div class="stats-grid">
@@ -437,6 +447,24 @@ const loadingStats = ref(true);
 const loadingChart = ref(true);
 const loadingRanking = ref(true);
 const userCount = ref(0);
+const showStatisticExplanation = ref(false);
+const statisticExplanation = ref({
+  title: "统计口径说明",
+  summary: "本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。",
+  bullets: [] as string[],
+});
+
+const getStatisticExplanation = async () => {
+  const response = await API.core.statistic.explanation();
+  Toast.stdResponse(response, false);
+  if (response.success) {
+    statisticExplanation.value = {
+      title: response.data.title,
+      summary: response.data.summary,
+      bullets: response.data.bullets,
+    };
+  }
+};
 
 const getUserCount = async () => {
   const response = await API.user.profile.list(1);
@@ -940,7 +968,7 @@ onMounted(async () => {
   loadingChart.value = true;
   loadingRanking.value = showRanking.value;
   try {
-    await Promise.all([getUserCount(), getPeriodData(), getGroupCount()]);
+    await Promise.all([getUserCount(), getPeriodData(), getGroupCount(), getStatisticExplanation()]);
     loadingStats.value = false;
   } finally {
     // loadingStats handled above
@@ -967,6 +995,48 @@ onBeforeUnmount(() => {
   color: var(--text-default-color);
   padding: clamp(10px, 1.6vw, 18px);
   overflow-x: hidden;
+
+  .stat-scope-note {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+
+  .stat-scope-note strong {
+    color: var(--text-default-color);
+  }
+
+  .stat-scope-note button {
+    border: 0;
+    color: var(--active-color);
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .stat-scope-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: -4px 0 14px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--active-color);
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-xs);
+    line-height: 1.7;
+  }
 
   .stats-grid {
     display: grid;

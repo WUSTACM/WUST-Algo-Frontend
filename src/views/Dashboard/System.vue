@@ -42,6 +42,38 @@
       <div class="header">
         <div class="header-title">
           <span class="title-icon">
+            <font-awesome-icon icon="fa-solid fa-database" />
+          </span>
+          <span class="title-text">统计缓存</span>
+        </div>
+        <div class="header-tabs">
+          <span class="tab" @click="loadCacheStatus">刷新</span>
+        </div>
+      </div>
+      <div class="content" style="position: relative">
+        <LoadingOverlay :show="loadingCache" />
+        <div class="cache-toolbar">
+          <input v-model.number="cacheUserId" type="number" placeholder="-1 表示全站缓存" />
+          <button class="action-btn" @click="loadCacheStatus">查看缓存</button>
+          <button class="action-btn danger" :disabled="clearingCache" @click="clearStatisticCache">
+            {{ clearingCache ? "清理中" : "清理缓存" }}
+          </button>
+        </div>
+        <div class="hint">`-1` 表示全站统计缓存；填写用户 ID 可查看/清理该用户统计与提交缓存。</div>
+        <div class="cache-list" v-if="cacheKeys.length > 0">
+          <div class="cache-row" v-for="item in cacheKeys" :key="item.key">
+            <code>{{ item.key }}</code>
+            <span :class="{ active: item.exists }">{{ item.exists ? "存在" : "不存在" }}</span>
+            <span>TTL {{ formatTTL(item.ttl) }}</span>
+          </div>
+        </div>
+        <div v-else class="empty">暂无缓存信息。</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="header">
+        <div class="header-title">
+          <span class="title-icon">
             <font-awesome-icon icon="fa-solid fa-arrows-rotate" />
           </span>
           <span class="title-text">抓取任务</span>
@@ -121,6 +153,10 @@ const inviteCode = ref("");
 const spiderJobs = ref<SpiderJobInfo[]>([]);
 const jobStatus = ref("");
 const retryingJobs = ref<Record<number, boolean>>({});
+const loadingCache = ref(false);
+const clearingCache = ref(false);
+const cacheUserId = ref(-1);
+const cacheKeys = ref<{ key: string; exists: boolean; ttl: number }[]>([]);
 
 const jobFilters = [
   { label: "全部", value: "" },
@@ -150,6 +186,34 @@ const saveInviteCode = async () => {
     inviteCode.value = response.data.inviteCode;
   }
   loading.value = false;
+};
+
+const loadCacheStatus = async () => {
+  loadingCache.value = true;
+  const response = await API.core.statistic.cacheStatus(Number(cacheUserId.value || -1));
+  Toast.stdResponse(response, false);
+  if (response.success) {
+    cacheKeys.value = response.data.keys || [];
+  }
+  loadingCache.value = false;
+};
+
+const clearStatisticCache = async () => {
+  clearingCache.value = true;
+  const response = await API.core.statistic.clearCache(Number(cacheUserId.value || -1));
+  Toast.stdResponse(response);
+  clearingCache.value = false;
+  if (response.success) {
+    await loadCacheStatus();
+  }
+};
+
+const formatTTL = (ttl: number) => {
+  if (ttl === -1) return "永久";
+  if (ttl < 0) return "-";
+  if (ttl < 60) return `${ttl}s`;
+  if (ttl < 3600) return `${Math.round(ttl / 60)}min`;
+  return `${Math.round(ttl / 3600)}h`;
 };
 
 const loadSpiderJobs = async () => {
@@ -220,6 +284,7 @@ const formatTime = (timestamp: number) => {
 
 onMounted(() => {
   loadInviteCode();
+  loadCacheStatus();
   loadSpiderJobs();
 });
 </script>
@@ -334,6 +399,12 @@ onMounted(() => {
   color: var(--background-color-1);
 }
 
+.action-btn.danger:hover:not(:disabled) {
+  background-color: #ff8585;
+  border-color: #ff8585;
+  color: white;
+}
+
 .action-btn:disabled {
   cursor: not-allowed;
   opacity: 0.7;
@@ -353,6 +424,59 @@ onMounted(() => {
 .retry-btn {
   min-width: 64px;
   height: 30px;
+}
+
+.cache-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cache-toolbar input {
+  width: 180px;
+  height: 34px;
+  padding: 0 12px;
+  color: var(--text-default-color);
+  background-color: var(--background-color-1);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+}
+
+.cache-toolbar input:focus {
+  border-color: var(--input-active-color);
+}
+
+.cache-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cache-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 80px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 10px;
+  color: var(--text-light-color);
+  background-color: var(--background-color-1);
+  font-size: var(--text-sm);
+}
+
+.cache-row code {
+  color: var(--text-default-color);
+  overflow-wrap: anywhere;
+}
+
+.cache-row span.active {
+  color: var(--active-color);
+  font-weight: 800;
 }
 
 .job-list {
@@ -442,6 +566,10 @@ onMounted(() => {
   }
 
   .job-card {
+    grid-template-columns: 1fr;
+  }
+
+  .cache-row {
     grid-template-columns: 1fr;
   }
 

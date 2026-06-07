@@ -64,7 +64,7 @@
                             <button class="btn def" @click="router.push('/changeprofile')">编辑个人资料</button>
                             <button class="btn dan" @click="showLogoutConfirm">退出登录</button>
                         </template>
-                        <button v-else-if="currentUserId" class="btn def" @click="openDirectMessage">发消息</button>
+                        <button v-else-if="canShowProfileMessageAction" class="btn def" @click="openDirectMessage">发消息</button>
                     </div>
                     <div class="team-card" style="position: relative;">
                         <LoadingOverlay :show="loadingTeam" />
@@ -222,6 +222,16 @@
                             </div>
                         </div>
                         <div class="content">
+                            <div class="stat-scope-note">
+                                <strong>{{ statisticExplanation.title || '统计口径说明' }}</strong>
+                                <span>{{ statisticExplanation.summary || '本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。' }}</span>
+                                <button class="inline-link-button" @click="showStatisticExplanation = !showStatisticExplanation">
+                                    {{ showStatisticExplanation ? '收起' : '查看说明' }}
+                                </button>
+                            </div>
+                            <div v-if="showStatisticExplanation" class="stat-scope-details">
+                                <div v-for="item in statisticExplanation.bullets" :key="item">{{ item }}</div>
+                            </div>
                             <div v-if="currentData === 0" class="statisticItems">
                                 <div class="statisticItem" v-for="item in data.submit">
                                     <div class="title">{{ item.title }}</div>
@@ -309,14 +319,20 @@
                                     </div>
                                     <div class="sync-side">
                                         <div class="sync-counts">
-                                            <span><strong>{{ platformStats(item.platform).ac }}</strong> 题</span>
-                                            <span>{{ platformStats(item.platform).submit }} 提交</span>
-                                        </div>
-                                        <span class="sync-badge" :class="{ stale: item.isStale, failed: item.status === 'failed', running: item.status === 'running' }">
-                                            {{ formatSyncStatus(item) }}
+                                        <span><strong>{{ platformStats(item.platform).ac }}</strong> 题</span>
+                                        <span>{{ platformStats(item.platform).submit }} 提交</span>
+                                        <span v-if="auditByPlatform(item.platform)">去重提交 {{ auditByPlatform(item.platform)?.distinctSubmitCount || 0 }}</span>
+                                        <span v-if="auditByPlatform(item.platform)">本次抓取 {{ auditByPlatform(item.platform)?.lastFetchedCount || 0 }}</span>
+                                        <span v-if="auditByPlatform(item.platform) && Number(auditByPlatform(item.platform)?.lastSkippedCount || 0) > 0">
+                                            跳过 {{ auditByPlatform(item.platform)?.lastSkippedCount }}
                                         </span>
-                                        <button
-                                            v-if="isSelfProfile"
+                                    </div>
+                                    <span class="sync-badge" :class="{ stale: item.isStale, failed: item.status === 'failed', running: item.status === 'running' }">
+                                        {{ formatSyncStatus(item) }}
+                                    </span>
+                                    <button class="sync-refresh-btn" @click="openPlatformDetail(item.platform)">明细</button>
+                                    <button
+                                        v-if="isSelfProfile"
                                             class="sync-refresh-btn"
                                             :disabled="isRefreshingPlatform(item.platform) || isPlatformRefreshCoolingDown(item.platform)"
                                             @click="updatePlatformLog(item.platform)"
@@ -337,6 +353,7 @@
                                             <span><strong>{{ item.ac.total }}</strong> 题</span>
                                             <span>{{ item.submit.total }} 提交</span>
                                         </div>
+                                        <button class="sync-refresh-btn" @click="openPlatformDetail(item.platform)">明细</button>
                                     </div>
                                 </div>
                                 </template>
@@ -449,13 +466,13 @@
                             </div>
                         </div>
                     </div>
-                    <div class="moblie-actions" v-if="currentUserId">
+                    <div class="moblie-actions" v-if="currentUserId && (isSelfProfile || canShowProfileMessageAction)">
                         <template v-if="currentUserId === Number(user.userId)">
                             <button class="btn def" @click="showUpdateConfirm">更新OJ数据</button>
                             <button class="btn def" @click="router.push('/changeprofile')">编辑个人资料</button>
                             <button class="btn dan" @click="showLogoutConfirm">退出登录</button>
                         </template>
-                        <button v-else class="btn def" @click="openDirectMessage">发消息</button>
+                        <button v-else-if="canShowProfileMessageAction" class="btn def" @click="openDirectMessage">发消息</button>
                     </div>
                 </div>
             </div>
@@ -510,6 +527,75 @@
                 </div>
             </aside>
         </div>
+        <div v-if="detailModal.open" class="detail-modal-mask" @click="closePlatformDetail">
+            <section class="detail-modal" @click.stop>
+                <div class="detail-modal-header">
+                    <div>
+                        <div class="achievement-drawer-kicker">Statistic Trace</div>
+                        <h2>{{ platformLabel(detailModal.platform) }} 明细</h2>
+                    </div>
+                    <button class="achievement-drawer-close" @click="closePlatformDetail">×</button>
+                </div>
+                <LoadingOverlay :show="loadingPlatformDetail" />
+                <div class="detail-summary" v-if="platformDetail">
+                    <div><strong>{{ platformDetail.summary.distinctAc }}</strong><span>去重 AC</span></div>
+                    <div><strong>{{ platformDetail.summary.acceptedSubmits }}</strong><span>AC 提交</span></div>
+                    <div><strong>{{ platformDetail.summary.distinctSubmitted }}</strong><span>去重提交题</span></div>
+                    <div><strong>{{ platformDetail.summary.rawSubmits }}</strong><span>原始提交</span></div>
+                </div>
+                <div class="detail-tabs">
+                    <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
+                    <button class="achievement-action-button" :class="{ active: detailModal.mode === 'submit' }" @click="switchPlatformDetailMode('submit')">提交记录</button>
+                </div>
+                <div class="detail-table-wrap">
+                    <table class="detail-table" v-if="platformDetail && detailModal.mode === 'ac'">
+                        <thead>
+                            <tr>
+                                <th>题目</th>
+                                <th>Problem Key</th>
+                                <th>首次 AC</th>
+                                <th>AC 提交</th>
+                                <th>总提交</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in platformDetail.problems" :key="item.problemKey">
+                                <td>{{ item.problem || item.problemKey }}</td>
+                                <td><code>{{ item.problemKey }}</code></td>
+                                <td>{{ formatDetailTime(item.firstAcAt) }}</td>
+                                <td>{{ item.acceptedSubmits }}</td>
+                                <td>{{ item.totalSubmits }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="detail-table" v-else-if="platformDetail">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>题目</th>
+                                <th>状态</th>
+                                <th>计入 AC</th>
+                                <th>Problem Key</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in platformDetail.records" :key="item.id">
+                                <td>{{ formatDetailTime(item.time) }}</td>
+                                <td>{{ item.problem || item.contest }}</td>
+                                <td>{{ item.status }}</td>
+                                <td>{{ item.includedInAc ? '是' : '否' }}</td>
+                                <td><code>{{ item.problemKey }}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="detail-pagination" v-if="platformDetail">
+                    <button class="achievement-action-button" :disabled="detailModal.page <= 1" @click="changePlatformDetailPage(-1)">上一页</button>
+                    <span>第 {{ detailModal.page }} 页 / 共 {{ Math.max(1, Math.ceil(platformDetail.total / detailModal.pageSize)) }} 页</span>
+                    <button class="achievement-action-button" :disabled="detailModal.page >= Math.ceil(platformDetail.total / detailModal.pageSize)" @click="changePlatformDetailPage(1)">下一页</button>
+                </div>
+            </section>
+        </div>
     </BaseLayout>
 </template>
 
@@ -522,7 +608,19 @@ import Confirm from '@/components/confirm.vue'
 import LoadingOverlay from '@/components/LoadingOverlay.vue'
 import { useUserStore } from '@/stores/user';
 import API from '@/utils/api';
-import type { CoreContestListData, CoreStatisticPeriodData, CoreStatisticPlatformPeriodItem, CoreSubmitLogGetByIdData, List as ProfileListItem, SpiderJobInfo, SpiderSyncStatusInfo, UserProfileGetByNameList } from '@/utils/api';
+import type {
+    CoreContestListData,
+    CoreStatisticPeriodData,
+    CoreStatisticPlatformPeriodItem,
+    CoreSubmitLogGetByIdData,
+    List as ProfileListItem,
+    SpiderAuditItem,
+    SpiderJobInfo,
+    SpiderSyncStatusInfo,
+    StatisticExplanationResponse,
+    StatisticPlatformDetailResponse,
+    UserProfileGetByNameList,
+} from '@/utils/api';
 import Toast from '@/utils/toast';
 import type { User } from '@/utils/type';
 import Link from '@/utils/link';
@@ -565,6 +663,8 @@ const currentData = ref(0)
 
 const jwtUserInfo = JWT.getUserInfo();
 const currentUserId = computed(() => Number(jwtUserInfo?.userId || 0))
+const currentRoleId = computed(() => Number(jwtUserInfo?.roleId || 0))
+const isCurrentUserAdmin = computed(() => currentRoleId.value === 1)
 
 const user = ref<User>({
     avatar: "",
@@ -599,8 +699,27 @@ const recentSubmitLogs = ref<CoreSubmitLogGetByIdData[]>([]);
 const profilePeriodData = ref<CoreStatisticPeriodData | null>(null);
 const platformPeriodStats = ref<CoreStatisticPlatformPeriodItem[]>([]);
 const syncStatuses = ref<SpiderSyncStatusInfo[]>([]);
+const spiderAuditRows = ref<SpiderAuditItem[]>([]);
+const statisticExplanation = ref<StatisticExplanationResponse>({
+    code: 0,
+    message: '',
+    title: '统计口径说明',
+    summary: '本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。',
+    bullets: [],
+    generatedAt: 0,
+});
+const showStatisticExplanation = ref(false);
 const loadingSyncStatus = ref(false);
 const activeSpiderJob = ref<SpiderJobInfo | null>(null);
+const loadingPlatformDetail = ref(false);
+const platformDetail = ref<StatisticPlatformDetailResponse | null>(null);
+const detailModal = ref({
+    open: false,
+    platform: '',
+    mode: 'ac' as 'ac' | 'submit',
+    page: 1,
+    pageSize: 20,
+});
 const platformRefreshCooldowns = ref<Record<string, number>>({});
 let spiderJobTimer: number | undefined;
 let refreshCooldownTimer: number | undefined;
@@ -682,6 +801,9 @@ const teamPanelMode = ref<TeamPanelMode>('idle')
 const inviteKeyword = ref('')
 const inviteCandidates = ref<UserProfileGetByNameList[]>([])
 const isSelfProfile = computed(() => currentUserId.value !== 0 && currentUserId.value === Number(user.value.userId))
+const canShowProfileMessageAction = computed(() => {
+    return currentUserId.value !== 0 && !isSelfProfile.value && isCurrentUserAdmin.value;
+})
 const canManageTeam = computed(() => {
     if (!isSelfProfile.value || teamInfo.value.id === 0) return false;
     return Number(teamInfo.value.ownerId) === currentUserId.value;
@@ -706,6 +828,10 @@ const platformStats = (platform: string) => {
         ac: Number(item?.ac?.total || 0),
         submit: Number(item?.submit?.total || 0),
     };
+}
+
+const auditByPlatform = (platform: string) => {
+    return spiderAuditRows.value.find((item) => item.platform === platform);
 }
 
 const permanentAchievementKeys = ref<string[]>([])
@@ -1551,6 +1677,7 @@ const getUserInfo = async () => {
     getContests();
     getTeamInfo();
     getSyncStatus();
+    getStatisticExplanation();
 }
 
 interface HeatmapData {
@@ -2042,12 +2169,27 @@ const pollSpiderJob = async (jobId: number) => {
 const getSyncStatus = async () => {
     if (!user.value.userId || !currentUserId.value) return;
     loadingSyncStatus.value = true;
-    const response = await API.core.spider.status(user.value.userId);
+    const [response, auditResponse] = await Promise.all([
+        API.core.spider.status(user.value.userId),
+        API.core.spider.audit(user.value.userId),
+    ]);
     Toast.stdResponse(response, false);
     if (response.success) {
         syncStatuses.value = response.data.data;
     }
+    Toast.stdResponse(auditResponse, false);
+    if (auditResponse.success) {
+        spiderAuditRows.value = auditResponse.data.data;
+    }
     loadingSyncStatus.value = false;
+}
+
+const getStatisticExplanation = async () => {
+    const response = await API.core.statistic.explanation();
+    Toast.stdResponse(response, false);
+    if (response.success) {
+        statisticExplanation.value = response.data;
+    }
 }
 
 const platformLabel = (platform: string) => {
@@ -2069,6 +2211,62 @@ const formatSyncStatus = (item: SpiderSyncStatusInfo) => {
     if (item.status === "running") return "抓取中";
     if (item.status === "success" && !item.isStale) return "已同步";
     return "未同步";
+}
+
+const formatDetailTime = (timestamp: number) => {
+    if (!timestamp) return '未知';
+    return new Date(timestamp * 1000).toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+}
+
+const loadPlatformDetail = async () => {
+    if (!detailModal.value.platform) return;
+    loadingPlatformDetail.value = true;
+    const response = await API.core.statistic.platformDetail({
+        userId: Number(user.value.userId),
+        platform: detailModal.value.platform,
+        mode: detailModal.value.mode,
+        page: detailModal.value.page,
+        pageSize: detailModal.value.pageSize,
+    });
+    Toast.stdResponse(response, false);
+    if (response.success) {
+        platformDetail.value = response.data;
+    }
+    loadingPlatformDetail.value = false;
+}
+
+const openPlatformDetail = async (platform: string) => {
+    detailModal.value = {
+        open: true,
+        platform,
+        mode: 'ac',
+        page: 1,
+        pageSize: 20,
+    };
+    platformDetail.value = null;
+    await loadPlatformDetail();
+}
+
+const closePlatformDetail = () => {
+    detailModal.value.open = false;
+}
+
+const switchPlatformDetailMode = async (mode: 'ac' | 'submit') => {
+    detailModal.value.mode = mode;
+    detailModal.value.page = 1;
+    await loadPlatformDetail();
+}
+
+const changePlatformDetailPage = async (delta: number) => {
+    detailModal.value.page = Math.max(1, detailModal.value.page + delta);
+    await loadPlatformDetail();
 }
 
 const formatJobStatus = (status: string) => {
@@ -3093,6 +3291,156 @@ onBeforeUnmount(() => {
     font-size: var(--text-sm);
 }
 
+.stat-scope-note {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+}
+
+.stat-scope-note strong {
+    color: var(--text-default-color);
+}
+
+.inline-link-button {
+    border: 0;
+    color: var(--active-color);
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.stat-scope-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: -4px 0 14px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--active-color);
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-xs);
+    line-height: 1.7;
+}
+
+.detail-modal-mask {
+    position: fixed;
+    z-index: 80;
+    inset: 0;
+    display: flex;
+    justify-content: flex-end;
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+.detail-modal {
+    position: relative;
+    width: min(900px, 92vw);
+    height: 100%;
+    overflow: auto;
+    padding: 24px;
+    border-left: 1px solid var(--divider-color);
+    color: var(--text-default-color);
+    background-color: var(--section-background-color);
+    box-shadow: -18px 0 40px rgba(0, 0, 0, 0.18);
+}
+
+.detail-modal-header,
+.detail-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.detail-modal-header h2 {
+    margin: 4px 0 0;
+    font-size: var(--text-xl);
+}
+
+.detail-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 18px 0;
+}
+
+.detail-summary div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    background-color: var(--background-color-2);
+}
+
+.detail-summary strong {
+    color: var(--active-color);
+    font-size: var(--text-xl);
+}
+
+.detail-summary span,
+.detail-pagination {
+    color: var(--text-light-color);
+    font-size: var(--text-sm);
+}
+
+.detail-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.detail-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+}
+
+.detail-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+
+.detail-table th,
+.detail-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--divider-color);
+    text-align: left;
+    vertical-align: top;
+}
+
+.detail-table th {
+    color: var(--text-default-color);
+    background-color: var(--background-color-2);
+}
+
+.detail-table td {
+    color: var(--text-light-color);
+}
+
+.detail-table code {
+    color: var(--active-color);
+    font-family: inherit;
+    overflow-wrap: anywhere;
+}
+
+.detail-pagination {
+    margin-top: 14px;
+}
+
 .achievement-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3858,6 +4206,15 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width:1000px) {
+    .detail-modal {
+        width: 100vw;
+        padding: 18px;
+    }
+
+    .detail-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .achievement-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -4000,6 +4357,19 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width:600px) {
+    .detail-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-modal-header {
+        align-items: flex-start;
+    }
+
+    .detail-pagination {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
     .achievement-grid,
     .team-dashboard-grid {
         grid-template-columns: 1fr;

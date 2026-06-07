@@ -220,10 +220,105 @@ export interface SpiderSyncStatusInfo {
   lastSuccessAt: number;
   lastError: string;
   lastFetchedCount: number;
+  lastSkippedCount?: number;
   isStale: boolean;
   canViewError: boolean;
   updatedAt: number;
   [property: string]: any;
+}
+
+export interface SpiderAuditItem {
+  platform: platform;
+  username: string;
+  status: string;
+  lastStartedAt: number;
+  lastFinishedAt: number;
+  lastSuccessAt: number;
+  lastFetchedCount: number;
+  lastSkippedCount: number;
+  lastError: string;
+  rawSubmitCount: number;
+  distinctSubmitCount: number;
+  acceptedSubmitCount: number;
+  distinctAcCount: number;
+  invalidRowCount: number;
+  isStale: boolean;
+}
+
+export interface SpiderAuditResponse {
+  code: number;
+  message: string;
+  userId: number;
+  staleAfterSeconds: number;
+  data: SpiderAuditItem[];
+}
+
+export interface StatisticExplanationResponse {
+  code: number;
+  message: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  generatedAt: number;
+}
+
+export interface StatisticPlatformDetailRecord {
+  id: number;
+  submitId: string;
+  platform: platform;
+  problem: string;
+  problemKey: string;
+  contest: string;
+  lang: string;
+  status: string;
+  time: number;
+  includedInAc: boolean;
+}
+
+export interface StatisticProblemRecord {
+  problemKey: string;
+  problem: string;
+  firstAcAt: number;
+  acceptedSubmits: number;
+  totalSubmits: number;
+}
+
+export interface StatisticPlatformDetailResponse {
+  code: number;
+  message: string;
+  userId: number;
+  platform: platform;
+  mode: "ac" | "submit" | string;
+  page: number;
+  pageSize: number;
+  total: number;
+  summary: {
+    rawSubmits: number;
+    acceptedSubmits: number;
+    distinctSubmitted: number;
+    distinctAc: number;
+  };
+  records: StatisticPlatformDetailRecord[];
+  problems: StatisticProblemRecord[];
+}
+
+export interface StatisticCacheStatusResponse {
+  code: number;
+  message: string;
+  userId: number;
+  generatedAt: number;
+  keys: {
+    key: string;
+    exists: boolean;
+    ttl: number;
+  }[];
+}
+
+export interface StatisticCacheClearResponse {
+  code: number;
+  message: string;
+  userId: number;
+  deletedKeys: number;
 }
 
 export interface SpiderStatusResponse {
@@ -1811,8 +1906,40 @@ export default class API {
           { code: 0, message: "", data: [], staleAfterSeconds: 86400, generatedAt: 0 },
         );
       },
+      audit: async (userId: number): Promise<stdResponse<SpiderAuditResponse>> => {
+        return apiCall<SpiderAuditResponse>(
+          () =>
+            axios.get<SpiderAuditResponse>("/api/core/spider/audit", {
+              params: { userId },
+              headers: { Authorization: `Bearer ${JWT.token}` },
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取抓取审计失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取抓取审计成功",
+            };
+          },
+          "获取抓取审计失败",
+          { code: 0, message: "", userId, staleAfterSeconds: 86400, data: [] },
+        );
+      },
     },
     statistic: {
+      explanation: async (): Promise<stdResponse<StatisticExplanationResponse>> => {
+        return apiCall<StatisticExplanationResponse>(
+          () => axios.get<StatisticExplanationResponse>("/api/core/statistic/explanation"),
+          (response) => {
+            if (response.status !== 200) return { message: "获取统计口径说明失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取统计口径说明成功",
+            };
+          },
+          "获取统计口径说明失败",
+          { code: 0, message: "", title: "统计口径说明", summary: "", bullets: [], generatedAt: 0 },
+        );
+      },
       heatmap: async (
         request: CoreStatisticHeatmapRequest,
       ): Promise<stdResponse<CoreStatisticHeatmapResponse>> => {
@@ -1888,6 +2015,74 @@ export default class API {
           },
           "获取平台统计数据失败",
           { code: "", data: [] },
+        );
+      },
+      platformDetail: async (
+        request: { userId: number; platform: string; mode?: "ac" | "submit"; page?: number; pageSize?: number },
+      ): Promise<stdResponse<StatisticPlatformDetailResponse>> => {
+        return apiCall<StatisticPlatformDetailResponse>(
+          () =>
+            axios.get<StatisticPlatformDetailResponse>("/api/core/statistic/platform-detail", {
+              params: request,
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取平台明细失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取平台明细成功",
+            };
+          },
+          "获取平台明细失败",
+          {
+            code: 0,
+            message: "",
+            userId: request.userId,
+            platform: request.platform as platform,
+            mode: request.mode || "ac",
+            page: request.page || 1,
+            pageSize: request.pageSize || 30,
+            total: 0,
+            summary: { rawSubmits: 0, acceptedSubmits: 0, distinctSubmitted: 0, distinctAc: 0 },
+            records: [],
+            problems: [],
+          },
+        );
+      },
+      cacheStatus: async (userId = -1): Promise<stdResponse<StatisticCacheStatusResponse>> => {
+        return apiCall<StatisticCacheStatusResponse>(
+          () =>
+            axios.get<StatisticCacheStatusResponse>("/api/core/statistic/cache-status", {
+              params: { userId },
+              headers: { Authorization: `Bearer ${JWT.token}` },
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取缓存状态失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取缓存状态成功",
+            };
+          },
+          "获取缓存状态失败",
+          { code: 0, message: "", userId, generatedAt: 0, keys: [] },
+        );
+      },
+      clearCache: async (userId = -1): Promise<stdResponse<StatisticCacheClearResponse>> => {
+        return apiCall<StatisticCacheClearResponse>(
+          () =>
+            axios.post<StatisticCacheClearResponse>(
+              "/api/core/statistic/cache-clear",
+              { userId },
+              { headers: { Authorization: `Bearer ${JWT.token}` } },
+            ),
+          (response) => {
+            if (response.status !== 200) return { message: "清理统计缓存失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "统计缓存已清理",
+            };
+          },
+          "清理统计缓存失败",
+          { code: 0, message: "", userId, deletedKeys: 0 },
         );
       },
     },
