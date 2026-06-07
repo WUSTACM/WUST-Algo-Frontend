@@ -12,7 +12,7 @@ The default deployment user is `acm_tracker`, matching the backend deployment te
 
 ```bash
 cd /opt/wust-algo
-git clone https://github.com/everlastingQAQ/WUST-Algo-Frontend.git frontend
+git clone https://github.com/WUSTACM/WUST-Algo-Frontend.git frontend
 cd /opt/wust-algo/frontend
 
 cp deploy/.env.example deploy/.env
