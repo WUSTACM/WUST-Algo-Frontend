@@ -559,6 +559,7 @@
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'submit' }" @click="switchPlatformDetailMode('submit')">提交记录</button>
                 </div>
+                <div class="detail-scroll-hint">表格可左右拖动查看更多字段</div>
                 <div class="detail-table-wrap">
                     <table class="detail-table" v-if="platformDetail && detailModal.mode === 'ac'">
                         <thead>
@@ -3471,22 +3472,49 @@ onBeforeUnmount(() => {
 .detail-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
+}
+
+.detail-scroll-hint {
+    margin-bottom: 10px;
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
 }
 
 .detail-table-wrap {
-    overflow: auto;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
     max-height: min(58dvh, 620px);
     border: 1px solid var(--divider-color);
     border-radius: 12px;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable both-edges;
+    touch-action: pan-x pan-y;
+}
+
+.detail-table-wrap::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.detail-table-wrap::-webkit-scrollbar-thumb {
+    border: 2px solid var(--background-color-1);
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--section-active-color) 55%, var(--divider-color));
+}
+
+.detail-table-wrap::-webkit-scrollbar-track {
+    background-color: var(--background-color-2);
 }
 
 .detail-table {
-    width: 100%;
-    min-width: 920px;
+    width: max-content;
+    min-width: 1040px;
     border-collapse: collapse;
     font-size: var(--text-sm);
+    table-layout: fixed;
 }
 
 .detail-table th,
@@ -3495,6 +3523,38 @@ onBeforeUnmount(() => {
     border-bottom: 1px solid var(--divider-color);
     text-align: left;
     vertical-align: top;
+    white-space: nowrap;
+}
+
+.detail-table th:nth-child(1),
+.detail-table td:nth-child(1) {
+    width: 170px;
+}
+
+.detail-table th:nth-child(2),
+.detail-table td:nth-child(2) {
+    width: 220px;
+}
+
+.detail-table th:nth-child(3),
+.detail-table td:nth-child(3) {
+    width: 120px;
+}
+
+.detail-table th:nth-child(4),
+.detail-table td:nth-child(4) {
+    width: 110px;
+}
+
+.detail-table th:nth-child(5),
+.detail-table td:nth-child(5) {
+    width: 260px;
+}
+
+.detail-table th:nth-child(6),
+.detail-table td:nth-child(6) {
+    width: 360px;
+    white-space: normal;
 }
 
 .detail-table th {
@@ -3510,6 +3570,7 @@ onBeforeUnmount(() => {
     color: var(--active-color);
     font-family: inherit;
     overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .achievement-grid {
