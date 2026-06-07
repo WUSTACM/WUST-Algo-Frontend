@@ -4,6 +4,66 @@
       <div class="header">
         <div class="header-title">
           <span class="title-icon">
+            <font-awesome-icon icon="fa-solid fa-server" />
+          </span>
+          <span class="title-text">运维总览</span>
+        </div>
+        <div class="header-tabs">
+          <span class="tab" @click="refreshOperations">刷新全部</span>
+        </div>
+      </div>
+      <div class="content" style="position: relative">
+        <LoadingOverlay :show="loadingOps" />
+        <div class="ops-grid">
+          <div class="ops-card">
+            <span>当前前端版本</span>
+            <strong>v1.1.5</strong>
+            <em>{{ shortGitHash }} · {{ gitDateLabel }}</em>
+          </div>
+          <div class="ops-card" :class="serviceHealthClass">
+            <span>服务健康</span>
+            <strong>{{ healthyServiceCount }}/{{ serviceStatuses.length }}</strong>
+            <em>{{ serviceHealthSummary }}</em>
+          </div>
+          <div class="ops-card">
+            <span>缓存状态</span>
+            <strong>{{ activeCacheCount }}/{{ cacheKeys.length }}</strong>
+            <em>当前查询范围：{{ cacheUserId === -1 ? "全站" : `用户 ${cacheUserId}` }}</em>
+          </div>
+          <div class="ops-card" :class="{ warn: activeJobCount > 0, danger: failedJobCount > 0 }">
+            <span>抓取任务</span>
+            <strong>{{ activeJobCount }} 运行 / {{ failedJobCount }} 失败</strong>
+            <em>最近展示 {{ spiderJobs.length }} 条任务</em>
+          </div>
+        </div>
+        <div class="service-grid">
+          <div
+            class="service-card"
+            v-for="service in serviceStatuses"
+            :key="service.key"
+            :class="service.status"
+          >
+            <div>
+              <strong>{{ service.name }}</strong>
+              <span>{{ service.description }}</span>
+            </div>
+            <em>{{ service.status === "ok" ? "正常" : service.status === "checking" ? "检查中" : "异常" }}</em>
+          </div>
+        </div>
+        <div class="failure-panel" v-if="recentFailedJobs.length > 0">
+          <div class="failure-title">最近失败任务</div>
+          <div class="failure-row" v-for="job in recentFailedJobs" :key="`failed-${job.jobId}`">
+            <span>#{{ job.jobId }} · 用户 {{ job.userId }} · {{ job.currentPlatform || "全平台" }}</span>
+            <p>{{ job.error || "未记录失败原因" }}</p>
+          </div>
+        </div>
+        <div class="empty" v-else>当前没有失败抓取任务。</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="header">
+        <div class="header-title">
+          <span class="title-icon">
             <font-awesome-icon icon="fa-solid fa-key" />
           </span>
           <span class="title-text">邀请码设置</span>
@@ -141,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import API from "@/utils/api";
 import Toast from "@/utils/toast";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
@@ -149,6 +209,7 @@ import type { SpiderJobInfo } from "@/utils/api";
 
 const loading = ref(false);
 const loadingJobs = ref(false);
+const loadingOps = ref(false);
 const inviteCode = ref("");
 const spiderJobs = ref<SpiderJobInfo[]>([]);
 const jobStatus = ref("");
@@ -157,6 +218,29 @@ const loadingCache = ref(false);
 const clearingCache = ref(false);
 const cacheUserId = ref(-1);
 const cacheKeys = ref<{ key: string; exists: boolean; ttl: number }[]>([]);
+const serviceStatuses = ref([
+  { key: "user", name: "User 服务", description: "邀请码、用户和权限接口", status: "checking" },
+  { key: "core", name: "Core Data 服务", description: "统计、缓存和抓取接口", status: "checking" },
+  { key: "spider", name: "Spider 队列", description: "抓取任务查询与重试", status: "checking" },
+]);
+
+const shortGitHash = __GIT_HASH__ ? __GIT_HASH__.slice(0, 7) : "unknown";
+const gitDateLabel = __GIT_DATE__ || "unknown";
+
+const activeCacheCount = computed(() => cacheKeys.value.filter((item) => item.exists).length);
+const activeJobCount = computed(() => spiderJobs.value.filter((job) => ["queued", "running"].includes(job.status)).length);
+const failedJobCount = computed(() => spiderJobs.value.filter((job) => job.status === "failed").length);
+const recentFailedJobs = computed(() => spiderJobs.value.filter((job) => job.status === "failed").slice(0, 3));
+const healthyServiceCount = computed(() => serviceStatuses.value.filter((service) => service.status === "ok").length);
+const serviceHealthClass = computed(() => ({
+  warn: healthyServiceCount.value > 0 && healthyServiceCount.value < serviceStatuses.value.length,
+  danger: healthyServiceCount.value === 0,
+}));
+const serviceHealthSummary = computed(() => {
+  const failed = serviceStatuses.value.filter((service) => service.status === "failed");
+  if (failed.length === 0) return "全部探测正常";
+  return `${failed.map((item) => item.name).join("、")} 异常`;
+});
 
 const jobFilters = [
   { label: "全部", value: "" },
@@ -231,6 +315,31 @@ const loadSpiderJobs = async () => {
   loadingJobs.value = false;
 };
 
+const setServiceStatus = (key: string, status: string) => {
+  serviceStatuses.value = serviceStatuses.value.map((service) => (
+    service.key === key ? { ...service, status } : service
+  ));
+};
+
+const loadServiceStatuses = async () => {
+  serviceStatuses.value = serviceStatuses.value.map((service) => ({ ...service, status: "checking" }));
+  const [userResult, coreResult, spiderResult] = await Promise.allSettled([
+    API.user.system.getRegisterInviteCode(),
+    API.core.statistic.explanation(),
+    API.core.spider.jobs({ scope: "all", page: 1, pageSize: 1 }),
+  ]);
+
+  setServiceStatus("user", userResult.status === "fulfilled" && userResult.value.success ? "ok" : "failed");
+  setServiceStatus("core", coreResult.status === "fulfilled" && coreResult.value.success ? "ok" : "failed");
+  setServiceStatus("spider", spiderResult.status === "fulfilled" && spiderResult.value.success ? "ok" : "failed");
+};
+
+const refreshOperations = async () => {
+  loadingOps.value = true;
+  await Promise.all([loadServiceStatuses(), loadCacheStatus(), loadSpiderJobs()]);
+  loadingOps.value = false;
+};
+
 const setJobStatus = (status: string) => {
   jobStatus.value = status;
   loadSpiderJobs();
@@ -284,8 +393,7 @@ const formatTime = (timestamp: number) => {
 
 onMounted(() => {
   loadInviteCode();
-  loadCacheStatus();
-  loadSpiderJobs();
+  refreshOperations();
 });
 </script>
 
@@ -330,6 +438,133 @@ onMounted(() => {
 
 .content {
   padding: 24px 20px;
+}
+
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ops-card {
+  display: flex;
+  min-height: 118px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--divider-color);
+  border-radius: 14px;
+  background-color: var(--background-color-1);
+}
+
+.ops-card span,
+.service-card span,
+.failure-row p {
+  color: var(--text-light-color);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.ops-card strong {
+  color: var(--text-default-color);
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.ops-card em,
+.service-card em {
+  color: var(--section-active-color);
+  font-style: normal;
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.ops-card.warn {
+  border-color: color-mix(in srgb, #ffb020 50%, var(--divider-color));
+}
+
+.ops-card.warn em {
+  color: #ffb020;
+}
+
+.ops-card.danger {
+  border-color: color-mix(in srgb, #ff8585 50%, var(--divider-color));
+}
+
+.ops-card.danger em,
+.service-card.failed em {
+  color: #ff8585;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.service-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--divider-color);
+  border-radius: 12px;
+  background-color: var(--background-color-1);
+}
+
+.service-card div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.service-card strong {
+  color: var(--text-default-color);
+  font-size: var(--text-sm);
+}
+
+.service-card.ok {
+  border-color: color-mix(in srgb, var(--active-color) 35%, var(--divider-color));
+}
+
+.service-card.failed {
+  border-color: color-mix(in srgb, #ff8585 45%, var(--divider-color));
+}
+
+.failure-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.failure-title {
+  color: var(--text-default-color);
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+.failure-row {
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, #ff8585 35%, var(--divider-color));
+  border-radius: 10px;
+  background-color: var(--background-color-1);
+}
+
+.failure-row span {
+  color: #ff8585;
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+.failure-row p {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
 }
 
 .form-grid {
@@ -575,6 +810,11 @@ onMounted(() => {
 
   .job-side {
     align-items: stretch;
+  }
+
+  .ops-grid,
+  .service-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>
