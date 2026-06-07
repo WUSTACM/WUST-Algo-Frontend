@@ -30,6 +30,8 @@ interface TrainingStatusInput {
   maxCount?: number;
 }
 
+const PLATFORM_ORDER = ["AtCoder", "NowCoder", "LuoGu", "CodeForces", "QOJ"];
+
 const nowSeconds = () => Math.floor(Date.now() / 1000);
 
 const toNumber = (value: unknown): number => {
@@ -105,10 +107,9 @@ const activeDays = (logs: CoreSubmitLogGetByIdData[]): number => {
 const topPlatforms = (logs: CoreSubmitLogGetByIdData[]): string[] => {
   const counts = new Map<string, number>();
   logs.forEach((log) => counts.set(log.platform, (counts.get(log.platform) || 0) + 1));
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
+  return PLATFORM_ORDER
+    .filter((platform) => (counts.get(platform) || 0) > 0)
     .slice(0, 2)
-    .map(([platform]) => platform);
 };
 
 const pushUnique = (list: TrainingStatusBadge[], badge: TrainingStatusBadge) => {

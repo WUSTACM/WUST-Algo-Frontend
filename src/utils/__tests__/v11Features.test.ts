@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildAchievementBadges } from "../v11Features";
+import { buildTrainingPortrait } from "../trainingStatus";
 import type { CoreStatisticPeriodData, CoreStatisticPlatformPeriodItem, CoreSubmitLogGetByIdData } from "../api";
 
 const period = (acTotal: number, submitTotal = acTotal): CoreStatisticPeriodData => ({
@@ -23,6 +24,20 @@ const period = (acTotal: number, submitTotal = acTotal): CoreStatisticPeriodData
     lastYear: 0,
     total: submitTotal,
   },
+});
+
+describe("buildTrainingPortrait", () => {
+  it("keeps recent platform summary in the canonical platform order", () => {
+    const base = Math.floor(Date.now() / 1000) - 3600;
+    const logs = [
+      submit("AC", base, "A", "CodeForces"),
+      submit("AC", base + 60, "B", "AtCoder"),
+      submit("WA", base + 120, "C", "CodeForces"),
+      submit("AC", base + 180, "D", "LuoGu"),
+    ];
+    const portrait = buildTrainingPortrait({ period: period(3, 4), recentLogs: logs });
+    expect(portrait.recent30Summary).toContain("主要活跃于 AtCoder 和 LuoGu");
+  });
 });
 
 const platformStat = (platform: string, acTotal: number): CoreStatisticPlatformPeriodItem => ({
