@@ -534,7 +534,7 @@
             </aside>
         </div>
         <div v-if="detailModal.open" class="detail-modal-mask" @click="closePlatformDetail">
-            <section class="detail-modal" @click.stop>
+            <section class="detail-modal" ref="detailModalRef" @click.stop>
                 <div class="detail-modal-header">
                     <div>
                         <div class="achievement-drawer-kicker">Statistic Trace</div>
@@ -555,7 +555,7 @@
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'submit' }" @click="switchPlatformDetailMode('submit')">提交记录</button>
                 </div>
-                <div class="detail-table-wrap">
+                <div class="detail-table-wrap" ref="detailTableWrapRef">
                     <table class="detail-table" v-if="platformDetail && detailModal.mode === 'ac'">
                         <thead>
                             <tr>
@@ -611,7 +611,7 @@
 
 <script setup lang="ts">
 import BaseLayout from '@/components/BaseLayout.vue'
-import { computed, ref, onBeforeUnmount, onMounted, watch } from 'vue';
+import { computed, ref, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import JWT from '../utils/jwt';
 import Confirm from '@/components/confirm.vue'
@@ -723,6 +723,8 @@ const loadingSyncStatus = ref(false);
 const activeSpiderJob = ref<SpiderJobInfo | null>(null);
 const loadingPlatformDetail = ref(false);
 const platformDetail = ref<StatisticPlatformDetailResponse | null>(null);
+const detailModalRef = ref<HTMLElement | null>(null);
+const detailTableWrapRef = ref<HTMLElement | null>(null);
 const detailModal = ref({
     open: false,
     platform: '',
@@ -733,10 +735,27 @@ const detailModal = ref({
 const platformRefreshCooldowns = ref<Record<string, number>>({});
 let spiderJobTimer: number | undefined;
 let refreshCooldownTimer: number | undefined;
+let detailResizeTimer: number | undefined;
 let previousBodyOverflow = '';
 
 const syncScreenSize = () => {
     isCompactScreen.value = window.innerWidth <= 640;
+};
+
+const handleProfileResize = () => {
+    syncScreenSize();
+    if (!detailModal.value.open) return;
+    if (detailResizeTimer) {
+        window.clearTimeout(detailResizeTimer);
+    }
+    detailResizeTimer = window.setTimeout(async () => {
+        await nextTick();
+        const nextPageSize = measuredDetailPageSize();
+        if (nextPageSize !== detailModal.value.pageSize) {
+            detailModal.value.pageSize = nextPageSize;
+            await loadPlatformDetail();
+        }
+    }, 160);
 };
 
 const ojPlatforms = [
@@ -2250,9 +2269,24 @@ const formatDetailTime = (timestamp: number) => {
     });
 }
 
+const clampDetailPageSize = (value: number) => Math.max(5, Math.min(40, value));
+
 const preferredDetailPageSize = () => {
     if (typeof window === 'undefined') return 12;
-    return window.innerWidth <= 600 || window.innerHeight <= 720 ? 8 : 12;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const shellHeight = width <= 600 ? 278 : width <= 1000 ? 292 : 310;
+    const rowHeight = width <= 600 ? 36 : 49;
+    return clampDetailPageSize(Math.floor((height - shellHeight) / rowHeight));
+}
+
+const measuredDetailPageSize = () => {
+    const wrapHeight = detailTableWrapRef.value?.clientHeight || 0;
+    if (!wrapHeight) return preferredDetailPageSize();
+    const width = typeof window === 'undefined' ? 1280 : window.innerWidth;
+    const rowHeight = width <= 600 ? 36 : 49;
+    const tableHeaderHeight = width <= 600 ? 37 : 45;
+    return clampDetailPageSize(Math.floor((wrapHeight - tableHeaderHeight - 12) / rowHeight));
 }
 
 const loadPlatformDetail = async () => {
@@ -2281,7 +2315,16 @@ const openPlatformDetail = async (platform: string) => {
         pageSize: preferredDetailPageSize(),
     };
     platformDetail.value = null;
+    await nextTick();
+    detailModal.value.pageSize = measuredDetailPageSize();
     await loadPlatformDetail();
+    await nextTick();
+    const measuredPageSize = measuredDetailPageSize();
+    if (measuredPageSize !== detailModal.value.pageSize) {
+        detailModal.value.page = 1;
+        detailModal.value.pageSize = measuredPageSize;
+        await loadPlatformDetail();
+    }
 }
 
 const closePlatformDetail = () => {
@@ -2363,7 +2406,7 @@ const logout = async () => {
 
 onMounted(() => {
     syncScreenSize();
-    window.addEventListener("resize", syncScreenSize);
+    window.addEventListener("resize", handleProfileResize);
     // 该页面有登录路由守卫
     if (route.query.id) {
         user.value.userId = Number(route.query.id);
@@ -2374,7 +2417,10 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    window.removeEventListener("resize", syncScreenSize);
+    window.removeEventListener("resize", handleProfileResize);
+    if (detailResizeTimer) {
+        window.clearTimeout(detailResizeTimer);
+    }
     stopSpiderJobPolling();
     stopRefreshCooldownTimer();
     if (typeof document !== 'undefined') {
@@ -3373,7 +3419,7 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: stretch;
     justify-content: flex-end;
-    padding: 20px;
+    padding: 12px;
     overflow: hidden;
     background-color: rgba(15, 23, 42, 0.72);
 }
@@ -3382,12 +3428,12 @@ onBeforeUnmount(() => {
     position: relative;
     display: grid;
     grid-template-rows: auto auto auto minmax(0, 1fr) auto;
-    width: min(1120px, 94vw);
-    height: calc(100dvh - 40px);
-    max-height: calc(100dvh - 40px);
+    width: min(1400px, calc(100vw - 24px));
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
     overflow: hidden;
     overscroll-behavior: contain;
-    padding: 24px;
+    padding: 0;
     border: 1px solid var(--divider-color);
     border-radius: 18px;
     color: var(--text-default-color);
@@ -3406,14 +3452,12 @@ onBeforeUnmount(() => {
 }
 
 .detail-modal-header {
-    margin: -24px -24px 0;
-    padding: 24px 24px 14px;
+    padding: 24px 24px 18px;
     border-bottom: 1px solid var(--divider-color);
 }
 
 .detail-pagination {
-    margin: 14px -24px -24px;
-    padding: 14px 24px 24px;
+    padding: 14px 24px;
     border-top: 1px solid var(--divider-color);
 }
 
@@ -3426,7 +3470,8 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 10px;
-    margin: 18px 0 14px;
+    margin: 0;
+    padding: 18px 24px 14px;
 }
 
 .detail-summary div {
@@ -3453,13 +3498,15 @@ onBeforeUnmount(() => {
 .detail-tabs {
     display: flex;
     gap: 8px;
-    margin-bottom: 14px;
+    margin: 0;
+    padding: 0 24px 14px;
 }
 
 .detail-table-wrap {
-    width: 100%;
+    width: auto;
     min-height: 0;
     height: 100%;
+    margin: 0 24px;
     overflow-x: auto;
     overflow-y: hidden;
     border: 1px solid var(--divider-color);
@@ -3486,8 +3533,7 @@ onBeforeUnmount(() => {
 }
 
 .detail-table {
-    width: max-content;
-    min-width: 1040px;
+    width: max(100%, 1040px);
     border-collapse: collapse;
     font-size: var(--text-sm);
     table-layout: fixed;
@@ -4324,22 +4370,27 @@ onBeforeUnmount(() => {
         width: 100%;
         height: calc(100dvh - 20px);
         max-height: calc(100dvh - 20px);
-        padding: 18px;
     }
 
     .detail-modal-header {
-        margin: -18px -18px 0;
         padding: 18px 18px 12px;
     }
 
     .detail-pagination {
-        bottom: -18px;
-        margin: 14px -18px -18px;
-        padding: 12px 18px 18px;
+        padding: 12px 18px;
     }
 
     .detail-summary {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 14px 18px 12px;
+    }
+
+    .detail-tabs {
+        padding: 0 18px 12px;
+    }
+
+    .detail-table-wrap {
+        margin: 0 18px;
     }
 
     .achievement-grid {
@@ -4488,7 +4539,6 @@ onBeforeUnmount(() => {
         width: 100%;
         height: 100dvh;
         max-height: 100dvh;
-        padding: 14px;
         border-left: none;
         border-right: none;
         border-radius: 0;
@@ -4496,8 +4546,11 @@ onBeforeUnmount(() => {
 
     .detail-modal-header {
         align-items: flex-start;
-        margin: -14px -14px 0;
         padding: 14px 14px 10px;
+    }
+
+    .detail-summary {
+        padding: 12px 14px 10px;
     }
 
     .detail-summary div {
@@ -4512,6 +4565,7 @@ onBeforeUnmount(() => {
     .detail-tabs {
         gap: 6px;
         margin-bottom: 10px;
+        padding: 0 14px 10px;
     }
 
     .detail-tabs .achievement-action-button {
@@ -4521,11 +4575,12 @@ onBeforeUnmount(() => {
     }
 
     .detail-table-wrap {
+        margin: 0 14px;
         border-radius: 10px;
     }
 
     .detail-table {
-        min-width: 720px;
+        width: max(100%, 720px);
         font-size: var(--text-xs);
     }
 
@@ -4537,8 +4592,7 @@ onBeforeUnmount(() => {
     .detail-pagination {
         align-items: stretch;
         flex-direction: column;
-        margin: 10px -14px -14px;
-        padding: 10px 14px 14px;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
     }
 
     .achievement-grid,
