@@ -551,10 +551,6 @@
                     <div><strong>{{ platformDetail.summary.filteredDuplicate }}</strong><span>去重过滤</span></div>
                     <div><strong>{{ platformDetail.summary.filteredInvalid }}</strong><span>异常记录</span></div>
                 </div>
-                <div class="detail-policy" v-if="platformDetail && platformDetail.policy?.length">
-                    <strong>计入口径</strong>
-                    <span v-for="item in platformDetail.policy" :key="item">{{ item }}</span>
-                </div>
                 <div class="detail-tabs">
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'submit' }" @click="switchPlatformDetailMode('submit')">提交记录</button>
@@ -732,7 +728,7 @@ const detailModal = ref({
     platform: '',
     mode: 'ac' as 'ac' | 'submit',
     page: 1,
-    pageSize: 20,
+    pageSize: 12,
 });
 const platformRefreshCooldowns = ref<Record<string, number>>({});
 let spiderJobTimer: number | undefined;
@@ -2254,6 +2250,11 @@ const formatDetailTime = (timestamp: number) => {
     });
 }
 
+const preferredDetailPageSize = () => {
+    if (typeof window === 'undefined') return 12;
+    return window.innerWidth <= 600 || window.innerHeight <= 720 ? 8 : 12;
+}
+
 const loadPlatformDetail = async () => {
     if (!detailModal.value.platform) return;
     loadingPlatformDetail.value = true;
@@ -2277,7 +2278,7 @@ const openPlatformDetail = async (platform: string) => {
         platform,
         mode: 'ac',
         page: 1,
-        pageSize: 20,
+        pageSize: preferredDetailPageSize(),
     };
     platformDetail.value = null;
     await loadPlatformDetail();
@@ -3379,9 +3380,12 @@ onBeforeUnmount(() => {
 
 .detail-modal {
     position: relative;
-    width: min(900px, 92vw);
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    width: min(1120px, 94vw);
+    height: calc(100dvh - 40px);
     max-height: calc(100dvh - 40px);
-    overflow-y: auto;
+    overflow: hidden;
     overscroll-behavior: contain;
     padding: 24px;
     border: 1px solid var(--divider-color);
@@ -3393,7 +3397,6 @@ onBeforeUnmount(() => {
 
 .detail-modal-header,
 .detail-pagination {
-    position: sticky;
     z-index: 2;
     display: flex;
     align-items: center;
@@ -3403,14 +3406,12 @@ onBeforeUnmount(() => {
 }
 
 .detail-modal-header {
-    top: -24px;
     margin: -24px -24px 0;
     padding: 24px 24px 14px;
     border-bottom: 1px solid var(--divider-color);
 }
 
 .detail-pagination {
-    bottom: -24px;
     margin: 14px -24px -24px;
     padding: 14px 24px 24px;
     border-top: 1px solid var(--divider-color);
@@ -3425,7 +3426,7 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 10px;
-    margin: 18px 0;
+    margin: 18px 0 14px;
 }
 
 .detail-summary div {
@@ -3449,25 +3450,6 @@ onBeforeUnmount(() => {
     font-size: var(--text-sm);
 }
 
-.detail-policy {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 14px;
-    padding: 12px 14px;
-    border: 1px solid var(--divider-color);
-    border-radius: 12px;
-    color: var(--text-light-color);
-    background-color: var(--background-color-2);
-    font-size: var(--text-xs);
-    line-height: 1.7;
-}
-
-.detail-policy strong {
-    color: var(--text-default-color);
-    font-size: var(--text-sm);
-}
-
 .detail-tabs {
     display: flex;
     gap: 8px;
@@ -3476,6 +3458,8 @@ onBeforeUnmount(() => {
 
 .detail-table-wrap {
     width: 100%;
+    min-height: 0;
+    height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
     border: 1px solid var(--divider-color);
@@ -4338,12 +4322,12 @@ onBeforeUnmount(() => {
 
     .detail-modal {
         width: 100%;
+        height: calc(100dvh - 20px);
         max-height: calc(100dvh - 20px);
         padding: 18px;
     }
 
     .detail-modal-header {
-        top: -18px;
         margin: -18px -18px 0;
         padding: 18px 18px 12px;
     }
@@ -4355,7 +4339,7 @@ onBeforeUnmount(() => {
     }
 
     .detail-summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .achievement-grid {
@@ -4492,7 +4476,8 @@ onBeforeUnmount(() => {
 
 @media (max-width:600px) {
     .detail-summary {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
     }
 
     .detail-modal-mask {
@@ -4501,7 +4486,9 @@ onBeforeUnmount(() => {
 
     .detail-modal {
         width: 100%;
+        height: 100dvh;
         max-height: 100dvh;
+        padding: 14px;
         border-left: none;
         border-right: none;
         border-radius: 0;
@@ -4509,15 +4496,36 @@ onBeforeUnmount(() => {
 
     .detail-modal-header {
         align-items: flex-start;
+        margin: -14px -14px 0;
+        padding: 14px 14px 10px;
+    }
+
+    .detail-summary div {
+        gap: 2px;
+        padding: 9px 10px;
+    }
+
+    .detail-summary strong {
+        font-size: var(--text-lg);
+    }
+
+    .detail-tabs {
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .detail-tabs .achievement-action-button {
+        min-width: 0;
+        padding: 6px 10px;
+        font-size: var(--text-xs);
     }
 
     .detail-table-wrap {
-        max-height: 52dvh;
         border-radius: 10px;
     }
 
     .detail-table {
-        min-width: 620px;
+        min-width: 720px;
         font-size: var(--text-xs);
     }
 
@@ -4529,6 +4537,8 @@ onBeforeUnmount(() => {
     .detail-pagination {
         align-items: stretch;
         flex-direction: column;
+        margin: 10px -14px -14px;
+        padding: 10px 14px 14px;
     }
 
     .achievement-grid,
