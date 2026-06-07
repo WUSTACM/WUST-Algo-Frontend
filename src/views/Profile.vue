@@ -322,9 +322,15 @@
                                         <span><strong>{{ platformStats(item.platform).ac }}</strong> 题</span>
                                         <span>{{ platformStats(item.platform).submit }} 提交</span>
                                         <span v-if="auditByPlatform(item.platform)">去重提交 {{ auditByPlatform(item.platform)?.distinctSubmitCount || 0 }}</span>
-                                        <span v-if="auditByPlatform(item.platform)">本次抓取 {{ auditByPlatform(item.platform)?.lastFetchedCount || 0 }}</span>
+                                        <span v-if="auditByPlatform(item.platform)">AC 提交 {{ auditByPlatform(item.platform)?.acceptedSubmitCount || 0 }}</span>
+                                        <span v-if="auditByPlatform(item.platform)">
+                                            本次 {{ auditByPlatform(item.platform)?.lastRawFetchedCount || 0 }} 原始 / {{ auditByPlatform(item.platform)?.lastFetchedCount || 0 }} 有效
+                                        </span>
                                         <span v-if="auditByPlatform(item.platform) && Number(auditByPlatform(item.platform)?.lastSkippedCount || 0) > 0">
                                             跳过 {{ auditByPlatform(item.platform)?.lastSkippedCount }}
+                                        </span>
+                                        <span v-if="auditByPlatform(item.platform) && Number(auditByPlatform(item.platform)?.filteredDuplicateCount || 0) > 0">
+                                            去重过滤 {{ auditByPlatform(item.platform)?.filteredDuplicateCount }}
                                         </span>
                                     </div>
                                     <span class="sync-badge" :class="{ stale: item.isStale, failed: item.status === 'failed', running: item.status === 'running' }">
@@ -542,6 +548,12 @@
                     <div><strong>{{ platformDetail.summary.acceptedSubmits }}</strong><span>AC 提交</span></div>
                     <div><strong>{{ platformDetail.summary.distinctSubmitted }}</strong><span>去重提交题</span></div>
                     <div><strong>{{ platformDetail.summary.rawSubmits }}</strong><span>原始提交</span></div>
+                    <div><strong>{{ platformDetail.summary.filteredDuplicate }}</strong><span>去重过滤</span></div>
+                    <div><strong>{{ platformDetail.summary.filteredInvalid }}</strong><span>异常记录</span></div>
+                </div>
+                <div class="detail-policy" v-if="platformDetail && platformDetail.policy?.length">
+                    <strong>计入口径</strong>
+                    <span v-for="item in platformDetail.policy" :key="item">{{ item }}</span>
                 </div>
                 <div class="detail-tabs">
                     <button class="achievement-action-button" :class="{ active: detailModal.mode === 'ac' }" @click="switchPlatformDetailMode('ac')">AC 题列表</button>
@@ -576,6 +588,7 @@
                                 <th>状态</th>
                                 <th>计入 AC</th>
                                 <th>Problem Key</th>
+                                <th>审计说明</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -585,6 +598,7 @@
                                 <td>{{ item.status }}</td>
                                 <td>{{ item.includedInAc ? '是' : '否' }}</td>
                                 <td><code>{{ item.problemKey }}</code></td>
+                                <td>{{ item.auditReason }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -3409,7 +3423,7 @@ onBeforeUnmount(() => {
 
 .detail-summary {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: 10px;
     margin: 18px 0;
 }
@@ -3435,6 +3449,25 @@ onBeforeUnmount(() => {
     font-size: var(--text-sm);
 }
 
+.detail-policy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--divider-color);
+    border-radius: 12px;
+    color: var(--text-light-color);
+    background-color: var(--background-color-2);
+    font-size: var(--text-xs);
+    line-height: 1.7;
+}
+
+.detail-policy strong {
+    color: var(--text-default-color);
+    font-size: var(--text-sm);
+}
+
 .detail-tabs {
     display: flex;
     gap: 8px;
@@ -3451,7 +3484,7 @@ onBeforeUnmount(() => {
 
 .detail-table {
     width: 100%;
-    min-width: 760px;
+    min-width: 920px;
     border-collapse: collapse;
     font-size: var(--text-sm);
 }

@@ -197,6 +197,55 @@
         <div v-else class="empty">暂无抓取任务。</div>
       </div>
     </div>
+    <div class="section">
+      <div class="header">
+        <div class="header-title">
+          <span class="title-icon">
+            <font-awesome-icon icon="fa-solid fa-magnifying-glass-chart" />
+          </span>
+          <span class="title-text">抓取数据审计</span>
+        </div>
+        <div class="header-tabs">
+          <span class="tab" @click="loadSpiderAudit">查询</span>
+        </div>
+      </div>
+      <div class="content" style="position: relative">
+        <LoadingOverlay :show="loadingAudit" />
+        <div class="audit-toolbar">
+          <input v-model.number="auditUserId" type="number" placeholder="输入用户 ID" />
+          <button class="action-btn" @click="loadSpiderAudit">查看审计</button>
+        </div>
+        <div class="hint">展示每个平台从“原始抓取”到“最终计入 AC”的完整链路，用来解释 AC 数和 OJ 主页口径差异。</div>
+        <div class="audit-list" v-if="spiderAuditRows.length > 0">
+          <div class="audit-card" v-for="item in spiderAuditRows" :key="item.platform">
+            <div class="audit-head">
+              <div>
+                <strong>{{ item.platform }}</strong>
+                <span>@{{ item.username }} · {{ formatTime(item.lastSuccessAt) }}</span>
+              </div>
+              <em :class="{ stale: item.isStale, failed: item.status === 'failed' }">
+                {{ item.status === 'success' && !item.isStale ? '已同步' : item.status === 'running' ? '抓取中' : '未同步' }}
+              </em>
+            </div>
+            <div class="audit-metrics">
+              <div><b>{{ item.lastRawFetchedCount || 0 }}</b><span>本次原始</span></div>
+              <div><b>{{ item.lastFetchedCount || 0 }}</b><span>本次有效</span></div>
+              <div><b>{{ item.rawSubmitCount }}</b><span>库内原始</span></div>
+              <div><b>{{ item.distinctSubmitCount }}</b><span>去重提交</span></div>
+              <div><b>{{ item.acceptedSubmitCount }}</b><span>AC 提交</span></div>
+              <div><b>{{ item.distinctAcCount }}</b><span>去重 AC</span></div>
+              <div><b>{{ item.filteredDuplicateCount || 0 }}</b><span>去重过滤</span></div>
+              <div><b>{{ item.filteredAbnormalCount || 0 }}</b><span>异常/跳过</span></div>
+            </div>
+            <div class="audit-notes">
+              <p v-for="note in item.auditNotes" :key="note">{{ note }}</p>
+              <p v-if="item.lastError" class="audit-error">最近错误：{{ item.lastError }}</p>
+            </div>
+          </div>
+        </div>
+        <div v-else class="empty">输入用户 ID 后可以查看平台抓取审计。</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -205,7 +254,7 @@ import { computed, onMounted, ref } from "vue";
 import API from "@/utils/api";
 import Toast from "@/utils/toast";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import type { SpiderJobInfo } from "@/utils/api";
+import type { SpiderAuditItem, SpiderJobInfo } from "@/utils/api";
 
 const loading = ref(false);
 const loadingJobs = ref(false);
@@ -216,8 +265,11 @@ const jobStatus = ref("");
 const retryingJobs = ref<Record<number, boolean>>({});
 const loadingCache = ref(false);
 const clearingCache = ref(false);
+const loadingAudit = ref(false);
 const cacheUserId = ref(-1);
+const auditUserId = ref<number | null>(null);
 const cacheKeys = ref<{ key: string; exists: boolean; ttl: number }[]>([]);
+const spiderAuditRows = ref<SpiderAuditItem[]>([]);
 const serviceStatuses = ref([
   { key: "user", name: "User 服务", description: "邀请码、用户和权限接口", status: "checking" },
   { key: "core", name: "Core Data 服务", description: "统计、缓存和抓取接口", status: "checking" },
@@ -290,6 +342,21 @@ const clearStatisticCache = async () => {
   if (response.success) {
     await loadCacheStatus();
   }
+};
+
+const loadSpiderAudit = async () => {
+  const userId = Number(auditUserId.value || 0);
+  if (!userId || userId <= 0) {
+    Toast.error("请输入需要审计的用户 ID");
+    return;
+  }
+  loadingAudit.value = true;
+  const response = await API.core.spider.audit(userId);
+  Toast.stdResponse(response, false, true);
+  if (response.success) {
+    spiderAuditRows.value = response.data.data || [];
+  }
+  loadingAudit.value = false;
 };
 
 const formatTTL = (ttl: number) => {
@@ -680,6 +747,127 @@ onMounted(() => {
   font-family: inherit;
 }
 
+.audit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.audit-toolbar input {
+  width: 180px;
+  height: 34px;
+  padding: 0 12px;
+  color: var(--text-default-color);
+  background-color: var(--background-color-1);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+}
+
+.audit-toolbar input:focus {
+  border-color: var(--input-active-color);
+}
+
+.audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.audit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--divider-color);
+  border-radius: 12px;
+  background-color: var(--background-color-1);
+}
+
+.audit-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.audit-head div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audit-head strong {
+  color: var(--text-default-color);
+  font-size: var(--text-base);
+}
+
+.audit-head span,
+.audit-notes p {
+  color: var(--text-light-color);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.audit-head em {
+  flex-shrink: 0;
+  color: var(--active-color);
+  font-style: normal;
+  font-size: var(--text-sm);
+  font-weight: 800;
+}
+
+.audit-head em.stale {
+  color: #ffb020;
+}
+
+.audit-head em.failed,
+.audit-error {
+  color: #ff8585 !important;
+}
+
+.audit-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.audit-metrics div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--divider-color);
+  border-radius: 10px;
+  background-color: var(--background-color-2);
+}
+
+.audit-metrics b {
+  color: var(--section-active-color);
+  font-size: var(--text-lg);
+}
+
+.audit-metrics span {
+  color: var(--text-light-color);
+  font-size: var(--text-xs);
+}
+
+.audit-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.audit-notes p {
+  margin: 0;
+}
+
 .cache-toolbar input:focus {
   border-color: var(--input-active-color);
 }
@@ -813,7 +1001,8 @@ onMounted(() => {
   }
 
   .ops-grid,
-  .service-grid {
+  .service-grid,
+  .audit-metrics {
     grid-template-columns: 1fr;
   }
 }

@@ -234,6 +234,7 @@ export interface SpiderAuditItem {
   lastStartedAt: number;
   lastFinishedAt: number;
   lastSuccessAt: number;
+  lastRawFetchedCount: number;
   lastFetchedCount: number;
   lastSkippedCount: number;
   lastError: string;
@@ -242,6 +243,11 @@ export interface SpiderAuditItem {
   acceptedSubmitCount: number;
   distinctAcCount: number;
   invalidRowCount: number;
+  filteredDuplicateCount: number;
+  filteredAbnormalCount: number;
+  countPolicy: string[];
+  filterReasons: string[];
+  auditNotes: string[];
   isStale: boolean;
 }
 
@@ -273,6 +279,7 @@ export interface StatisticPlatformDetailRecord {
   status: string;
   time: number;
   includedInAc: boolean;
+  auditReason: string;
 }
 
 export interface StatisticProblemRecord {
@@ -297,7 +304,10 @@ export interface StatisticPlatformDetailResponse {
     acceptedSubmits: number;
     distinctSubmitted: number;
     distinctAc: number;
+    filteredDuplicate: number;
+    filteredInvalid: number;
   };
+  policy: string[];
   records: StatisticPlatformDetailRecord[];
   problems: StatisticProblemRecord[];
 }
@@ -2042,7 +2052,15 @@ export default class API {
             page: request.page || 1,
             pageSize: request.pageSize || 30,
             total: 0,
-            summary: { rawSubmits: 0, acceptedSubmits: 0, distinctSubmitted: 0, distinctAc: 0 },
+            summary: {
+              rawSubmits: 0,
+              acceptedSubmits: 0,
+              distinctSubmitted: 0,
+              distinctAc: 0,
+              filteredDuplicate: 0,
+              filteredInvalid: 0,
+            },
+            policy: [],
             records: [],
             problems: [],
           },
