@@ -205,6 +205,18 @@
                     </div>
                 </div>
                 <div class="right">
+                    <div class="stat-scope-card">
+                        <div class="stat-scope-note">
+                            <strong>{{ statisticExplanation.title || '统计口径说明' }}</strong>
+                            <span>{{ statisticExplanation.summary || '本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。' }}</span>
+                            <button class="inline-link-button" @click="showStatisticExplanation = !showStatisticExplanation">
+                                {{ showStatisticExplanation ? '收起' : '查看说明' }}
+                            </button>
+                        </div>
+                        <div v-if="showStatisticExplanation" class="stat-scope-details">
+                            <div v-for="item in statisticExplanation.bullets" :key="item">{{ item }}</div>
+                        </div>
+                    </div>
                     <div class="section" style="position: relative;">
                         <LoadingOverlay :show="loadingStats" />
                         <div class="header">
@@ -222,16 +234,6 @@
                             </div>
                         </div>
                         <div class="content">
-                            <div class="stat-scope-note">
-                                <strong>{{ statisticExplanation.title || '统计口径说明' }}</strong>
-                                <span>{{ statisticExplanation.summary || '本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。' }}</span>
-                                <button class="inline-link-button" @click="showStatisticExplanation = !showStatisticExplanation">
-                                    {{ showStatisticExplanation ? '收起' : '查看说明' }}
-                                </button>
-                            </div>
-                            <div v-if="showStatisticExplanation" class="stat-scope-details">
-                                <div v-for="item in statisticExplanation.bullets" :key="item">{{ item }}</div>
-                            </div>
                             <div v-if="currentData === 0" class="statisticItems">
                                 <div class="statisticItem" v-for="item in data.submit">
                                     <div class="title">{{ item.title }}</div>
@@ -3370,12 +3372,17 @@ onBeforeUnmount(() => {
     font-size: var(--text-sm);
 }
 
+.stat-scope-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .stat-scope-note {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 14px;
     padding: 10px 12px;
     border: 1px solid var(--divider-color);
     border-radius: 12px;
@@ -3403,9 +3410,10 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin: -4px 0 14px;
     padding: 10px 12px;
+    border: 1px solid var(--divider-color);
     border-left: 3px solid var(--active-color);
+    border-radius: 12px;
     color: var(--text-light-color);
     background-color: var(--background-color-2);
     font-size: var(--text-xs);
@@ -4639,6 +4647,21 @@ onBeforeUnmount(() => {
         align-self: flex-start;
     }
 
+    .stat-scope-note {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .stat-scope-note span {
+        width: 100%;
+    }
+
+    .inline-link-button {
+        align-self: flex-start;
+        padding: 0;
+    }
+
     .container > .top > .left > .avatar {
         top: 120px;
         width: 80px;
@@ -4741,11 +4764,6 @@ onBeforeUnmount(() => {
         width: calc(100% - 24px);
         padding-left: 12px;
         padding-right: 12px;
-    }
-
-    .stat-scope-note {
-        align-items: flex-start;
-        flex-direction: column;
     }
 
     .detail-summary {
