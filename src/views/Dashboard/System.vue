@@ -35,6 +35,11 @@
             <strong>{{ activeJobCount }} 运行 / {{ failedJobCount }} 失败</strong>
             <em>最近展示 {{ spiderJobs.length }} 条任务</em>
           </div>
+          <div class="ops-card">
+            <span>操作日志</span>
+            <strong>{{ operationLogs.length }}</strong>
+            <em>用户服务 + 核心数据服务</em>
+          </div>
         </div>
         <div class="service-grid">
           <div
@@ -58,6 +63,44 @@
           </div>
         </div>
         <div class="empty" v-else>当前没有失败抓取任务。</div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="header">
+        <div class="header-title">
+          <span class="title-icon">
+            <font-awesome-icon icon="fa-solid fa-clipboard-list" />
+          </span>
+          <span class="title-text">运维审计</span>
+        </div>
+        <div class="header-tabs">
+          <span class="tab" @click="loadOperationLogs">刷新</span>
+        </div>
+      </div>
+      <div class="content" style="position: relative">
+        <LoadingOverlay :show="loadingOperationLogs" />
+        <div class="log-toolbar">
+          <input v-model="operationAction" type="text" placeholder="按 action 精确筛选，可留空" />
+          <button class="action-btn" @click="loadOperationLogs">查看日志</button>
+        </div>
+        <div class="hint">记录改角色、删用户、清缓存、重爬数据、改团队等高风险操作，方便线上问题回溯。</div>
+        <div class="operation-list" v-if="operationLogs.length > 0">
+          <div class="operation-card" v-for="item in operationLogs" :key="`${item.service}-${item.id}`">
+            <div class="operation-main">
+              <div class="operation-title">
+                <strong>{{ actionLabel(item.action) }}</strong>
+                <span>{{ item.service }}</span>
+              </div>
+              <div class="operation-meta">
+                操作者 {{ item.operatorId || "未知" }} · {{ roleLabel(item.operatorRole) }}
+                <template v-if="item.targetType"> · 目标 {{ item.targetType }} #{{ item.targetId }}</template>
+              </div>
+              <pre v-if="formatDetail(item.detail)" class="operation-detail">{{ formatDetail(item.detail) }}</pre>
+            </div>
+            <div class="operation-time">{{ formatTime(item.createdAt) }}</div>
+          </div>
+        </div>
+        <div v-else class="empty">暂无操作日志。</div>
       </div>
     </div>
     <div class="section">
@@ -254,13 +297,16 @@ import { computed, onMounted, ref } from "vue";
 import API from "@/utils/api";
 import Toast from "@/utils/toast";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import type { SpiderAuditItem, SpiderJobInfo } from "@/utils/api";
+import type { OperationLogItem, SpiderAuditItem, SpiderJobInfo } from "@/utils/api";
 
 const loading = ref(false);
 const loadingJobs = ref(false);
 const loadingOps = ref(false);
+const loadingOperationLogs = ref(false);
 const inviteCode = ref("");
 const spiderJobs = ref<SpiderJobInfo[]>([]);
+const operationLogs = ref<OperationLogItem[]>([]);
+const operationAction = ref("");
 const jobStatus = ref("");
 const retryingJobs = ref<Record<number, boolean>>({});
 const loadingCache = ref(false);
@@ -293,6 +339,30 @@ const serviceHealthSummary = computed(() => {
   if (failed.length === 0) return "全部探测正常";
   return `${failed.map((item) => item.name).join("、")} 异常`;
 });
+
+const actionLabels: Record<string, string> = {
+  "profile.delete": "删除用户",
+  "profile.change_password": "修改密码",
+  "profile.set_role": "设置角色",
+  "profile.move_group": "移动分组",
+  "group.create": "创建团队/分组",
+  "group.update": "更新团队/分组",
+  "group.delete": "删除团队/分组",
+  "team.create": "创建团队",
+  "team.update": "更新团队",
+  "team.invite": "邀请成员",
+  "team.remove_member": "移除成员",
+  "team.transfer_owner": "转移队长",
+  "team.leave": "退出团队",
+  "team.disband": "解散团队",
+  "message.broadcast": "群发消息",
+  "spider.update": "更新 OJ 数据",
+  "spider.retry": "重试抓取",
+  "spider.rebuild_all": "重爬全站",
+  "spider.set": "绑定 OJ 账号",
+  "statistic.clear_cache": "清理统计缓存",
+  "snapshot.save": "保存功能快照",
+};
 
 const jobFilters = [
   { label: "全部", value: "" },
@@ -359,6 +429,34 @@ const loadSpiderAudit = async () => {
   loadingAudit.value = false;
 };
 
+const loadOperationLogs = async () => {
+  loadingOperationLogs.value = true;
+  const request = {
+    page: 1,
+    pageSize: 50,
+    action: operationAction.value.trim() || undefined,
+  };
+  const [userResult, coreResult] = await Promise.allSettled([
+    API.user.system.operationLogs(request),
+    API.core.operationLogs(request),
+  ]);
+  const rows: OperationLogItem[] = [];
+  if (userResult.status === "fulfilled" && userResult.value.success) {
+    rows.push(...(userResult.value.data.data || []));
+  }
+  if (coreResult.status === "fulfilled" && coreResult.value.success) {
+    rows.push(...(coreResult.value.data.data || []));
+  }
+  const failed = [userResult, coreResult].some((item) => item.status === "fulfilled" && !item.value.success);
+  if (failed) {
+    Toast.error("部分操作日志获取失败");
+  }
+  operationLogs.value = rows
+    .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+    .slice(0, 80);
+  loadingOperationLogs.value = false;
+};
+
 const formatTTL = (ttl: number) => {
   if (ttl === -1) return "永久";
   if (ttl < 0) return "-";
@@ -403,7 +501,7 @@ const loadServiceStatuses = async () => {
 
 const refreshOperations = async () => {
   loadingOps.value = true;
-  await Promise.all([loadServiceStatuses(), loadCacheStatus(), loadSpiderJobs()]);
+  await Promise.all([loadServiceStatuses(), loadCacheStatus(), loadSpiderJobs(), loadOperationLogs()]);
   loadingOps.value = false;
 };
 
@@ -458,6 +556,25 @@ const formatTime = (timestamp: number) => {
   });
 };
 
+const actionLabel = (action: string) => actionLabels[action] || action || "未知操作";
+
+const roleLabel = (roleId: number) => {
+  if (roleId === 1) return "管理员";
+  if (roleId === 2) return "教练";
+  return "普通用户";
+};
+
+const formatDetail = (detail: Record<string, any> = {}) => {
+  const entries = Object.entries(detail || {}).filter(([, value]) => (
+    value !== undefined && value !== null && value !== ""
+  ));
+  if (entries.length === 0) return "";
+  return entries
+    .slice(0, 6)
+    .map(([key, value]) => `${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`)
+    .join(" · ");
+};
+
 onMounted(() => {
   loadInviteCode();
   refreshOperations();
@@ -509,7 +626,7 @@ onMounted(() => {
 
 .ops-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -770,6 +887,96 @@ onMounted(() => {
   border-color: var(--input-active-color);
 }
 
+.log-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.log-toolbar input {
+  width: min(360px, 100%);
+  height: 34px;
+  padding: 0 12px;
+  color: var(--text-default-color);
+  background-color: var(--background-color-1);
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  outline: none;
+  font-family: inherit;
+}
+
+.log-toolbar input:focus {
+  border-color: var(--input-active-color);
+}
+
+.operation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.operation-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--divider-color);
+  border-radius: 12px;
+  background-color: var(--background-color-1);
+}
+
+.operation-main {
+  min-width: 0;
+}
+
+.operation-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.operation-title strong {
+  color: var(--text-default-color);
+  font-size: var(--text-base);
+}
+
+.operation-title span {
+  padding: 2px 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: 999px;
+  color: var(--section-active-color);
+  font-size: var(--text-xs);
+}
+
+.operation-meta,
+.operation-time {
+  margin-top: 6px;
+  color: var(--text-light-color);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.operation-time {
+  margin-top: 0;
+  text-align: right;
+}
+
+.operation-detail {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--text-light-color);
+  background-color: var(--background-color-2);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .audit-list {
   display: flex;
   flex-direction: column;
@@ -990,6 +1197,14 @@ onMounted(() => {
 
   .job-card {
     grid-template-columns: 1fr;
+  }
+
+  .operation-card {
+    grid-template-columns: 1fr;
+  }
+
+  .operation-time {
+    text-align: left;
   }
 
   .cache-row {

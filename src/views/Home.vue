@@ -712,6 +712,17 @@ const refreshWeeklyReport = async () => {
     // Ignore broken cache entries and rebuild below.
   }
 
+  const snapshot = await API.core.snapshot.get<WeeklyReport>(userId, "weekly_report", signature);
+  if (snapshot.success && snapshot.data.exists && !snapshot.data.stale && snapshot.data.payload) {
+    weeklyReport.value = snapshot.data.payload;
+    try {
+      sessionStorage.setItem(cacheKey, JSON.stringify({ generatedAt: Date.now(), report: snapshot.data.payload }));
+    } catch {
+      // Snapshot is enough when browser storage is unavailable.
+    }
+    return;
+  }
+
   const { buildWeeklyReport } = await import("@/utils/v11Features");
   const report = buildWeeklyReport(periodData.value, recentSubmitLogs.value, platformPeriodData.value);
   weeklyReport.value = report;
@@ -720,6 +731,7 @@ const refreshWeeklyReport = async () => {
   } catch {
     // Storage can be unavailable in private mode; rendering should still work.
   }
+  API.core.snapshot.save(userId, "weekly_report", signature, report);
 };
 
 watch([periodData, recentSubmitLogs, platformPeriodData, isLogin], () => {

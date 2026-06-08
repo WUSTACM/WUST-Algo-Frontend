@@ -415,7 +415,7 @@
                         </div>
                         <div class="content">
                             <div class="profile-chart-container">
-                                <v-chart class="profile-chart" :option="chartOption" autoresize />
+                                <AsyncLineChart class="profile-chart" :option="chartOption" autoresize />
                             </div>
                         </div>
                     </div>
@@ -613,7 +613,7 @@
 
 <script setup lang="ts">
 import BaseLayout from '@/components/BaseLayout.vue'
-import { computed, ref, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, nextTick, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import JWT from '../utils/jwt';
 import Confirm from '@/components/confirm.vue'
@@ -645,25 +645,8 @@ import {
     type TeamDashboard,
     type TeamDashboardMember,
 } from '@/utils/v11Features';
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
-import {
-    DataZoomComponent,
-    GridComponent,
-    LegendComponent,
-    TooltipComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
 
-use([
-    CanvasRenderer,
-    LineChart,
-    TooltipComponent,
-    LegendComponent,
-    GridComponent,
-    DataZoomComponent,
-]);
+const AsyncLineChart = defineAsyncComponent(() => import('@/components/AsyncLineChart.vue'));
 
 Bot.tip.addOjTip();
 
@@ -1015,6 +998,46 @@ const achievements = computed<AchievementBadge[]>(() => {
     ));
 })
 
+let achievementSnapshotTimer: ReturnType<typeof setTimeout> | null = null;
+let lastAchievementSnapshotHash = "";
+
+const achievementSnapshotHash = computed(() => {
+    const newestLogTime = Math.max(0, ...recentSubmitLogs.value.map((item) => Number(item.time || 0)));
+    const platformMarker = platformPeriodStats.value
+        .map((item) => `${item.platform}:${item.ac?.total || 0}:${item.submit?.total || 0}`)
+        .join('|');
+    return JSON.stringify([
+        Number(user.value.userId || 0),
+        Number(profilePeriodData.value?.ac?.total || 0),
+        Number(profilePeriodData.value?.submit?.total || 0),
+        recentSubmitLogs.value.length,
+        newestLogTime,
+        platformMarker,
+        teamInfo.value.id,
+        teamInfo.value.members.map((member) => member.userId).join(','),
+        permanentAchievementKeys.value.join(','),
+        passwordChangeCount.value,
+    ]);
+})
+
+const saveAchievementSnapshot = () => {
+    const userId = Number(user.value.userId || 0);
+    if (!userId || achievements.value.length === 0) return;
+    if (!isSelfProfile.value && currentRoleId.value !== 1 && currentRoleId.value !== 2) return;
+    const sourceHash = achievementSnapshotHash.value;
+    if (!sourceHash || sourceHash === lastAchievementSnapshotHash) return;
+    lastAchievementSnapshotHash = sourceHash;
+    if (achievementSnapshotTimer) window.clearTimeout(achievementSnapshotTimer);
+    achievementSnapshotTimer = window.setTimeout(() => {
+        API.core.snapshot.save(userId, 'achievement', sourceHash, {
+            achievements: achievements.value,
+            unlockedCount: unlockedAchievements.value.length,
+            totalCount: achievements.value.length,
+            generatedAt: Date.now(),
+        });
+    }, 800);
+}
+
 watch(rawAchievements, (items) => {
     const triggeredPermanent = items.filter((item) => item.unlocked).map((item) => item.key);
     if (triggeredPermanent.length === 0) return;
@@ -1023,6 +1046,8 @@ watch(rawAchievements, (items) => {
         savePermanentAchievements([...currentKeys, ...triggeredPermanent]);
     }
 }, { immediate: true })
+
+watch([achievements, achievementSnapshotHash], saveAchievementSnapshot, { deep: true })
 
 const unlockedAchievements = computed(() => achievements.value.filter((item) => item.unlocked))
 type AchievementGlobalRate = {

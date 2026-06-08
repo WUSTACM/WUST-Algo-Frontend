@@ -257,7 +257,7 @@
     <div style="position: relative">
       <LoadingOverlay :show="loadingChart" />
       <div class="chart-container">
-        <v-chart class="chart" :option="chartOption" autoresize />
+        <AsyncLineChart class="chart" :option="chartOption" autoresize />
       </div>
     </div>
     <template v-if="showRanking">
@@ -394,38 +394,15 @@ import API, {
 } from "@/utils/api";
 import Toast from "@/utils/toast";
 import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "@/stores/user";
 import { buildTrainingStatuses, type TrainingStatusBadge } from "@/utils/trainingStatus";
 
-// 导入 ECharts 相关
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
-import {
-  TooltipComponent,
-  ToolboxComponent,
-  LegendComponent,
-  GridComponent,
-  DataZoomComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
-
 const router = useRouter();
 const userStore = useUserStore();
 const showRanking = computed(() => userStore.isLogin);
-
-// 注册 ECharts 模块
-use([
-  CanvasRenderer,
-  LineChart,
-  TooltipComponent,
-  ToolboxComponent,
-  LegendComponent,
-  GridComponent,
-  DataZoomComponent,
-]);
+const AsyncLineChart = defineAsyncComponent(() => import("@/components/AsyncLineChart.vue"));
 
 export interface Response {
   list: List[];

@@ -38,6 +38,11 @@ import {
   faNewspaper,
   faEnvelope,
   faKey,
+  faServer,
+  faDatabase,
+  faArrowsRotate,
+  faMagnifyingGlassChart,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 
 // 主题
@@ -67,6 +72,11 @@ library.add(
   faBell,
   faEnvelope,
   faKey,
+  faServer,
+  faDatabase,
+  faArrowsRotate,
+  faMagnifyingGlassChart,
+  faClipboardList,
   faThumbtack,
   faArrowRight,
   faNewspaper,

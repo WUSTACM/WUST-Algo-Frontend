@@ -582,6 +582,37 @@ export interface UserSystemRegisterInviteCodeResponse {
   inviteCode: string;
 }
 
+export interface OperationLogItem {
+  id: number;
+  service: "user" | "core-data" | string;
+  operatorId: number;
+  operatorRole: number;
+  action: string;
+  targetType: string;
+  targetId: number;
+  detail: Record<string, any>;
+  createdAt: number;
+}
+
+export interface OperationLogResponse {
+  code: number;
+  message: string;
+  data: OperationLogItem[];
+  total: number;
+}
+
+export interface FeatureSnapshotResponse<T = any> {
+  code: number;
+  message: string;
+  userId: number;
+  kind: "weekly_report" | "achievement" | string;
+  sourceHash: string;
+  payload: T;
+  exists: boolean;
+  stale: boolean;
+  generatedAt: number;
+}
+
 export interface UserRoleListResponse {
   roles: UserRole[];
   [property: string]: any;
@@ -1738,10 +1769,118 @@ export default class API {
           { success: false, message: "", inviteCode: "" },
         );
       },
+      operationLogs: async (
+        request: { page?: number; pageSize?: number; action?: string } = {},
+      ): Promise<stdResponse<OperationLogResponse>> => {
+        return apiCall<OperationLogResponse>(
+          () =>
+            axios.get<OperationLogResponse>("/api/user/system/operation-logs", {
+              params: request,
+              headers: { Authorization: `Bearer ${JWT.token}` },
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取用户操作日志失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取用户操作日志成功",
+            };
+          },
+          "获取用户操作日志失败",
+          { code: 0, message: "", data: [], total: 0 },
+        );
+      },
     },
   };
 
   static core = {
+    operationLogs: async (
+      request: { page?: number; pageSize?: number; action?: string } = {},
+    ): Promise<stdResponse<OperationLogResponse>> => {
+      return apiCall<OperationLogResponse>(
+        () =>
+          axios.get<OperationLogResponse>("/api/core/operation-logs", {
+            params: request,
+            headers: { Authorization: `Bearer ${JWT.token}` },
+          }),
+        (response) => {
+          if (response.status !== 200) return { message: "获取核心操作日志失败" };
+          return {
+            data: response.data,
+            message: response.data.message || "获取核心操作日志成功",
+          };
+        },
+        "获取核心操作日志失败",
+        { code: 0, message: "", data: [], total: 0 },
+      );
+    },
+    snapshot: {
+      get: async <T = any>(
+        userId: number,
+        kind: "weekly_report" | "achievement" | string,
+        sourceHash = "",
+      ): Promise<stdResponse<FeatureSnapshotResponse<T>>> => {
+        return apiCall<FeatureSnapshotResponse<T>>(
+          () =>
+            axios.get<FeatureSnapshotResponse<T>>("/api/core/snapshot", {
+              params: { userId, kind, sourceHash },
+              headers: { Authorization: `Bearer ${JWT.token}` },
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取快照失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取快照成功",
+            };
+          },
+          "获取快照失败",
+          {
+            code: 0,
+            message: "",
+            userId,
+            kind,
+            sourceHash,
+            payload: {} as T,
+            exists: false,
+            stale: true,
+            generatedAt: 0,
+          },
+        );
+      },
+      save: async <T = any>(
+        userId: number,
+        kind: "weekly_report" | "achievement" | string,
+        sourceHash: string,
+        payload: T,
+      ): Promise<stdResponse<FeatureSnapshotResponse<T>>> => {
+        return apiCall<FeatureSnapshotResponse<T>>(
+          () =>
+            axios.post<FeatureSnapshotResponse<T>>(
+              "/api/core/snapshot",
+              { userId, kind, sourceHash, payload },
+              { headers: { Authorization: `Bearer ${JWT.token}` } },
+            ),
+          (response) => {
+            if (response.status !== 200) return { message: "保存快照失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "保存快照成功",
+            };
+          },
+          "保存快照失败",
+          {
+            code: 0,
+            message: "",
+            userId,
+            kind,
+            sourceHash,
+            payload,
+            exists: false,
+            stale: true,
+            generatedAt: 0,
+          },
+        );
+      },
+    },
     submitLog: {
       getById: async (
         id: number,
