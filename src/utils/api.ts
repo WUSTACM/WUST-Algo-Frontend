@@ -613,6 +613,21 @@ export interface FeatureSnapshotResponse<T = any> {
   generatedAt: number;
 }
 
+export interface AchievementGlobalRate {
+  unlocked: number;
+  total: number;
+  rate: number;
+}
+
+export interface AchievementGlobalSnapshotResponse {
+  code: number;
+  message: string;
+  rates: Record<string, AchievementGlobalRate>;
+  nightPercentiles: Record<string, number>;
+  siteContexts: Record<string, Record<string, number | boolean>>;
+  generatedAt: number;
+}
+
 export interface UserRoleListResponse {
   roles: UserRole[];
   [property: string]: any;
@@ -1876,6 +1891,29 @@ export default class API {
             payload,
             exists: false,
             stale: true,
+            generatedAt: 0,
+          },
+        );
+      },
+    },
+    achievement: {
+      globalSnapshot: async (): Promise<stdResponse<AchievementGlobalSnapshotResponse>> => {
+        return apiCall<AchievementGlobalSnapshotResponse>(
+          () => axios.get<AchievementGlobalSnapshotResponse>("/api/core/achievement/global-snapshot"),
+          (response) => {
+            if (response.status !== 200) return { message: "获取全站成就快照失败" };
+            return {
+              data: response.data,
+              message: response.data.message || "获取全站成就快照成功",
+            };
+          },
+          "获取全站成就快照失败",
+          {
+            code: 0,
+            message: "",
+            rates: {},
+            nightPercentiles: {},
+            siteContexts: {},
             generatedAt: 0,
           },
         );

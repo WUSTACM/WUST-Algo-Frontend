@@ -625,7 +625,6 @@ import type {
     CoreStatisticPeriodData,
     CoreStatisticPlatformPeriodItem,
     CoreSubmitLogGetByIdData,
-    List as ProfileListItem,
     SpiderAuditItem,
     SpiderJobInfo,
     SpiderSyncStatusInfo,
@@ -891,84 +890,7 @@ const isWrongAnswerStatus = (status: string) => {
     return normalized === 'wa' || normalized.includes('wrong answer') || normalized.includes('答案错误');
 }
 
-const isAcceptedStatus = (status: string) => {
-    const normalized = String(status || '').trim().toLowerCase();
-    return normalized === 'ac' || normalized.includes('accepted') || normalized.includes('答案正确') || normalized.includes('通过');
-}
-
 const countWrongAnswers = (logs: CoreSubmitLogGetByIdData[]) => logs.filter((log) => isWrongAnswerStatus(log.status)).length;
-
-const countNightAccepted = (logs: CoreSubmitLogGetByIdData[]) => logs.filter((log) => {
-    if (!isAcceptedStatus(log.status)) return false;
-    const hour = new Date(Number(log.time || 0) * 1000).getHours();
-    return hour >= 0 && hour < 5;
-}).length;
-
-const localDateKey = (time: number) => {
-    const date = new Date(time * 1000);
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-const localMinuteKey = (time: number) => {
-    const date = new Date(time * 1000);
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const hour = `${date.getHours()}`.padStart(2, '0');
-    const minute = `${date.getMinutes()}`.padStart(2, '0');
-    return `${month}-${day} ${hour}:${minute}`;
-}
-
-const percentileOf = (values: number[], value: number) => {
-    if (values.length === 0) return 0;
-    return (values.filter((item) => item < value).length / values.length) * 100;
-}
-
-const medianOf = (values: number[]) => {
-    const sorted = values.filter((item) => Number.isFinite(item)).sort((a, b) => a - b);
-    if (sorted.length === 0) return 0;
-    const middle = Math.floor(sorted.length / 2);
-    if (sorted.length % 2 === 1) return sorted[middle] || 0;
-    return ((sorted[middle - 1] || 0) + (sorted[middle] || 0)) / 2;
-}
-
-const maxDailyWrongAnswers = (logs: CoreSubmitLogGetByIdData[]) => {
-    const counts = new Map<string, number>();
-    logs.forEach((log) => {
-        if (!isWrongAnswerStatus(log.status)) return;
-        const key = localDateKey(Number(log.time || 0));
-        counts.set(key, (counts.get(key) || 0) + 1);
-    });
-    return Math.max(0, ...counts.values());
-}
-
-const todaySubmitCount = (logs: CoreSubmitLogGetByIdData[]) => {
-    const today = localDateKey(Math.floor(Date.now() / 1000));
-    return logs.filter((log) => localDateKey(Number(log.time || 0)) === today).length;
-}
-
-const todayAcceptRate = (logs: CoreSubmitLogGetByIdData[]) => {
-    const today = localDateKey(Math.floor(Date.now() / 1000));
-    const todayLogs = logs.filter((log) => localDateKey(Number(log.time || 0)) === today);
-    if (todayLogs.length === 0) return 0;
-    return (todayLogs.filter((log) => isAcceptedStatus(log.status)).length / todayLogs.length) * 100;
-}
-
-const hourlyDistribution = (logs: CoreSubmitLogGetByIdData[]) => {
-    const buckets = Array.from({ length: 24 }, () => 0);
-    logs.forEach((log) => {
-        const hour = new Date(Number(log.time || 0) * 1000).getHours();
-        buckets[hour] = (buckets[hour] || 0) + 1;
-    });
-    const total = buckets.reduce((sum, item) => sum + item, 0);
-    return total > 0 ? buckets.map((item) => item / total) : buckets;
-}
-
-const distributionDistance = (left: number[], right: number[]) => {
-    return left.reduce((sum, item, index) => sum + Math.abs(item - (right[index] || 0)), 0);
-}
 
 const rawAchievements = computed<AchievementBadge[]>(() => {
     return buildAchievementBadges(profilePeriodData.value, recentSubmitLogs.value, platformPeriodStats.value, {
@@ -1153,54 +1075,10 @@ const achievementMetaLabel = (badge: AchievementBadge) => {
     return globalRate ? `${achievementRarity(badge)} · ${globalRate}` : achievementRarity(badge);
 }
 
-const getAllProfileUsers = async (): Promise<ProfileListItem[]> => {
-    const firstResponse = await API.user.profile.list(1);
-    Toast.stdResponse(firstResponse, false);
-    if (!firstResponse.success) return [];
-
-    const users = [...firstResponse.data.list];
-    const totalPage = Math.ceil(Number(firstResponse.data.total || 0) / 10);
-    if (totalPage <= 1) return users;
-
-    const pageResponses = await chunkedMap(
-        Array.from({ length: totalPage - 1 }, (_, index) => index + 2),
-        4,
-        (page) => API.user.profile.list(page),
-    );
-    pageResponses.forEach((response) => {
-        if (response.success) users.push(...response.data.list);
-    });
-    return users;
-}
-
-const getAchievementSubmitLogs = async (userId: number): Promise<CoreSubmitLogGetByIdData[]> => {
-    const logs: CoreSubmitLogGetByIdData[] = [];
-    let cursor = -1;
-    const pageSize = 300;
-    const maxLogs = 900;
-    const minTime = Math.floor(Date.now() / 1000) - 400 * 86400;
-
-    while (logs.length < maxLogs) {
-        const response = await API.core.submitLog.getById(userId, cursor, pageSize);
-        Toast.stdResponse(response, false);
-        if (!response.success) break;
-
-        const pageLogs = response.data.data || [];
-        logs.push(...pageLogs);
-        if (pageLogs.length === 0 || pageLogs.length < pageSize) break;
-
-        const lastLog = pageLogs[pageLogs.length - 1];
-        cursor = Number(lastLog?.time || 0);
-        if (!cursor || cursor < minTime) break;
-    }
-
-    return logs;
-}
-
 const loadAchievementGlobalRates = async () => {
     if (achievementGlobalRateLoaded.value || loadingAchievementGlobalRates.value) return;
 
-    const cacheKey = 'wust-achievement-global-rates:v2';
+    const cacheKey = 'wust-achievement-global-rates:v3';
     const cacheTtl = 30 * 60 * 1000;
     try {
         const cached = JSON.parse(sessionStorage.getItem(cacheKey) || 'null');
@@ -1217,137 +1095,21 @@ const loadAchievementGlobalRates = async () => {
 
     loadingAchievementGlobalRates.value = true;
     try {
-        const users = (await getAllProfileUsers()).filter((item) => item.username !== 'admin');
-        if (users.length === 0) return;
+        const response = await API.core.achievement.globalSnapshot();
+        Toast.stdResponse(response, false);
+        if (!response.success) return;
 
-        const userStats = await chunkedMap(users, 3, async (profile) => {
-            const userId = Number(profile.userId);
-            const [periodResponse, platformResponse, logs] = await Promise.all([
-                API.core.statistic.period(userId),
-                API.core.statistic.platformPeriod(userId),
-                getAchievementSubmitLogs(userId),
-            ]);
-            return {
-                profile,
-                period: periodResponse.success ? periodResponse.data.data : null,
-                platformStats: platformResponse.success ? platformResponse.data.data : [],
-                logs,
-                nightAcCount: countNightAccepted(logs),
-                totalSubmit: Number(periodResponse.success ? periodResponse.data.data?.submit?.total || 0 : 0) || logs.length,
-                acceptRate: (() => {
-                    const submitTotal = Number(periodResponse.success ? periodResponse.data.data?.submit?.total || 0 : 0) || logs.length;
-                    const acceptedTotal = Number(periodResponse.success ? periodResponse.data.data?.ac?.total || 0 : 0) || logs.filter((log) => isAcceptedStatus(log.status)).length;
-                    return submitTotal > 0 ? (acceptedTotal / submitTotal) * 100 : 0;
-                })(),
-                maxDailyWa: maxDailyWrongAnswers(logs),
-                todaySubmit: todaySubmitCount(logs),
-                todayAcRate: todayAcceptRate(logs),
-                hourlyDistribution: hourlyDistribution(logs),
-            };
-        });
-
-        const totalSubmits = userStats.map((item) => item.totalSubmit);
-        const acceptRates = userStats.map((item) => item.acceptRate);
-        const nightAcCounts = userStats.map((item) => item.nightAcCount);
-        const maxDailyWas = userStats.map((item) => item.maxDailyWa);
-        const todaySubmits = userStats.map((item) => item.todaySubmit);
-        const todayLuckyRates = userStats.filter((item) => item.todaySubmit >= 10).map((item) => item.todayAcRate);
-        const medianSubmit = medianOf(totalSubmits);
-        const medianAcceptRate = medianOf(acceptRates);
-        const averageHourlyDistribution = Array.from({ length: 24 }, (_, index) => (
-            userStats.reduce((sum, item) => sum + (item.hourlyDistribution[index] || 0), 0) / Math.max(userStats.length, 1)
-        ));
-        const offPeakScores = userStats.map((item) => distributionDistance(item.hourlyDistribution, averageHourlyDistribution));
-        const acMinuteOwners = new Map<string, Set<number>>();
-        userStats.forEach((item) => {
-            item.logs.forEach((log) => {
-                if (!isAcceptedStatus(log.status)) return;
-                const minuteKey = localMinuteKey(Number(log.time || 0));
-                const owners = acMinuteOwners.get(minuteKey) || new Set<number>();
-                owners.add(Number(item.profile.userId));
-                acMinuteOwners.set(minuteKey, owners);
-            });
-        });
-        const nightPercentiles: Record<number, number> = {};
-        const siteContexts: Record<number, Record<string, number | boolean>> = {};
-        const maxDailyWaLeaderValue = Math.max(0, ...maxDailyWas);
-        const todaySubmitLeaderValue = Math.max(0, ...todaySubmits);
-        userStats.forEach((item) => {
-            const userId = Number(item.profile.userId);
-            const nightPercentile = percentileOf(nightAcCounts, item.nightAcCount);
-            const offPeakScore = distributionDistance(item.hourlyDistribution, averageHourlyDistribution);
-            nightPercentiles[userId] = nightPercentile;
-            const userAcMinuteKeys = new Set(
-                item.logs
-                    .filter((log) => isAcceptedStatus(log.status))
-                    .map((log) => localMinuteKey(Number(log.time || 0))),
-            );
-            const uniqueAcMinute = [...userAcMinuteKeys].some((minuteKey) => acMinuteOwners.get(minuteKey)?.size === 1);
-            siteContexts[userId] = {
-                totalSubmitPercentile: percentileOf(totalSubmits, item.totalSubmit),
-                acceptRatePercentile: percentileOf(acceptRates, item.acceptRate),
-                medianSubmit,
-                medianAcceptRate,
-                uniqueAcMinute,
-                siteDailyWaLeader: maxDailyWaLeaderValue >= 20 && item.maxDailyWa === maxDailyWaLeaderValue,
-                todaySubmitLeader: todaySubmitLeaderValue > 0 && item.todaySubmit === todaySubmitLeaderValue,
-                todaySubmit: item.todaySubmit,
-                todayAcRatePercentile: item.todaySubmit >= 10 ? percentileOf(todayLuckyRates, item.todayAcRate) : 0,
-                offPeakPercentile: percentileOf(offPeakScores, offPeakScore),
-            };
-        });
-        achievementNightAcPercentile.value = Number(nightPercentiles[Number(user.value.userId)] || 0);
-        achievementSiteContext.value = siteContexts[Number(user.value.userId)] || {};
-
-        const teamMembersByGroup = new Map<number, TeamDashboardMember[]>();
-        userStats.forEach((item) => {
-            const groupId = Number(item.profile.groupId || 0);
-            if (groupId <= 0) return;
-            const list = teamMembersByGroup.get(groupId) || [];
-            list.push({
-                userId: Number(item.profile.userId),
-                name: item.profile.name || item.profile.username,
-                username: item.profile.username,
-                avatar: item.profile.avatar || '',
-                acTotal: Number(item.period?.ac?.total || 0),
-                submitTotal: Number(item.period?.submit?.total || 0),
-                waTotal: countWrongAnswers(item.logs),
-                weekAc: Number(item.period?.ac?.thisWeek || 0),
-                weekSubmit: Number(item.period?.submit?.thisWeek || 0),
-                monthAc: Number(item.period?.ac?.thisMonth || 0),
-                monthSubmit: Number(item.period?.submit?.thisMonth || 0),
-            });
-            teamMembersByGroup.set(groupId, list);
-        });
-
-        const counts: Record<string, number> = {};
-        userStats.forEach((item) => {
-            const groupId = Number(item.profile.groupId || 0);
-            const badges = buildAchievementBadges(item.period, item.logs, item.platformStats, {
-                currentUserId: Number(item.profile.userId),
-                members: groupId > 0 ? (teamMembersByGroup.get(groupId) || []) : [],
-                nightAcPercentile: nightPercentiles[Number(item.profile.userId)] || 0,
-                passwordChangeCount: Number(item.profile.userId) === Number(user.value.userId) ? passwordChangeCount.value : 0,
-                ...siteContexts[Number(item.profile.userId)],
-            });
-            badges.forEach((badge) => {
-                if (badge.unlocked) counts[badge.key] = (counts[badge.key] || 0) + 1;
-            });
-        });
-
-        const rates: Record<string, AchievementGlobalRate> = {};
-        const total = userStats.length;
-        achievements.value.forEach((badge) => {
-            const unlocked = counts[badge.key] || 0;
-            rates[badge.key] = {
-                unlocked,
-                total,
-                rate: total > 0 ? (unlocked / total) * 100 : 0,
-            };
-        });
-        achievementGlobalRates.value = rates;
+        const snapshotUserId = String(Number(user.value.userId || 0));
+        achievementGlobalRates.value = response.data.rates || {};
+        achievementNightAcPercentile.value = Number(response.data.nightPercentiles?.[snapshotUserId] || 0);
+        achievementSiteContext.value = response.data.siteContexts?.[snapshotUserId] || {};
         achievementGlobalRateLoaded.value = true;
-        sessionStorage.setItem(cacheKey, JSON.stringify({ generatedAt: Date.now(), rates, nightPercentiles, siteContexts }));
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+            generatedAt: Date.now(),
+            rates: achievementGlobalRates.value,
+            nightPercentiles: response.data.nightPercentiles || {},
+            siteContexts: response.data.siteContexts || {},
+        }));
     } finally {
         loadingAchievementGlobalRates.value = false;
     }

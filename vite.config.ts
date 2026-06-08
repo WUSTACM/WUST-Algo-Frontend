@@ -38,8 +38,23 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('/echarts/') || id.includes('/vue-echarts/') || id.includes('/zrender/')) {
-                return 'vendor-echarts'
+              if (id.includes('/vue-echarts/')) {
+                return 'echarts-vue'
+              }
+              if (id.includes('/zrender/')) {
+                return 'echarts-zrender'
+              }
+              if (id.includes('/echarts/charts/')) {
+                return 'echarts-charts'
+              }
+              if (id.includes('/echarts/components/')) {
+                return 'echarts-components'
+              }
+              if (id.includes('/echarts/renderers/')) {
+                return 'echarts-renderers'
+              }
+              if (id.includes('/echarts/core') || id.includes('/echarts/lib/') || id.includes('/echarts/')) {
+                return 'echarts-core'
               }
               if (id.includes('/@fortawesome/')) {
                 return 'vendor-icons'
