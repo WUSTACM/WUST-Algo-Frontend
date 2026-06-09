@@ -522,7 +522,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import BaseLayout from "@/components/BaseLayout.vue";
 import Calendar from "@/components/Calendar.vue";
 // import Rank from '@/components/Rank.vue';
@@ -671,8 +671,32 @@ const currentPeriodData = computed<CoreStatisticPeriodItem>(() => {
 
 const weeklyReport = ref<WeeklyReport | null>(null);
 let weeklyReportSignature = "";
+const spiderRefreshEventKey = "wust-spider-refresh-done";
+const spiderSnapshotState = ref({
+  checkedAt: 0,
+  active: false,
+});
 
 const weeklyCacheKey = (userId: number, signature: string) => `wust-weekly-report:${userId}:${signature}`;
+
+const hasActiveSpiderRefresh = async (userId: number) => {
+  if (!userId || !JWT.isValid()) return false;
+  const now = Date.now();
+  if (now - spiderSnapshotState.value.checkedAt < 5000) {
+    return spiderSnapshotState.value.active;
+  }
+
+  const [queuedResponse, runningResponse] = await Promise.all([
+    API.core.spider.jobs({ scope: "mine", status: "queued", page: 1, pageSize: 1, userId }),
+    API.core.spider.jobs({ scope: "mine", status: "running", page: 1, pageSize: 1, userId }),
+  ]);
+  const active = Boolean(
+    (queuedResponse.success && queuedResponse.data.data.length > 0) ||
+    (runningResponse.success && runningResponse.data.data.length > 0),
+  );
+  spiderSnapshotState.value = { checkedAt: now, active };
+  return active;
+};
 
 const buildWeeklySignature = () => {
   const userId = Number(JWT.getUserInfo()?.userId || 0);
@@ -699,6 +723,7 @@ const refreshWeeklyReport = async () => {
   const userId = Number(JWT.getUserInfo()?.userId || 0);
   const signature = buildWeeklySignature();
   if (!userId || signature === weeklyReportSignature) return;
+  if (await hasActiveSpiderRefresh(userId)) return;
 
   weeklyReportSignature = signature;
   const cacheKey = weeklyCacheKey(userId, signature);
@@ -732,6 +757,28 @@ const refreshWeeklyReport = async () => {
     // Storage can be unavailable in private mode; rendering should still work.
   }
   API.core.snapshot.save(userId, "weekly_report", signature, report);
+};
+
+const refreshHomeAfterSpider = async () => {
+  spiderSnapshotState.value = { checkedAt: 0, active: false };
+  weeklyReportSignature = "";
+  await Promise.all([
+    getPeriodData(),
+    getWeeklySubmitLogs(),
+  ]);
+  await refreshWeeklyReport();
+};
+
+const handleSpiderRefreshDone = (event: StorageEvent) => {
+  if (event.key !== spiderRefreshEventKey || !event.newValue) return;
+  try {
+    const payload = JSON.parse(event.newValue);
+    const currentUserId = Number(JWT.getUserInfo()?.userId || 0);
+    if (!currentUserId || Number(payload?.userId || 0) !== currentUserId) return;
+    refreshHomeAfterSpider();
+  } catch {
+    // Ignore malformed cross-tab notifications.
+  }
 };
 
 watch([periodData, recentSubmitLogs, platformPeriodData, isLogin], () => {
@@ -855,10 +902,15 @@ const getTrend = (curr: number, prev: number): string => {
 };
 
 onMounted(() => {
+  window.addEventListener("storage", handleSpiderRefreshDone);
   getHeatmapData();
   getPeriodData();
   getWeeklySubmitLogs();
   getAiSummary();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("storage", handleSpiderRefreshDone);
 });
 </script>
 

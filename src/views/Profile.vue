@@ -717,6 +717,7 @@ const detailModal = ref({
     pageSize: 12,
 });
 const platformRefreshCooldowns = ref<Record<string, number>>({});
+const snapshotSavePaused = ref(false);
 let spiderJobTimer: number | undefined;
 let refreshCooldownTimer: number | undefined;
 let detailResizeTimer: number | undefined;
@@ -944,6 +945,7 @@ const saveAchievementSnapshot = () => {
     const userId = Number(user.value.userId || 0);
     if (!userId || achievements.value.length === 0) return;
     if (!isSelfProfile.value && currentRoleId.value !== 1 && currentRoleId.value !== 2) return;
+    if (snapshotSavePaused.value || ["queued", "running"].includes(activeSpiderJob.value?.status || "")) return;
     const sourceHash = achievementSnapshotHash.value;
     if (!sourceHash || sourceHash === lastAchievementSnapshotHash) return;
     lastAchievementSnapshotHash = sourceHash;
@@ -1904,12 +1906,15 @@ const getData = async () => {
 }
 
 const updateLog = async (platform = "") => {
+    snapshotSavePaused.value = true;
     const response = await API.core.spider.update(user.value.userId, platform);
     Toast.stdResponse(response);
     const jobId = Number(response.data?.jobId || 0);
     if (response.success && jobId > 0) {
         if (platform) startPlatformRefreshCooldown(platform);
         await pollSpiderJob(jobId);
+    } else {
+        snapshotSavePaused.value = false;
     }
 }
 
@@ -1977,11 +1982,23 @@ const pollSpiderJob = async (jobId: number) => {
         if (["success", "failed"].includes(activeSpiderJob.value.status)) {
             stopSpiderJobPolling();
             await getSyncStatus();
-            await getData();
-            await getSubmitInfo();
             if (activeSpiderJob.value.status === "success") {
+                await getData();
+                await getSubmitInfo();
+                snapshotSavePaused.value = false;
+                lastAchievementSnapshotHash = "";
+                saveAchievementSnapshot();
+                window.localStorage.setItem("wust-spider-refresh-done", JSON.stringify({
+                    userId: Number(user.value.userId || 0),
+                    platform: activeSpiderJob.value.currentPlatform || "",
+                    jobId,
+                    finishedAt: Date.now(),
+                }));
                 Toast.success("OJ 数据更新完成");
             } else {
+                snapshotSavePaused.value = false;
+                await getData();
+                await getSubmitInfo();
                 Toast.error(activeSpiderJob.value.error || "OJ 数据更新失败");
             }
         }
