@@ -515,6 +515,36 @@
               <!-- <div v-for="item in analyse" v-html="item" class="analyseItem"></div> -->
             </div>
           </div>
+          <div class="section-secondary update-home-section">
+            <div class="section-header">
+              <div class="header-title">
+                <span class="title-icon">
+                  <font-awesome-icon icon="fa-solid fa-code-branch" />
+                </span>
+                <span class="title-text">最近更新</span>
+              </div>
+              <span class="update-version">v1.1.5</span>
+            </div>
+
+            <div class="section-secondary-container update-feed">
+              <div
+                class="update-item"
+                v-for="item in recentUpdates"
+                :key="item.title"
+              >
+                <div class="update-marker" :class="`tone-${item.tone}`">
+                  {{ item.type }}
+                </div>
+                <div class="update-content">
+                  <div class="update-title-row">
+                    <strong>{{ item.title }}</strong>
+                    <span>{{ item.date }}</span>
+                  </div>
+                  <p>{{ item.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -556,6 +586,37 @@ interface HeatmapData {
 
 const analyse = ref<string[]>([]);
 const aiSummary = ref<string[]>([]);
+
+const recentUpdates = [
+  {
+    type: "修复",
+    tone: "fix",
+    title: "Codeforces 抓取保护",
+    description: "降低 CF 刷新频率，避免接口限流时用不完整数据覆盖旧统计。",
+    date: "06/11",
+  },
+  {
+    type: "优化",
+    tone: "improve",
+    title: "统计明细体验",
+    description: "调整平台明细弹窗尺寸和表格横向滚动，移动端查看更稳。",
+    date: "06/10",
+  },
+  {
+    type: "修复",
+    tone: "fix",
+    title: "团队统计口径",
+    description: "团队总 AC 与提交改为成员数据累加，修复本周看板异常值。",
+    date: "06/09",
+  },
+  {
+    type: "新增",
+    tone: "new",
+    title: "成就与消息增强",
+    description: "补充成就永久解锁、系统消息置顶和团队管理操作。",
+    date: "06/08",
+  },
+];
 
 const submitData = ref<HeatmapData[]>([]);
 const acData = ref<HeatmapData[]>([]);
@@ -1413,6 +1474,89 @@ onBeforeUnmount(() => {
   font-size: var(--text-sm);
 }
 
+.update-version {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--divider-color);
+  border-radius: 8px;
+  color: var(--active-color);
+  font-size: var(--text-xs);
+  font-weight: 800;
+}
+
+.update-feed {
+  gap: 0;
+  padding-block: 4px;
+}
+
+.update-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--divider-color);
+}
+
+.update-item:last-child {
+  border-bottom: none;
+}
+
+.update-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 28px;
+  border: 1px solid var(--divider-color);
+  border-radius: 10px;
+  color: var(--text-default-color);
+  background-color: var(--section-background-color);
+  font-size: var(--text-xs);
+  font-weight: 900;
+}
+
+.update-marker.tone-fix {
+  color: #ff8585;
+}
+
+.update-marker.tone-improve {
+  color: var(--neon-cyan);
+}
+
+.update-marker.tone-new {
+  color: var(--active-color);
+}
+
+.update-content {
+  min-width: 0;
+}
+
+.update-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.update-title-row strong {
+  color: var(--text-default-color);
+  font-size: var(--text-sm);
+  font-weight: 900;
+}
+
+.update-title-row span {
+  flex-shrink: 0;
+  color: var(--text-light-color);
+  font-size: var(--text-xs);
+}
+
+.update-content p {
+  margin: 5px 0 0;
+  color: var(--text-light-color);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
 .analyseItem {
   font-size: var(--text-base);
 }
@@ -1512,6 +1656,12 @@ onBeforeUnmount(() => {
 
   .weekly-scenes {
     grid-template-columns: 1fr;
+  }
+
+  .update-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .ranking-card {
