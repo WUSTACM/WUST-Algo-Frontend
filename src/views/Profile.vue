@@ -1,7 +1,7 @@
 <template>
     <BaseLayout>
         <Confirm ref="confirmRef" :message="'确定要退出登录吗？'" @confirm="logout" />
-        <Confirm ref="confirmUpdateRef" :title="'更新OJ数据'" :message="'确定要更新OJ数据吗？这可能需要一些时间。'" @confirm="doUpdateLog" />
+        <Confirm ref="confirmUpdateRef" :title="'更新OJ数据'" :message="updateConfirmMessage" @confirm="doUpdateLog" />
         <div class="container">
             <div class="top">
                 <div class="left" style="position: relative;">
@@ -317,6 +317,9 @@
                                     <div>
                                         <div class="sync-platform">{{ platformLabel(item.platform) }}</div>
                                         <div class="sync-meta">@{{ item.username }} · {{ formatSyncTime(item.lastSuccessAt) }}</div>
+                                        <div v-if="isCodeforcesPlatform(item.platform)" class="cf-refresh-hint">
+                                            Codeforces 官方 API 限流严格，30 分钟内不建议重复刷新；全量更新会自动跳过近期已抓取的 CF 数据。
+                                        </div>
                                         <div v-if="item.lastError && item.canViewError" class="sync-error">{{ item.lastError }}</div>
                                     </div>
                                     <div class="sync-side">
@@ -342,6 +345,7 @@
                                     <button
                                         v-if="isSelfProfile"
                                             class="sync-refresh-btn"
+                                            :title="isCodeforcesPlatform(item.platform) ? 'Codeforces 官方 API 限流严格，请不要频繁刷新。' : ''"
                                             :disabled="isRefreshingPlatform(item.platform) || isPlatformRefreshCoolingDown(item.platform)"
                                             @click="updatePlatformLog(item.platform)"
                                         >
@@ -680,6 +684,13 @@ const user = ref<User>({
 
 const confirmRef = ref()
 const confirmUpdateRef = ref()
+const updateConfirmMessage = computed(() => {
+    const hasCodeforces = Boolean(user.value.links.CodeForces || user.value.spiders?.some((item) => item.platform === "CodeForces"));
+    if (!hasCodeforces) {
+        return "确定要更新 OJ 数据吗？这可能需要一些时间。";
+    }
+    return "确定要更新 OJ 数据吗？Codeforces 官方 API 限流严格，近期已抓取的 CF 数据会自动跳过，请不要频繁刷新 CF。";
+})
 const loadingProfile = ref(true)
 const loadingStats = ref(true)
 const loadingHeatmap = ref(true)
@@ -750,6 +761,8 @@ const ojPlatforms = [
     { key: 'CodeForces' as const, label: 'CodeForces' },
     { key: 'QOJ' as const, label: 'QOJ' },
 ]
+const codeforcesRefreshCooldownMs = 30 * 60 * 1000;
+const defaultPlatformRefreshCooldownMs = 60 * 1000;
 const ojPlatformOrder = ojPlatforms.map((item) => item.key as string);
 const platformOrderIndex = (platform: string) => {
     const index = ojPlatformOrder.indexOf(platform);
@@ -1923,6 +1936,8 @@ const updatePlatformLog = async (platform: string) => {
     await updateLog(platform);
 }
 
+const isCodeforcesPlatform = (platform: string) => platform === "CodeForces";
+
 const isRefreshingPlatform = (platform: string) => {
     if (!activeSpiderJob.value || !["queued", "running"].includes(activeSpiderJob.value.status)) return false;
     return !activeSpiderJob.value.currentPlatform || activeSpiderJob.value.currentPlatform === platform;
@@ -1938,13 +1953,22 @@ const isPlatformRefreshCoolingDown = (platform: string) => platformRefreshCooldo
 const platformRefreshButtonLabel = (platform: string) => {
     if (isRefreshingPlatform(platform)) return "刷新中";
     const cooldown = platformRefreshCooldown(platform);
-    return cooldown > 0 ? `${cooldown}s` : "刷新";
+    return cooldown > 0 ? formatRefreshCooldown(cooldown) : "刷新";
+}
+
+const platformRefreshCooldownMs = (platform: string) => {
+    return isCodeforcesPlatform(platform) ? codeforcesRefreshCooldownMs : defaultPlatformRefreshCooldownMs;
+}
+
+const formatRefreshCooldown = (seconds: number) => {
+    if (seconds >= 60) return `${Math.ceil(seconds / 60)}m`;
+    return `${seconds}s`;
 }
 
 const startPlatformRefreshCooldown = (platform: string) => {
     platformRefreshCooldowns.value = {
         ...platformRefreshCooldowns.value,
-        [platform]: Date.now() + 60_000,
+        [platform]: Date.now() + platformRefreshCooldownMs(platform),
     };
     startRefreshCooldownTimer();
 }
@@ -3134,6 +3158,15 @@ onBeforeUnmount(() => {
     margin-top: 4px;
     color: #ff8585;
     font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+}
+
+.cf-refresh-hint {
+    margin-top: 4px;
+    max-width: 520px;
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+    line-height: 1.5;
     overflow-wrap: anywhere;
 }
 
