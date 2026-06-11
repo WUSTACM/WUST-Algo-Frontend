@@ -169,3 +169,144 @@ select {
   font-size: var(--text-xl);
   font-weight: 900;
 }
+
+/* Card containment contract:
+   normal cards/panels grow with content; wide data widgets scroll inside themselves. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+.ds-card,
+.section-secondary,
+.section-secondary-container,
+.stat-card,
+.weekly-card,
+.weekly-metric,
+.weekly-scene,
+.weekly-advice,
+.update-item,
+.update-content,
+.bulletin-card,
+.conversation-item,
+.thread-panel,
+.system-message-panel,
+.message-list,
+.message-bubble,
+.bubble-content,
+.team-card,
+.team-panel,
+.team-form,
+.team-search,
+.team-member,
+.team-edit-member,
+.team-dashboard,
+.portrait-card,
+.spider-job-card,
+.stat-scope-card,
+.achievement-card,
+.achievement-detail-card,
+.ops-card,
+.service-card,
+.operation-card,
+.job-card,
+.audit-card,
+.ranking-table-wrapper,
+.detail-modal,
+.detail-table-wrap,
+.table-scroll {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ds-card,
+.section-secondary,
+.section-secondary-container,
+.stat-card,
+.weekly-card,
+.weekly-metric,
+.weekly-scene,
+.weekly-advice,
+.update-item,
+.bulletin-card,
+.conversation-item,
+.team-card,
+.team-panel,
+.portrait-card,
+.spider-job-card,
+.stat-scope-card,
+.achievement-card,
+.achievement-detail-card,
+.ops-card,
+.service-card,
+.operation-card,
+.job-card,
+.audit-card {
+  height: auto;
+}
+
+.section-secondary-container > *,
+.stat-card > *,
+.weekly-card > *,
+.update-item > *,
+.bulletin-card > *,
+.conversation-item > *,
+.thread-panel > *,
+.system-message-panel > *,
+.message-list > *,
+.team-card > *,
+.team-panel > *,
+.portrait-card > *,
+.spider-job-card > *,
+.stat-scope-card > *,
+.achievement-card > *,
+.achievement-detail-card > *,
+.ops-card > *,
+.service-card > *,
+.operation-card > *,
+.job-card > *,
+.audit-card > * {
+  min-width: 0;
+}
+
+.weekly-card,
+.weekly-metric,
+.weekly-scene,
+.weekly-advice,
+.update-content,
+.bulletin-card,
+.message-bubble,
+.bubble-content,
+.team-card,
+.team-panel,
+.team-form,
+.team-search,
+.team-member,
+.team-edit-member,
+.team-dashboard,
+.portrait-card,
+.spider-job-card,
+.stat-scope-card,
+.achievement-card,
+.achievement-detail-card,
+.operation-card,
+.job-card,
+.audit-card {
+  overflow-wrap: anywhere;
+}
+
+.table-scroll,
+.ranking-table-wrapper,
+.detail-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+img,
+svg,
+canvas,
+video {
+  max-width: 100%;
+}

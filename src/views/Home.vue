@@ -591,6 +591,13 @@ const recentUpdates = [
   {
     type: "修复",
     tone: "fix",
+    title: "分屏布局越界修复",
+    description: "普通卡片随内容增高，热力图和长内容在卡片内部滚动，分屏时不再压到右侧模块。",
+    date: "06/11",
+  },
+  {
+    type: "修复",
+    tone: "fix",
     title: "Codeforces 抓取保护",
     description: "降低 CF 刷新频率，避免接口限流时用不完整数据覆盖旧统计。",
     date: "06/11",
@@ -608,13 +615,6 @@ const recentUpdates = [
     title: "团队统计口径",
     description: "团队总 AC 与提交改为成员数据累加，修复本周看板异常值。",
     date: "06/09",
-  },
-  {
-    type: "新增",
-    tone: "new",
-    title: "成就与消息增强",
-    description: "补充成就永久解锁、系统消息置顶和团队管理操作。",
-    date: "06/08",
   },
 ];
 
