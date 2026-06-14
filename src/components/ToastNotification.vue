@@ -1,12 +1,7 @@
 <template>
   <div class="toast-container">
     <transition-group name="toast" tag="div">
-      <div 
-        v-for="toast in toasts" 
-        :key="toast.id" 
-        class="toast" 
-        :class="toast.type"
-      >
+      <div v-for="toast in toasts" :key="toast.id" class="toast" :class="toast.type">
         <div class="toast-content">
           {{ toast.message }}
         </div>
@@ -16,18 +11,18 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from "vue"
 
 const toasts = ref([])
 
-const showToast = async (message, type = 'info', duration = 5000) => {
+const showToast = async (message, type = "info", duration = 5000) => {
   const id = Date.now()
   const toast = {
     id,
     message,
     type,
     duration,
-    timer: null
+    timer: null,
   }
 
   toasts.value.push(toast)
@@ -36,7 +31,7 @@ const showToast = async (message, type = 'info', duration = 5000) => {
   await nextTick()
 
   // 找到对应的toast并设置定时器
-  const index = toasts.value.findIndex(t => t.id === id)
+  const index = toasts.value.findIndex((t) => t.id === id)
   if (index !== -1) {
     // 设置定时器，duration + 300ms（滑入动画时间）
     toasts.value[index].timer = setTimeout(() => {
@@ -46,7 +41,7 @@ const showToast = async (message, type = 'info', duration = 5000) => {
 }
 
 const removeToast = (id) => {
-  const index = toasts.value.findIndex(t => t.id === id)
+  const index = toasts.value.findIndex((t) => t.id === id)
   if (index !== -1) {
     if (toasts.value[index].timer) {
       clearTimeout(toasts.value[index].timer)
@@ -62,16 +57,16 @@ const handleToastEvent = (event) => {
 }
 
 onMounted(() => {
-  window.addEventListener('show-toast', handleToastEvent)
+  window.addEventListener("show-toast", handleToastEvent)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('show-toast', handleToastEvent)
+  window.removeEventListener("show-toast", handleToastEvent)
 })
 
 // 暴露方法供全局调用
 defineExpose({
-  showToast
+  showToast,
 })
 </script>
 

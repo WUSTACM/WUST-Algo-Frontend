@@ -1,254 +1,286 @@
 /* 默认主题 = 专业（白底克莱因蓝） */
 :root {
-    --background-color-1: #FFFFFF;
-    --background-color-2: #FCFCFD;
-    --background-color-3: #F1F2F5;
-    --background-header: linear-gradient(45deg, rgba(0, 112, 243, 0.06) 0%, #ffffff 100px, #ffffff calc(100% - 100px), rgba(0, 112, 243, 0.06) 100%);
-    --background-color-header: #ffffff;
-    --background-color-content: #ffffff;
-    --divider-color: #E5E7EB;
-    --section-background-color: rgba(0, 0, 0, 0.025);
-    --section-active-color: #0070F3;
-    --section-default-color: #6B7280;
+  --background-color-1: #ffffff;
+  --background-color-2: #fcfcfd;
+  --background-color-3: #f1f2f5;
+  --background-header: linear-gradient(
+    45deg,
+    rgba(0, 112, 243, 0.06) 0%,
+    #ffffff 100px,
+    #ffffff calc(100% - 100px),
+    rgba(0, 112, 243, 0.06) 100%
+  );
+  --background-color-header: #ffffff;
+  --background-color-content: #ffffff;
+  --divider-color: #e5e7eb;
+  --section-background-color: rgba(0, 0, 0, 0.025);
+  --section-active-color: #0070f3;
+  --section-default-color: #6b7280;
 
-    --text-default-color: #111827;
-    --text-light-color: #6B7280;
-    --text-reverse-color: #ffffff;
+  --text-default-color: #111827;
+  --text-light-color: #6b7280;
+  --text-reverse-color: #ffffff;
 
-    --text-link-color: #0070F3;
-    --input-active-color: #0070F3;
+  --text-link-color: #0070f3;
+  --input-active-color: #0070f3;
 
-    --card-icon-background-color: #E5E7EB;
+  --card-icon-background-color: #e5e7eb;
 
-    --neon-cyan: #0070F3;
+  --neon-cyan: #0070f3;
 
-    --gradient-cyber: linear-gradient(135deg, #0070F3 0%, #7928CA 50%, #0070F3 100%);
+  --gradient-cyber: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #0070f3 100%);
 
-    --text-secondary-color: var(--text-light-color);
-    --border-color: var(--divider-color);
-    --control-radius: 8px;
-    --control-height: 32px;
-    --control-padding-x: 12px;
-    --control-padding-y: 6px;
+  --text-secondary-color: var(--text-light-color);
+  --border-color: var(--divider-color);
+  --control-radius: 8px;
+  --control-height: 32px;
+  --control-padding-x: 12px;
+  --control-padding-y: 6px;
 }
 
 /* 极客 — Nord 暗色主题 */
 [data-theme="nordic"] {
-    --background-color-1: #2E3440;
-    --background-color-2: #3B4252;
-    --background-color-3: #434C5E;
-    --background-header: linear-gradient(45deg, rgba(136, 192, 208, 0.1) 0%, #3B4252 100px, #3B4252 calc(100% - 100px), rgba(136, 192, 208, 0.1) 100%);
-    --background-color-header: #3B4252;
-    --background-color-content: #3B4252;
-    --divider-color: #434C5E;
-    --section-background-color: rgba(136, 192, 208, 0.06);
-    --section-active-color: #88C0D0;
-    --section-default-color: #D8DEE9;
+  --background-color-1: #2e3440;
+  --background-color-2: #3b4252;
+  --background-color-3: #434c5e;
+  --background-header: linear-gradient(
+    45deg,
+    rgba(136, 192, 208, 0.1) 0%,
+    #3b4252 100px,
+    #3b4252 calc(100% - 100px),
+    rgba(136, 192, 208, 0.1) 100%
+  );
+  --background-color-header: #3b4252;
+  --background-color-content: #3b4252;
+  --divider-color: #434c5e;
+  --section-background-color: rgba(136, 192, 208, 0.06);
+  --section-active-color: #88c0d0;
+  --section-default-color: #d8dee9;
 
-    --text-default-color: #ECEFF4;
-    --text-light-color: #D8DEE9;
-    --text-reverse-color: #2E3440;
+  --text-default-color: #eceff4;
+  --text-light-color: #d8dee9;
+  --text-reverse-color: #2e3440;
 
-    --text-link-color: #88C0D0;
-    --input-active-color: #88C0D0;
+  --text-link-color: #88c0d0;
+  --input-active-color: #88c0d0;
 
-    --card-icon-background-color: #434C5E;
+  --card-icon-background-color: #434c5e;
 
-    --neon-cyan: #88C0D0;
+  --neon-cyan: #88c0d0;
 
-    --gradient-cyber: linear-gradient(135deg, #88C0D0 0%, #81A1C1 50%, #5E81AC 100%);
+  --gradient-cyber: linear-gradient(135deg, #88c0d0 0%, #81a1c1 50%, #5e81ac 100%);
 }
 
 /* 专业 — GitHub/Vercel 风格 */
 [data-theme="github"] {
-    --background-color-1: #FFFFFF;
-    --background-color-2: #FCFCFD;
-    --background-color-3: #F1F2F5;
-    --background-header: linear-gradient(45deg, rgba(0, 112, 243, 0.06) 0%, #ffffff 100px, #ffffff calc(100% - 100px), rgba(0, 112, 243, 0.06) 100%);
-    --background-color-header: #ffffff;
-    --background-color-content: #ffffff;
-    --divider-color: #E5E7EB;
-    --section-background-color: rgba(0, 0, 0, 0.025);
-    --section-active-color: #0070F3;
-    --section-default-color: #6B7280;
+  --background-color-1: #ffffff;
+  --background-color-2: #fcfcfd;
+  --background-color-3: #f1f2f5;
+  --background-header: linear-gradient(
+    45deg,
+    rgba(0, 112, 243, 0.06) 0%,
+    #ffffff 100px,
+    #ffffff calc(100% - 100px),
+    rgba(0, 112, 243, 0.06) 100%
+  );
+  --background-color-header: #ffffff;
+  --background-color-content: #ffffff;
+  --divider-color: #e5e7eb;
+  --section-background-color: rgba(0, 0, 0, 0.025);
+  --section-active-color: #0070f3;
+  --section-default-color: #6b7280;
 
-    --text-default-color: #111827;
-    --text-light-color: #6B7280;
-    --text-reverse-color: #ffffff;
+  --text-default-color: #111827;
+  --text-light-color: #6b7280;
+  --text-reverse-color: #ffffff;
 
-    --text-link-color: #0070F3;
-    --input-active-color: #0070F3;
+  --text-link-color: #0070f3;
+  --input-active-color: #0070f3;
 
-    --card-icon-background-color: #E5E7EB;
+  --card-icon-background-color: #e5e7eb;
 
-    --neon-cyan: #0070F3;
+  --neon-cyan: #0070f3;
 
-    --gradient-cyber: linear-gradient(135deg, #0070F3 0%, #7928CA 50%, #0070F3 100%);
+  --gradient-cyber: linear-gradient(135deg, #0070f3 0%, #7928ca 50%, #0070f3 100%);
 }
 
 /* 樱花粉 — 柔和暖色主题 */
 [data-theme="sakura"] {
-    --background-color-1: #FFF8F8;
-    --background-color-2: #FFF0F3;
-    --background-color-3: #FFE4E8;
-    --background-header: linear-gradient(45deg, rgba(255, 107, 138, 0.08) 0%, #FFF0F3 100px, #FFF0F3 calc(100% - 100px), rgba(255, 107, 138, 0.08) 100%);
-    --background-color-header: #FFF0F3;
-    --background-color-content: #FFF8F8;
-    --divider-color: #FFDCE5;
-    --section-background-color: rgba(255, 107, 138, 0.05);
-    --section-active-color: #FF6B8A;
-    --section-default-color: #9B7B84;
+  --background-color-1: #fff8f8;
+  --background-color-2: #fff0f3;
+  --background-color-3: #ffe4e8;
+  --background-header: linear-gradient(
+    45deg,
+    rgba(255, 107, 138, 0.08) 0%,
+    #fff0f3 100px,
+    #fff0f3 calc(100% - 100px),
+    rgba(255, 107, 138, 0.08) 100%
+  );
+  --background-color-header: #fff0f3;
+  --background-color-content: #fff8f8;
+  --divider-color: #ffdce5;
+  --section-background-color: rgba(255, 107, 138, 0.05);
+  --section-active-color: #ff6b8a;
+  --section-default-color: #9b7b84;
 
-    --text-default-color: #2D1B24;
-    --text-light-color: #8B6B78;
-    --text-reverse-color: #ffffff;
+  --text-default-color: #2d1b24;
+  --text-light-color: #8b6b78;
+  --text-reverse-color: #ffffff;
 
-    --text-link-color: #FF6B8A;
-    --input-active-color: #FF6B8A;
+  --text-link-color: #ff6b8a;
+  --input-active-color: #ff6b8a;
 
-    --card-icon-background-color: #FFE4E8;
+  --card-icon-background-color: #ffe4e8;
 
-    --neon-cyan: #FF6B8A;
+  --neon-cyan: #ff6b8a;
 
-    --gradient-cyber: linear-gradient(135deg, #FF85A2 0%, #FF6B8A 50%, #FF4070 100%);
+  --gradient-cyber: linear-gradient(135deg, #ff85a2 0%, #ff6b8a 50%, #ff4070 100%);
 }
 
 /* 锡院紫 — 清华紫浅色，参考 Gemini 对比度建议 */
 [data-theme="wxu-purple"] {
-    --background-color-1: #FFFFFF;
-    --background-color-2: #FDFCFF;
-    --background-color-3: #F3E8FF;
-    --background-header: linear-gradient(45deg, rgba(121, 40, 202, 0.08) 0%, #ffffff 100px, #ffffff calc(100% - 100px), rgba(121, 40, 202, 0.08) 100%);
-    --background-color-header: #ffffff;
-    --background-color-content: #ffffff;
-    --divider-color: #E9D5FF;
-    --section-background-color: rgba(121, 40, 202, 0.04);
-    --section-active-color: #7928CA;
-    --section-default-color: #6B7280;
+  --background-color-1: #ffffff;
+  --background-color-2: #fdfcff;
+  --background-color-3: #f3e8ff;
+  --background-header: linear-gradient(
+    45deg,
+    rgba(121, 40, 202, 0.08) 0%,
+    #ffffff 100px,
+    #ffffff calc(100% - 100px),
+    rgba(121, 40, 202, 0.08) 100%
+  );
+  --background-color-header: #ffffff;
+  --background-color-content: #ffffff;
+  --divider-color: #e9d5ff;
+  --section-background-color: rgba(121, 40, 202, 0.04);
+  --section-active-color: #7928ca;
+  --section-default-color: #6b7280;
 
-    --text-default-color: #1E1B4B;
-    --text-light-color: #6B5B8A;
-    --text-reverse-color: #ffffff;
+  --text-default-color: #1e1b4b;
+  --text-light-color: #6b5b8a;
+  --text-reverse-color: #ffffff;
 
-    --text-link-color: #7928CA;
-    --input-active-color: #7928CA;
+  --text-link-color: #7928ca;
+  --input-active-color: #7928ca;
 
-    --card-icon-background-color: #E9D5FF;
+  --card-icon-background-color: #e9d5ff;
 
-    --neon-cyan: #7928CA;
+  --neon-cyan: #7928ca;
 
-    --gradient-cyber: linear-gradient(135deg, #8B5CF6 0%, #7928CA 50%, #A78BFA 100%);
+  --gradient-cyber: linear-gradient(135deg, #8b5cf6 0%, #7928ca 50%, #a78bfa 100%);
 }
 
 body {
-    font-family: 'Jetbrains Mono', 'Maple Mono CN', monospace;
-    background-color: var(--background-color-1);
-    color: var(--text-default-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: "Jetbrains Mono", "Maple Mono CN", monospace;
+  background-color: var(--background-color-1);
+  color: var(--text-default-color);
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 button,
 input,
 textarea,
 select {
-    font-family: inherit;
+  font-family: inherit;
 }
 
 button {
-    min-height: var(--control-height);
-    padding: var(--control-padding-y) var(--control-padding-x);
-    border: 1px solid var(--divider-color);
-    border-radius: var(--control-radius);
-    color: var(--text-secondary-color);
-    background-color: var(--background-color-2);
-    font-size: var(--text-sm);
-    font-weight: 800;
-    line-height: 1;
-    cursor: pointer;
-    transition:
-        background-color 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease,
-        opacity 0.2s ease;
+  min-height: var(--control-height);
+  padding: var(--control-padding-y) var(--control-padding-x);
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  color: var(--text-secondary-color);
+  background-color: var(--background-color-2);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 button:hover:not(:disabled) {
-    color: white;
-    border-color: var(--neon-cyan);
-    background-color: var(--neon-cyan);
+  color: white;
+  border-color: var(--neon-cyan);
+  background-color: var(--neon-cyan);
 }
 
 button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 input,
 textarea,
 select {
-    border: 1px solid var(--divider-color);
-    border-radius: var(--control-radius);
-    color: var(--text-default-color);
-    background-color: var(--background-color-1);
-    font-size: var(--text-base);
-    outline: none;
-    transition:
-        border-color 0.2s ease,
-        background-color 0.2s ease,
-        color 0.2s ease;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  color: var(--text-default-color);
+  background-color: var(--background-color-1);
+  font-size: var(--text-base);
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
-    border-color: var(--input-active-color);
+  border-color: var(--input-active-color);
 }
 
 a {
-    color: var(--text-link-color);
+  color: var(--text-link-color);
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: var(--text-base);
-    border: 1px solid var(--divider-color);
-    background-color: var(--background-color-1);
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-base);
+  border: 1px solid var(--divider-color);
+  background-color: var(--background-color-1);
 }
 
 table th,
 table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid var(--divider-color);
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--divider-color);
 }
 
 table td a {
-    color: var(--text-link-color);
+  color: var(--text-link-color);
 }
 
 table th {
-    background-color: var(--background-color-1);
+  background-color: var(--background-color-1);
 }
 
 table tr:nth-child(even) {
-    background-color: var(--background-color-2);
+  background-color: var(--background-color-2);
 }
 
 table tr:hover {
-    background-color: var(--background-color-3);
+  background-color: var(--background-color-3);
 }
 
 @media (max-width: 768px) {
-    .terminal-content {
-        padding: 12px;
-    }
+  .terminal-content {
+    padding: 12px;
+  }
 
-    table th {
-        padding: 4px;
-    }
+  table th {
+    padding: 4px;
+  }
 
-    table td {
-        padding: 4px;
-    }
+  table td {
+    padding: 4px;
+  }
 }

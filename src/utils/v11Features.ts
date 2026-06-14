@@ -2,163 +2,155 @@ import type {
   CoreStatisticPeriodData,
   CoreStatisticPlatformPeriodItem,
   CoreSubmitLogGetByIdData,
-} from "@/utils/api";
+} from "@/utils/api"
 
 export interface AchievementBadge {
-  key: string;
-  label: string;
-  description: string;
-  hiddenDescription?: string;
-  condition: string;
-  icon: string;
-  unlocked: boolean;
-  progress: number;
-  tone: "cyan" | "blue" | "gold" | "red" | "muted";
-  rarity?: "common" | "rare" | "epic" | "legendary" | "pain" | "hidden" | "fun" | "server";
-  hidden?: boolean;
-  permanent?: boolean;
+  key: string
+  label: string
+  description: string
+  hiddenDescription?: string
+  condition: string
+  icon: string
+  unlocked: boolean
+  progress: number
+  tone: "cyan" | "blue" | "gold" | "red" | "muted"
+  rarity?: "common" | "rare" | "epic" | "legendary" | "pain" | "hidden" | "fun" | "server"
+  hidden?: boolean
+  permanent?: boolean
 }
 
 export interface AchievementTeamContext {
-  currentUserId: number;
-  members: Pick<TeamDashboardMember, "userId" | "acTotal" | "submitTotal" | "waTotal">[];
-  nightAcPercentile?: number;
-  passwordChangeCount?: number;
-  totalSubmitPercentile?: number;
-  acceptRatePercentile?: number;
-  medianSubmit?: number;
-  medianAcceptRate?: number;
-  uniqueAcMinute?: boolean;
-  siteDailyWaLeader?: boolean;
-  todaySubmitLeader?: boolean;
-  todaySubmit?: number;
-  todayAcRatePercentile?: number;
-  offPeakPercentile?: number;
+  currentUserId: number
+  members: Pick<TeamDashboardMember, "userId" | "acTotal" | "submitTotal" | "waTotal">[]
+  nightAcPercentile?: number
+  passwordChangeCount?: number
+  totalSubmitPercentile?: number
+  acceptRatePercentile?: number
+  medianSubmit?: number
+  medianAcceptRate?: number
+  uniqueAcMinute?: boolean
+  siteDailyWaLeader?: boolean
+  todaySubmitLeader?: boolean
+  todaySubmit?: number
+  todayAcRatePercentile?: number
+  offPeakPercentile?: number
 }
 
 export interface WeeklyReportMetric {
-  label: string;
-  value: string;
-  hint: string;
+  label: string
+  value: string
+  hint: string
 }
 
 export interface WeeklyReportScene {
-  title: string;
-  text: string;
+  title: string
+  text: string
 }
 
 export interface WeeklyReport {
-  title: string;
-  summary: string;
-  advice: string;
-  metrics: WeeklyReportMetric[];
-  scenes: WeeklyReportScene[];
-  tip: string;
+  title: string
+  summary: string
+  advice: string
+  metrics: WeeklyReportMetric[]
+  scenes: WeeklyReportScene[]
+  tip: string
 }
 
 export interface TeamDashboardMember {
-  userId: number;
-  name: string;
-  username: string;
-  avatar: string;
-  acTotal: number;
-  submitTotal: number;
-  waTotal: number;
-  weekAc: number;
-  weekSubmit: number;
-  monthAc: number;
-  monthSubmit: number;
+  userId: number
+  name: string
+  username: string
+  avatar: string
+  acTotal: number
+  submitTotal: number
+  waTotal: number
+  weekAc: number
+  weekSubmit: number
+  monthAc: number
+  monthSubmit: number
 }
 
 export interface TeamDashboard {
-  weekAc: number;
-  weekSubmit: number;
-  monthAc: number;
-  activeMembers: number;
-  leader: TeamDashboardMember | null;
-  members: TeamDashboardMember[];
-  summary: string;
+  weekAc: number
+  weekSubmit: number
+  monthAc: number
+  activeMembers: number
+  leader: TeamDashboardMember | null
+  members: TeamDashboardMember[]
+  summary: string
 }
 
 const toNumber = (value: unknown): number => {
-  const parsed = Number(value || 0);
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+  const parsed = Number(value || 0)
+  return Number.isFinite(parsed) ? parsed : 0
+}
 
-const nowSeconds = () => Math.floor(Date.now() / 1000);
+const nowSeconds = () => Math.floor(Date.now() / 1000)
 
 const isAccepted = (status: string): boolean => {
-  const normalized = status.trim().toLowerCase();
+  const normalized = status.trim().toLowerCase()
   return (
     normalized === "ac" ||
     normalized.includes("accepted") ||
     normalized.includes("答案正确") ||
     normalized.includes("通过")
-  );
-};
+  )
+}
 
 const isCompileError = (status: string): boolean => {
-  const normalized = status.trim().toLowerCase();
+  const normalized = status.trim().toLowerCase()
   return (
     normalized === "ce" ||
     normalized.includes("compile") ||
     normalized.includes("compilation") ||
     normalized.includes("编译")
-  );
-};
+  )
+}
 
 const isWrongAnswer = (status: string): boolean => {
-  const normalized = status.trim().toLowerCase();
+  const normalized = status.trim().toLowerCase()
   return (
-    normalized === "wa" ||
-    normalized.includes("wrong answer") ||
-    normalized.includes("答案错误")
-  );
-};
+    normalized === "wa" || normalized.includes("wrong answer") || normalized.includes("答案错误")
+  )
+}
 
 const problemKey = (log: CoreSubmitLogGetByIdData): string => {
-  const platform = String(log.platform || "Unknown").trim();
-  const problem = String(log.problem || "").trim();
-  const submitId = String(log.submitId || log.id || "").trim();
-  return `${platform}:${problem || submitId}`;
-};
-
-const logsInDays = (logs: CoreSubmitLogGetByIdData[], days: number) => {
-  const start = nowSeconds() - days * 86400;
-  return logs.filter((log) => toNumber(log.time) >= start);
-};
+  const platform = String(log.platform || "Unknown").trim()
+  const problem = String(log.problem || "").trim()
+  const submitId = String(log.submitId || log.id || "").trim()
+  return `${platform}:${problem || submitId}`
+}
 
 const logsBetween = (logs: CoreSubmitLogGetByIdData[], start: number, end: number) => {
   return logs.filter((log) => {
-    const time = toNumber(log.time);
-    return time >= start && time < end;
-  });
-};
+    const time = toNumber(log.time)
+    return time >= start && time < end
+  })
+}
 
 const uniqueAcCount = (logs: CoreSubmitLogGetByIdData[]): number => {
-  const accepted = new Set<string>();
+  const accepted = new Set<string>()
   logs.forEach((log) => {
     if (isAccepted(log.status)) {
-      accepted.add(problemKey(log));
+      accepted.add(problemKey(log))
     }
-  });
-  return accepted.size;
-};
+  })
+  return accepted.size
+}
 
 const activeDayCount = (logs: CoreSubmitLogGetByIdData[]): number => {
-  return new Set(
-    logs.map((log) => new Date(toNumber(log.time) * 1000).toISOString().slice(0, 10)),
-  ).size;
-};
+  return new Set(logs.map((log) => new Date(toNumber(log.time) * 1000).toISOString().slice(0, 10)))
+    .size
+}
 
 const topPlatform = (logs: CoreSubmitLogGetByIdData[]): string => {
-  const counts = new Map<string, number>();
+  const counts = new Map<string, number>()
   logs.forEach((log) => {
-    const platform = String(log.platform || "未知平台");
-    counts.set(platform, (counts.get(platform) || 0) + 1);
-  });
-  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "暂无平台";
-};
+    const platform = String(log.platform || "未知平台")
+    counts.set(platform, (counts.get(platform) || 0) + 1)
+  })
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "暂无平台"
+}
 
 const platformLabel = (platform: string): string => {
   const labels: Record<string, string> = {
@@ -168,114 +160,113 @@ const platformLabel = (platform: string): string => {
     CodeForces: "CodeForces",
     LeetCode: "LeetCode",
     QOJ: "QOJ",
-  };
-  return labels[platform] || platform || "未知平台";
-};
+  }
+  return labels[platform] || platform || "未知平台"
+}
 
 const formatPlatformList = (platforms: string[]): string => {
-  return platforms.map(platformLabel).join("、");
-};
+  return platforms.map(platformLabel).join("、")
+}
 
 const clampProgress = (value: number, target: number) => {
-  if (target <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((value / target) * 100)));
-};
+  if (target <= 0) return 0
+  return Math.max(0, Math.min(100, Math.round((value / target) * 100)))
+}
 
 const localDateKey = (time: number) => {
-  const date = new Date(time * 1000);
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+  const date = new Date(time * 1000)
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, "0")
+  const day = `${date.getDate()}`.padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
 
-const localMonthKey = (time: number) => localDateKey(time).slice(0, 7);
+const localMonthKey = (time: number) => localDateKey(time).slice(0, 7)
 
 const dayNumberFromKey = (key: string) => {
-  const [year, month, day] = key.split("-").map(Number);
-  return Math.floor(new Date(year || 1970, (month || 1) - 1, day || 1).getTime() / 86400000);
-};
+  const [year, month, day] = key.split("-").map(Number)
+  return Math.floor(new Date(year || 1970, (month || 1) - 1, day || 1).getTime() / 86400000)
+}
 
 const groupLogsByDay = (logs: CoreSubmitLogGetByIdData[]) => {
-  const days = new Map<string, { submit: number; ac: number; wa: number }>();
+  const days = new Map<string, { submit: number; ac: number; wa: number }>()
   logs.forEach((log) => {
-    const key = localDateKey(toNumber(log.time));
-    const current = days.get(key) || { submit: 0, ac: 0, wa: 0 };
-    current.submit += 1;
-    if (isAccepted(log.status)) current.ac += 1;
-    if (isWrongAnswer(log.status)) current.wa += 1;
-    days.set(key, current);
-  });
-  return days;
-};
+    const key = localDateKey(toNumber(log.time))
+    const current = days.get(key) || { submit: 0, ac: 0, wa: 0 }
+    current.submit += 1
+    if (isAccepted(log.status)) current.ac += 1
+    if (isWrongAnswer(log.status)) current.wa += 1
+    days.set(key, current)
+  })
+  return days
+}
 
-const maxDailyValue = (days: Map<string, { submit: number; ac: number; wa: number }>, field: "submit" | "ac" | "wa") => {
-  return Math.max(0, ...[...days.values()].map((item) => item[field]));
-};
+const maxDailyValue = (
+  days: Map<string, { submit: number; ac: number; wa: number }>,
+  field: "submit" | "ac" | "wa",
+) => {
+  return Math.max(0, ...[...days.values()].map((item) => item[field]))
+}
 
 const maxConsecutiveDays = (dayKeys: string[]) => {
-  const numbers = [...new Set(dayKeys.map(dayNumberFromKey))].sort((a, b) => a - b);
-  let best = 0;
-  let current = 0;
-  let previous: number | null = null;
+  const numbers = [...new Set(dayKeys.map(dayNumberFromKey))].sort((a, b) => a - b)
+  let best = 0
+  let current = 0
+  let previous: number | null = null
   numbers.forEach((day) => {
-    current = previous !== null && day === previous + 1 ? current + 1 : 1;
-    best = Math.max(best, current);
-    previous = day;
-  });
-  return best;
-};
+    current = previous !== null && day === previous + 1 ? current + 1 : 1
+    best = Math.max(best, current)
+    previous = day
+  })
+  return best
+}
 
 const hasDailyStreak = (
   days: Map<string, { submit: number; ac: number; wa: number }>,
   count: number,
   predicate: (day: { submit: number; ac: number; wa: number }) => boolean,
 ) => {
-  const matched = [...days.entries()].filter(([, value]) => predicate(value)).map(([key]) => key);
-  return maxConsecutiveDays(matched) >= count;
-};
+  const matched = [...days.entries()].filter(([, value]) => predicate(value)).map(([key]) => key)
+  return maxConsecutiveDays(matched) >= count
+}
 
 const hasGapThenAc = (
   logs: CoreSubmitLogGetByIdData[],
   gapDays: number,
   gapType: "submit" | "ac",
 ) => {
-  const sorted = [...logs].sort((a, b) => toNumber(a.time) - toNumber(b.time));
-  let previousTime: number | null = null;
+  const sorted = [...logs].sort((a, b) => toNumber(a.time) - toNumber(b.time))
+  let previousTime: number | null = null
   for (const log of sorted) {
-    const currentTime = toNumber(log.time);
-    if (isAccepted(log.status) && previousTime !== null && currentTime - previousTime >= gapDays * 86400) {
-      return true;
+    const currentTime = toNumber(log.time)
+    if (
+      isAccepted(log.status) &&
+      previousTime !== null &&
+      currentTime - previousTime >= gapDays * 86400
+    ) {
+      return true
     }
     if (gapType === "submit" || isAccepted(log.status)) {
-      previousTime = currentTime;
+      previousTime = currentTime
     }
   }
-  return false;
-};
+  return false
+}
 
 const hasMonthlyScatteredTraining = (logs: CoreSubmitLogGetByIdData[]) => {
-  const months = new Map<string, string[]>();
+  const months = new Map<string, string[]>()
   logs.forEach((log) => {
-    const month = localMonthKey(toNumber(log.time));
-    const list = months.get(month) || [];
-    list.push(localDateKey(toNumber(log.time)));
-    months.set(month, list);
-  });
+    const month = localMonthKey(toNumber(log.time))
+    const list = months.get(month) || []
+    list.push(localDateKey(toNumber(log.time)))
+    months.set(month, list)
+  })
   for (const dayKeys of months.values()) {
-    const uniqueDays = [...new Set(dayKeys)];
-    if (uniqueDays.length >= 10 && maxConsecutiveDays(uniqueDays) <= 2) return true;
+    const uniqueDays = [...new Set(dayKeys)]
+    if (uniqueDays.length >= 10 && maxConsecutiveDays(uniqueDays) <= 2) return true
   }
-  return false;
-};
-
-const hasAcOnMonthDay = (logs: CoreSubmitLogGetByIdData[], month: number, day: number) => {
-  return logs.some((log) => {
-    if (!isAccepted(log.status)) return false;
-    const date = new Date(toNumber(log.time) * 1000);
-    return date.getMonth() + 1 === month && date.getDate() === day;
-  });
-};
+  return false
+}
 
 const qixiDateByYear: Record<number, string> = {
   2018: "2018-08-17",
@@ -291,211 +282,218 @@ const qixiDateByYear: Record<number, string> = {
   2028: "2028-08-26",
   2029: "2029-08-16",
   2030: "2030-08-05",
-};
+}
 
 const hasThreeLineLoveLetter = (logs: CoreSubmitLogGetByIdData[]) => {
-  const acDates = new Set(logs.filter((log) => isAccepted(log.status)).map((log) => localDateKey(toNumber(log.time))));
-  return Object.entries(qixiDateByYear).some(([year, qixi]) => (
-    acDates.has(`${year}-03-14`) &&
-    acDates.has(`${year}-05-20`) &&
-    acDates.has(qixi)
-  ));
-};
+  const acDates = new Set(
+    logs.filter((log) => isAccepted(log.status)).map((log) => localDateKey(toNumber(log.time))),
+  )
+  return Object.entries(qixiDateByYear).some(
+    ([year, qixi]) =>
+      acDates.has(`${year}-03-14`) && acDates.has(`${year}-05-20`) && acDates.has(qixi),
+  )
+}
 
 const hasNewYearAc = (logs: CoreSubmitLogGetByIdData[]) => {
   return logs.some((log) => {
-    if (!isAccepted(log.status)) return false;
-    const date = new Date(toNumber(log.time) * 1000);
-    return date.getMonth() === 0 && date.getDate() === 1 && date.getHours() === 0;
-  });
-};
+    if (!isAccepted(log.status)) return false
+    const date = new Date(toNumber(log.time) * 1000)
+    return date.getMonth() === 0 && date.getDate() === 1 && date.getHours() === 0
+  })
+}
 
 const groupLogsByProblem = (logs: CoreSubmitLogGetByIdData[]) => {
-  const groups = new Map<string, CoreSubmitLogGetByIdData[]>();
+  const groups = new Map<string, CoreSubmitLogGetByIdData[]>()
   logs.forEach((log) => {
-    const key = problemKey(log);
-    if (!key) return;
-    const list = groups.get(key) || [];
-    list.push(log);
-    groups.set(key, list);
-  });
-  groups.forEach((list) => list.sort((a, b) => toNumber(a.time) - toNumber(b.time)));
-  return groups;
-};
+    const key = problemKey(log)
+    if (!key) return
+    const list = groups.get(key) || []
+    list.push(log)
+    groups.set(key, list)
+  })
+  groups.forEach((list) => list.sort((a, b) => toNumber(a.time) - toNumber(b.time)))
+  return groups
+}
 
 const hasWaThenAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>, minWa: number) => {
   for (const logs of groups.values()) {
-    const firstAcIndex = logs.findIndex((log) => isAccepted(log.status));
-    if (firstAcIndex <= 0) continue;
-    const waBeforeAc = logs.slice(0, firstAcIndex).filter((log) => isWrongAnswer(log.status)).length;
-    if (waBeforeAc >= minWa) return true;
+    const firstAcIndex = logs.findIndex((log) => isAccepted(log.status))
+    if (firstAcIndex <= 0) continue
+    const waBeforeAc = logs.slice(0, firstAcIndex).filter((log) => isWrongAnswer(log.status)).length
+    if (waBeforeAc >= minWa) return true
   }
-  return false;
-};
+  return false
+}
 
-const hasManySubmitsInWindow = (groups: Map<string, CoreSubmitLogGetByIdData[]>, limit: number, seconds: number) => {
+const hasManySubmitsInWindow = (
+  groups: Map<string, CoreSubmitLogGetByIdData[]>,
+  limit: number,
+  seconds: number,
+) => {
   for (const logs of groups.values()) {
     for (let left = 0, right = 0; right < logs.length; right += 1) {
-      const rightLog = logs[right];
-      if (!rightLog) continue;
-      const rightTime = toNumber(rightLog.time);
-      let leftLog = logs[left];
+      const rightLog = logs[right]
+      if (!rightLog) continue
+      const rightTime = toNumber(rightLog.time)
+      let leftLog = logs[left]
       while (leftLog && rightTime - toNumber(leftLog.time) > seconds) {
-        left += 1;
-        leftLog = logs[left];
+        left += 1
+        leftLog = logs[left]
       }
-      if (right - left + 1 >= limit) return true;
+      if (right - left + 1 >= limit) return true
     }
   }
-  return false;
-};
+  return false
+}
 
 const hasLongFightAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>, seconds: number) => {
   for (const logs of groups.values()) {
-    const first = logs[0];
-    const firstAc = logs.find((log) => isAccepted(log.status));
-    if (first && firstAc && toNumber(firstAc.time) - toNumber(first.time) >= seconds) return true;
+    const first = logs[0]
+    const firstAc = logs.find((log) => isAccepted(log.status))
+    if (first && firstAc && toNumber(firstAc.time) - toNumber(first.time) >= seconds) return true
   }
-  return false;
-};
+  return false
+}
 
-const hasFirstWaToFinalAcGap = (groups: Map<string, CoreSubmitLogGetByIdData[]>, seconds: number) => {
+const hasFirstWaToFirstAcGap = (
+  groups: Map<string, CoreSubmitLogGetByIdData[]>,
+  seconds: number,
+) => {
   for (const logs of groups.values()) {
-    const firstWa = logs.find((log) => isWrongAnswer(log.status));
-    const finalAc = [...logs].reverse().find((log) => isAccepted(log.status));
-    if (firstWa && finalAc && toNumber(finalAc.time) > toNumber(firstWa.time) && toNumber(finalAc.time) - toNumber(firstWa.time) >= seconds) {
-      return true;
+    const firstWa = logs.find((log) => isWrongAnswer(log.status))
+    const firstAc = logs.find((log) => isAccepted(log.status))
+    if (
+      firstWa &&
+      firstAc &&
+      toNumber(firstAc.time) > toNumber(firstWa.time) &&
+      toNumber(firstAc.time) - toNumber(firstWa.time) >= seconds
+    ) {
+      return true
     }
   }
-  return false;
-};
-
-const hasFirstWaToFirstAcGap = (groups: Map<string, CoreSubmitLogGetByIdData[]>, seconds: number) => {
-  for (const logs of groups.values()) {
-    const firstWa = logs.find((log) => isWrongAnswer(log.status));
-    const firstAc = logs.find((log) => isAccepted(log.status));
-    if (firstWa && firstAc && toNumber(firstAc.time) > toNumber(firstWa.time) && toNumber(firstAc.time) - toNumber(firstWa.time) >= seconds) {
-      return true;
-    }
-  }
-  return false;
-};
+  return false
+}
 
 const hasFirstTryAc = (groups: Map<string, CoreSubmitLogGetByIdData[]>) => {
   for (const logs of groups.values()) {
-    const first = logs[0];
-    if (first && isAccepted(first.status)) return true;
+    const first = logs[0]
+    if (first && isAccepted(first.status)) return true
   }
-  return false;
-};
+  return false
+}
 
-const hasAcInHourRange = (logs: CoreSubmitLogGetByIdData[], startHour: number, endHour: number, endMinute = 60) => {
+const hasAcInHourRange = (
+  logs: CoreSubmitLogGetByIdData[],
+  startHour: number,
+  endHour: number,
+  endMinute = 60,
+) => {
   return logs.some((log) => {
-    if (!isAccepted(log.status)) return false;
-    const date = new Date(toNumber(log.time) * 1000);
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-    if (startHour === endHour) return hour === startHour && minute < endMinute;
-    return hour >= startHour && hour < endHour;
-  });
-};
+    if (!isAccepted(log.status)) return false
+    const date = new Date(toNumber(log.time) * 1000)
+    const hour = date.getHours()
+    const minute = date.getMinutes()
+    if (startHour === endHour) return hour === startHour && minute < endMinute
+    return hour >= startHour && hour < endHour
+  })
+}
 
 const maxAcInOneHour = (logs: CoreSubmitLogGetByIdData[]) => {
   const acTimes = logs
     .filter((log) => isAccepted(log.status))
     .map((log) => toNumber(log.time))
-    .sort((a, b) => a - b);
-  let best = 0;
+    .sort((a, b) => a - b)
+  let best = 0
   for (let left = 0, right = 0; right < acTimes.length; right += 1) {
-    const rightTime = acTimes[right];
-    if (rightTime === undefined) continue;
-    let leftTime = acTimes[left];
+    const rightTime = acTimes[right]
+    if (rightTime === undefined) continue
+    let leftTime = acTimes[left]
     while (leftTime !== undefined && rightTime - leftTime > 3600) {
-      left += 1;
-      leftTime = acTimes[left];
+      left += 1
+      leftTime = acTimes[left]
     }
-    best = Math.max(best, right - left + 1);
+    best = Math.max(best, right - left + 1)
   }
-  return best;
-};
+  return best
+}
 
 const maxWaInOneHour = (logs: CoreSubmitLogGetByIdData[]) => {
   const waTimes = logs
     .filter((log) => isWrongAnswer(log.status))
     .map((log) => toNumber(log.time))
-    .sort((a, b) => a - b);
-  let best = 0;
+    .sort((a, b) => a - b)
+  let best = 0
   for (let left = 0, right = 0; right < waTimes.length; right += 1) {
-    const rightTime = waTimes[right];
-    if (rightTime === undefined) continue;
-    let leftTime = waTimes[left];
+    const rightTime = waTimes[right]
+    if (rightTime === undefined) continue
+    let leftTime = waTimes[left]
     while (leftTime !== undefined && rightTime - leftTime > 3600) {
-      left += 1;
-      leftTime = waTimes[left];
+      left += 1
+      leftTime = waTimes[left]
     }
-    best = Math.max(best, right - left + 1);
+    best = Math.max(best, right - left + 1)
   }
-  return best;
-};
+  return best
+}
 
 const maxWaInWindow = (logs: CoreSubmitLogGetByIdData[], seconds: number) => {
   const waTimes = logs
     .filter((log) => isWrongAnswer(log.status))
     .map((log) => toNumber(log.time))
-    .sort((a, b) => a - b);
-  let best = 0;
+    .sort((a, b) => a - b)
+  let best = 0
   for (let left = 0, right = 0; right < waTimes.length; right += 1) {
-    const rightTime = waTimes[right];
-    if (rightTime === undefined) continue;
-    let leftTime = waTimes[left];
+    const rightTime = waTimes[right]
+    if (rightTime === undefined) continue
+    let leftTime = waTimes[left]
     while (leftTime !== undefined && rightTime - leftTime > seconds) {
-      left += 1;
-      leftTime = waTimes[left];
+      left += 1
+      leftTime = waTimes[left]
     }
-    best = Math.max(best, right - left + 1);
+    best = Math.max(best, right - left + 1)
   }
-  return best;
-};
+  return best
+}
 
 const maxConsecutiveStatus = (
   logs: CoreSubmitLogGetByIdData[],
   matcher: (status: string) => boolean,
 ) => {
-  const sortedLogs = [...logs].sort((a, b) => toNumber(a.time) - toNumber(b.time));
-  let best = 0;
-  let current = 0;
+  const sortedLogs = [...logs].sort((a, b) => toNumber(a.time) - toNumber(b.time))
+  let best = 0
+  let current = 0
   sortedLogs.forEach((log) => {
     if (matcher(log.status)) {
-      current += 1;
-      best = Math.max(best, current);
-      return;
+      current += 1
+      best = Math.max(best, current)
+      return
     }
-    current = 0;
-  });
-  return best;
-};
+    current = 0
+  })
+  return best
+}
 
 const nightAcceptedCount = (logs: CoreSubmitLogGetByIdData[]) => {
   return logs.filter((log) => {
-    if (!isAccepted(log.status)) return false;
-    const hour = new Date(toNumber(log.time) * 1000).getHours();
-    return hour >= 0 && hour < 5;
-  }).length;
-};
+    if (!isAccepted(log.status)) return false
+    const hour = new Date(toNumber(log.time) * 1000).getHours()
+    return hour >= 0 && hour < 5
+  }).length
+}
 
 const hasRetirementFailed = (logs: CoreSubmitLogGetByIdData[]) => {
   const sortedAc = logs
     .filter((log) => isAccepted(log.status))
-    .sort((a, b) => toNumber(a.time) - toNumber(b.time));
+    .sort((a, b) => toNumber(a.time) - toNumber(b.time))
   for (let index = 1; index < sortedAc.length; index += 1) {
-    const current = sortedAc[index];
-    const previous = sortedAc[index - 1];
+    const current = sortedAc[index]
+    const previous = sortedAc[index - 1]
     if (current && previous && toNumber(current.time) - toNumber(previous.time) >= 30 * 86400) {
-      return true;
+      return true
     }
   }
-  return false;
-};
+  return false
+}
 
 const achievementDifficultyScore = (badge: AchievementBadge) => {
   const rarityScore: Record<string, number> = {
@@ -507,10 +505,10 @@ const achievementDifficultyScore = (badge: AchievementBadge) => {
     fun: 65,
     legendary: 70,
     server: 80,
-  };
-  const fallbackScore = badge.tone === "gold" ? 45 : badge.tone === "red" ? 35 : 20;
-  return rarityScore[badge.rarity || ""] ?? fallbackScore;
-};
+  }
+  const fallbackScore = badge.tone === "gold" ? 45 : badge.tone === "red" ? 35 : 20
+  return rarityScore[badge.rarity || ""] ?? fallbackScore
+}
 
 export const buildAchievementBadges = (
   period: CoreStatisticPeriodData | null,
@@ -518,45 +516,49 @@ export const buildAchievementBadges = (
   platformStats: CoreStatisticPlatformPeriodItem[],
   teamContext?: AchievementTeamContext,
 ): AchievementBadge[] => {
-  const totalAc = toNumber(period?.ac?.total);
-  const platformCount = platformStats.filter((item) => toNumber(item.ac?.total) > 0).length;
-  const problemGroups = groupLogsByProblem(submitLogs);
-  const compileErrorCount = submitLogs.filter((log) => isCompileError(log.status)).length;
-  const acInOneHour = maxAcInOneHour(submitLogs);
-  const waInOneHour = maxWaInOneHour(submitLogs);
-  const waInFiveMinutes = maxWaInWindow(submitLogs, 5 * 60);
-  const consecutiveAc = maxConsecutiveStatus(submitLogs, isAccepted);
-  const consecutiveWa = maxConsecutiveStatus(submitLogs, isWrongAnswer);
-  const dayStats = groupLogsByDay(submitLogs);
-  const maxDailyAc = maxDailyValue(dayStats, "ac");
-  const maxDailyWa = maxDailyValue(dayStats, "wa");
-  const maxDailySubmit = maxDailyValue(dayStats, "submit");
+  const totalAc = toNumber(period?.ac?.total)
+  const platformCount = platformStats.filter((item) => toNumber(item.ac?.total) > 0).length
+  const problemGroups = groupLogsByProblem(submitLogs)
+  const compileErrorCount = submitLogs.filter((log) => isCompileError(log.status)).length
+  const acInOneHour = maxAcInOneHour(submitLogs)
+  const waInOneHour = maxWaInOneHour(submitLogs)
+  const waInFiveMinutes = maxWaInWindow(submitLogs, 5 * 60)
+  const consecutiveAc = maxConsecutiveStatus(submitLogs, isAccepted)
+  const consecutiveWa = maxConsecutiveStatus(submitLogs, isWrongAnswer)
+  const dayStats = groupLogsByDay(submitLogs)
+  const maxDailyAc = maxDailyValue(dayStats, "ac")
+  const maxDailyWa = maxDailyValue(dayStats, "wa")
+  const maxDailySubmit = maxDailyValue(dayStats, "submit")
   const midnightSubmitCount = submitLogs.filter((log) => {
-    const hour = new Date(toNumber(log.time) * 1000).getHours();
-    return hour >= 0 && hour < 5;
-  }).length;
-  const totalSubmit = toNumber(period?.submit?.total) || submitLogs.length;
-  const acceptedSubmit = submitLogs.filter((log) => isAccepted(log.status)).length;
-  const acceptRatePercent = totalSubmit > 0 ? Math.round((acceptedSubmit / totalSubmit) * 100) : 0;
-  const teamAcTotal = teamContext?.members.reduce((sum, item) => sum + toNumber(item.acTotal), 0) || 0;
-  const teamWaTotal = teamContext?.members.reduce((sum, item) => sum + toNumber(item.waTotal), 0) || 0;
-  const currentTeamMember = teamContext?.members.find((item) => Number(item.userId) === Number(teamContext.currentUserId));
-  const currentTeamAc = toNumber(currentTeamMember?.acTotal);
-  const currentTeamSubmit = toNumber(currentTeamMember?.submitTotal);
-  const currentTeamWa = toNumber(currentTeamMember?.waTotal);
-  const teamCarryRatio = teamAcTotal > 0 ? currentTeamAc / teamAcTotal : 0;
-  const teamWaRatio = teamWaTotal > 0 ? currentTeamWa / teamWaTotal : 0;
-  const ququRatio = teamAcTotal > 0 ? currentTeamAc / teamAcTotal : 0;
-  const userNightAcCount = nightAcceptedCount(submitLogs);
-  const nightAcPercentile = toNumber(teamContext?.nightAcPercentile);
-  const passwordChangeCount = toNumber(teamContext?.passwordChangeCount);
-  const totalSubmitPercentile = toNumber(teamContext?.totalSubmitPercentile);
-  const acceptRatePercentile = toNumber(teamContext?.acceptRatePercentile);
-  const medianSubmit = toNumber(teamContext?.medianSubmit);
-  const medianAcceptRate = toNumber(teamContext?.medianAcceptRate);
-  const todayAcRatePercentile = toNumber(teamContext?.todayAcRatePercentile);
-  const todaySubmit = toNumber(teamContext?.todaySubmit);
-  const offPeakPercentile = toNumber(teamContext?.offPeakPercentile);
+    const hour = new Date(toNumber(log.time) * 1000).getHours()
+    return hour >= 0 && hour < 5
+  }).length
+  const totalSubmit = toNumber(period?.submit?.total) || submitLogs.length
+  const acceptedSubmit = submitLogs.filter((log) => isAccepted(log.status)).length
+  const acceptRatePercent = totalSubmit > 0 ? Math.round((acceptedSubmit / totalSubmit) * 100) : 0
+  const teamAcTotal =
+    teamContext?.members.reduce((sum, item) => sum + toNumber(item.acTotal), 0) || 0
+  const teamWaTotal =
+    teamContext?.members.reduce((sum, item) => sum + toNumber(item.waTotal), 0) || 0
+  const currentTeamMember = teamContext?.members.find(
+    (item) => Number(item.userId) === Number(teamContext.currentUserId),
+  )
+  const currentTeamAc = toNumber(currentTeamMember?.acTotal)
+  const currentTeamSubmit = toNumber(currentTeamMember?.submitTotal)
+  const currentTeamWa = toNumber(currentTeamMember?.waTotal)
+  const teamCarryRatio = teamAcTotal > 0 ? currentTeamAc / teamAcTotal : 0
+  const teamWaRatio = teamWaTotal > 0 ? currentTeamWa / teamWaTotal : 0
+  const ququRatio = teamAcTotal > 0 ? currentTeamAc / teamAcTotal : 0
+  const userNightAcCount = nightAcceptedCount(submitLogs)
+  const nightAcPercentile = toNumber(teamContext?.nightAcPercentile)
+  const passwordChangeCount = toNumber(teamContext?.passwordChangeCount)
+  const totalSubmitPercentile = toNumber(teamContext?.totalSubmitPercentile)
+  const acceptRatePercentile = toNumber(teamContext?.acceptRatePercentile)
+  const medianSubmit = toNumber(teamContext?.medianSubmit)
+  const medianAcceptRate = toNumber(teamContext?.medianAcceptRate)
+  const todayAcRatePercentile = toNumber(teamContext?.todayAcRatePercentile)
+  const todaySubmit = toNumber(teamContext?.todaySubmit)
+  const offPeakPercentile = toNumber(teamContext?.offPeakPercentile)
 
   const badges: AchievementBadge[] = [
     {
@@ -699,7 +701,9 @@ export const buildAchievementBadges = (
       condition: "全期任意一天 04:00-05:00 有提交记录。",
       icon: "???",
       unlocked: submitLogs.some((log) => new Date(toNumber(log.time) * 1000).getHours() === 4),
-      progress: submitLogs.some((log) => new Date(toNumber(log.time) * 1000).getHours() === 4) ? 100 : 0,
+      progress: submitLogs.some((log) => new Date(toNumber(log.time) * 1000).getHours() === 4)
+        ? 100
+        : 0,
       tone: "blue",
       hidden: true,
     },
@@ -921,7 +925,10 @@ export const buildAchievementBadges = (
       condition: "00:00-05:00 的 AC 数超过全站 90% 用户。",
       icon: "夜",
       unlocked: nightAcPercentile >= 90,
-      progress: nightAcPercentile > 0 ? Math.min(100, Math.round(nightAcPercentile)) : clampProgress(userNightAcCount, 100),
+      progress:
+        nightAcPercentile > 0
+          ? Math.min(100, Math.round(nightAcPercentile))
+          : clampProgress(userNightAcCount, 100),
       tone: "blue",
       rarity: "legendary",
       hidden: true,
@@ -957,7 +964,10 @@ export const buildAchievementBadges = (
       condition: "总提交数超过全站 80% 用户。",
       icon: "卷",
       unlocked: totalSubmitPercentile >= 80,
-      progress: totalSubmitPercentile > 0 ? Math.min(100, Math.round(totalSubmitPercentile)) : clampProgress(totalSubmit, 1000),
+      progress:
+        totalSubmitPercentile > 0
+          ? Math.min(100, Math.round(totalSubmitPercentile))
+          : clampProgress(totalSubmit, 1000),
       tone: "gold",
       rarity: "server",
     },
@@ -968,7 +978,10 @@ export const buildAchievementBadges = (
       condition: "提交数超过全站 80% 用户，但 AC 率低于全站中位数。",
       icon: "莽",
       unlocked: totalSubmitPercentile >= 80 && acceptRatePercent < medianAcceptRate,
-      progress: totalSubmitPercentile > 0 ? Math.min(100, Math.round(totalSubmitPercentile)) : clampProgress(totalSubmit, 1000),
+      progress:
+        totalSubmitPercentile > 0
+          ? Math.min(100, Math.round(totalSubmitPercentile))
+          : clampProgress(totalSubmit, 1000),
       tone: "red",
       rarity: "server",
     },
@@ -979,7 +992,10 @@ export const buildAchievementBadges = (
       condition: "AC 率进入全站前 10%，且提交数低于全站中位数。",
       icon: `${acceptRatePercent}%`,
       unlocked: acceptRatePercentile >= 90 && totalSubmit < medianSubmit,
-      progress: acceptRatePercentile > 0 ? Math.min(100, Math.round(acceptRatePercentile)) : Math.min(acceptRatePercent, 100),
+      progress:
+        acceptRatePercentile > 0
+          ? Math.min(100, Math.round(acceptRatePercentile))
+          : Math.min(acceptRatePercent, 100),
       tone: "cyan",
       rarity: "server",
     },
@@ -1024,7 +1040,10 @@ export const buildAchievementBadges = (
       condition: "今日提交数不少于 10，且今日 AC 率进入全站前 1%。",
       icon: "欧",
       unlocked: todaySubmit >= 10 && todayAcRatePercentile >= 99,
-      progress: todayAcRatePercentile > 0 ? Math.min(100, Math.round(todayAcRatePercentile)) : Math.min(acceptRatePercent, 100),
+      progress:
+        todayAcRatePercentile > 0
+          ? Math.min(100, Math.round(todayAcRatePercentile))
+          : Math.min(acceptRatePercent, 100),
       tone: "gold",
       rarity: "server",
     },
@@ -1035,7 +1054,10 @@ export const buildAchievementBadges = (
       condition: "提交时间分布与全站平均差异进入前 5%。",
       icon: "峰",
       unlocked: offPeakPercentile >= 95,
-      progress: offPeakPercentile > 0 ? Math.min(100, Math.round(offPeakPercentile)) : clampProgress(midnightSubmitCount, 100),
+      progress:
+        offPeakPercentile > 0
+          ? Math.min(100, Math.round(offPeakPercentile))
+          : clampProgress(midnightSubmitCount, 100),
       tone: "blue",
       rarity: "server",
     },
@@ -1067,10 +1089,18 @@ export const buildAchievementBadges = (
       label: "ququ 酱",
       description: "你可能不是队伍的输出核心，但你一定是队伍的精神支柱。",
       hiddenDescription: "有些人不负责过题，但负责让队伍还像个队伍。",
-      condition: "一次团队统计周期内，团队总 AC 不少于 10，用户至少有 1 次提交，且个人 AC 贡献占团队总 AC 低于 10%。",
+      condition:
+        "一次团队统计周期内，团队总 AC 不少于 10，用户至少有 1 次提交，且个人 AC 贡献占团队总 AC 低于 10%。",
       icon: "趣",
-      unlocked: Boolean(currentTeamMember) && teamAcTotal >= 10 && currentTeamSubmit >= 1 && ququRatio < 0.1,
-      progress: teamAcTotal >= 10 && currentTeamSubmit >= 1 ? Math.max(0, Math.min(100, Math.round((0.1 - ququRatio) * 1000))) : 0,
+      unlocked:
+        Boolean(currentTeamMember) &&
+        teamAcTotal >= 10 &&
+        currentTeamSubmit >= 1 &&
+        ququRatio < 0.1,
+      progress:
+        teamAcTotal >= 10 && currentTeamSubmit >= 1
+          ? Math.max(0, Math.min(100, Math.round((0.1 - ququRatio) * 1000)))
+          : 0,
       tone: "cyan",
       rarity: "fun",
       hidden: true,
@@ -1088,148 +1118,155 @@ export const buildAchievementBadges = (
       rarity: "fun",
       hidden: true,
     },
-  ];
+  ]
 
-  return badges.sort((a, b) => (
-    Number(b.unlocked) - Number(a.unlocked) ||
-    achievementDifficultyScore(a) - achievementDifficultyScore(b) ||
-    a.label.localeCompare(b.label, "zh-CN")
-  ));
-};
+  return badges.sort(
+    (a, b) =>
+      Number(b.unlocked) - Number(a.unlocked) ||
+      achievementDifficultyScore(a) - achievementDifficultyScore(b) ||
+      a.label.localeCompare(b.label, "zh-CN"),
+  )
+}
 
 export const buildWeeklyReport = (
   period: CoreStatisticPeriodData | null,
   recentLogs: CoreSubmitLogGetByIdData[],
   platformStats: CoreStatisticPlatformPeriodItem[] = [],
 ): WeeklyReport => {
-  const now = nowSeconds();
-  const currentStart = now - 7 * 86400;
-  const previousStart = now - 14 * 86400;
-  const currentLogs = logsBetween(recentLogs, currentStart, now + 1);
-  const previousLogs = logsBetween(recentLogs, previousStart, currentStart);
-  const currentAc = toNumber(period?.ac?.thisWeek) || uniqueAcCount(currentLogs);
-  const previousAc = toNumber(period?.ac?.lastWeek) || uniqueAcCount(previousLogs);
-  const currentSubmit = toNumber(period?.submit?.thisWeek) || currentLogs.length;
-  const activeDays = activeDayCount(currentLogs);
-  const growth = currentAc - previousAc;
-  const totalAc = toNumber(period?.ac?.total);
-  const currentAcceptedLogs = currentLogs.filter((log) => isAccepted(log.status));
-  const currentWaLogs = currentLogs.filter((log) => isWrongAnswer(log.status));
-  const acceptRate = currentSubmit > 0 ? currentAc / currentSubmit : 0;
-  const nightRatio = currentLogs.length > 0
-    ? currentLogs.filter((log) => {
-      const hour = new Date(toNumber(log.time) * 1000).getHours();
-      return hour >= 23 || hour < 6;
-    }).length / currentLogs.length
-    : 0;
+  const now = nowSeconds()
+  const currentStart = now - 7 * 86400
+  const previousStart = now - 14 * 86400
+  const currentLogs = logsBetween(recentLogs, currentStart, now + 1)
+  const previousLogs = logsBetween(recentLogs, previousStart, currentStart)
+  const currentAc = toNumber(period?.ac?.thisWeek) || uniqueAcCount(currentLogs)
+  const previousAc = toNumber(period?.ac?.lastWeek) || uniqueAcCount(previousLogs)
+  const currentSubmit = toNumber(period?.submit?.thisWeek) || currentLogs.length
+  const activeDays = activeDayCount(currentLogs)
+  const growth = currentAc - previousAc
+  const totalAc = toNumber(period?.ac?.total)
+  const currentAcceptedLogs = currentLogs.filter((log) => isAccepted(log.status))
+  const currentWaLogs = currentLogs.filter((log) => isWrongAnswer(log.status))
+  const acceptRate = currentSubmit > 0 ? currentAc / currentSubmit : 0
+  const nightRatio =
+    currentLogs.length > 0
+      ? currentLogs.filter((log) => {
+          const hour = new Date(toNumber(log.time) * 1000).getHours()
+          return hour >= 23 || hour < 6
+        }).length / currentLogs.length
+      : 0
 
-  const platformCounts = new Map<string, number>();
+  const platformCounts = new Map<string, number>()
   currentLogs.forEach((log) => {
-    const platform = String(log.platform || "").trim();
-    if (platform) platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1);
-  });
+    const platform = String(log.platform || "").trim()
+    if (platform) platformCounts.set(platform, (platformCounts.get(platform) || 0) + 1)
+  })
   if (platformCounts.size === 0) {
     platformStats.forEach((item) => {
-      const submit = toNumber(item.submit?.thisWeek);
-      if (submit > 0) platformCounts.set(item.platform, submit);
-    });
+      const submit = toNumber(item.submit?.thisWeek)
+      if (submit > 0) platformCounts.set(item.platform, submit)
+    })
   }
-  const activePlatforms = [...platformCounts.entries()].sort((a, b) => b[1] - a[1]);
-  const mainPlatform = activePlatforms[0]?.[0] || topPlatform(currentLogs);
-  const mainPlatformLabel = mainPlatform === "暂无平台" ? "训练场" : platformLabel(mainPlatform);
-  const clearlyRising = currentAc >= 5 && currentAc >= Math.max(previousAc + 5, Math.ceil(previousAc * 1.5));
-  const lowAcceptRate = currentSubmit >= 20 && acceptRate > 0 && acceptRate < 0.35;
+  const activePlatforms = [...platformCounts.entries()].sort((a, b) => b[1] - a[1])
+  const mainPlatform = activePlatforms[0]?.[0] || topPlatform(currentLogs)
+  const mainPlatformLabel = mainPlatform === "暂无平台" ? "训练场" : platformLabel(mainPlatform)
+  const clearlyRising =
+    currentAc >= 5 && currentAc >= Math.max(previousAc + 5, Math.ceil(previousAc * 1.5))
+  const lowAcceptRate = currentSubmit >= 20 && acceptRate > 0 && acceptRate < 0.35
 
-  let title = "持续训练周";
-  if (clearlyRising) title = "爆发上升周";
-  else if (activeDays >= 5) title = "稳定发育周";
-  else if (lowAcceptRate || (currentSubmit >= 30 && currentAc <= 3)) title = "红温调试周";
-  else if (nightRatio >= 0.35) title = "夜行训练周";
-  else if (activePlatforms.length >= 3) title = "跨平台开火周";
-  else if (currentSubmit > 0 && currentAc <= 2) title = "低调蓄力周";
+  let title = "持续训练周"
+  if (clearlyRising) title = "爆发上升周"
+  else if (activeDays >= 5) title = "稳定发育周"
+  else if (lowAcceptRate || (currentSubmit >= 30 && currentAc <= 3)) title = "红温调试周"
+  else if (nightRatio >= 0.35) title = "夜行训练周"
+  else if (activePlatforms.length >= 3) title = "跨平台开火周"
+  else if (currentSubmit > 0 && currentAc <= 2) title = "低调蓄力周"
 
-  const summary = currentSubmit === 0
-    ? "本周训练记录还不够多，继续积累后会生成更完整的战报。"
-    : `本周 AC ${currentAc} 题，提交 ${currentSubmit} 次，活跃 ${activeDays} 天，主要火力集中在 ${mainPlatformLabel}。`;
+  const summary =
+    currentSubmit === 0
+      ? "本周训练记录还不够多，继续积累后会生成更完整的战报。"
+      : `本周 AC ${currentAc} 题，提交 ${currentSubmit} 次，活跃 ${activeDays} 天，主要火力集中在 ${mainPlatformLabel}。`
 
-  const scenes: WeeklyReportScene[] = [];
+  const scenes: WeeklyReportScene[] = []
   if (activePlatforms.length >= 3) {
     scenes.push({
       title: "跨平台开火",
       text: `本周在 ${formatPlatformList(activePlatforms.slice(0, 4).map(([platform]) => platform))} 等平台均有提交记录。`,
-    });
+    })
   } else if (activePlatforms.length > 0) {
     scenes.push({
       title: "主战场锁定",
       text: `本周主要在 ${mainPlatformLabel} 训练，节奏比较集中。`,
-    });
+    })
   }
 
-  const waGroups = new Map<string, { problem: string; platform: string; count: number }>();
+  const waGroups = new Map<string, { problem: string; platform: string; count: number }>()
   currentWaLogs.forEach((log) => {
-    const key = problemKey(log);
+    const key = problemKey(log)
     const current = waGroups.get(key) || {
-      problem: String(log.problem || log.contest || log.submitId || "未知题目").trim() || "未知题目",
+      problem:
+        String(log.problem || log.contest || log.submitId || "未知题目").trim() || "未知题目",
       platform: String(log.platform || ""),
       count: 0,
-    };
-    current.count += 1;
-    waGroups.set(key, current);
-  });
-  const boss = [...waGroups.values()].sort((a, b) => b.count - a.count)[0];
+    }
+    current.count += 1
+    waGroups.set(key, current)
+  })
+  const boss = [...waGroups.values()].sort((a, b) => b.count - a.count)[0]
   if (boss && boss.count >= 2) {
     scenes.push({
       title: "本周 Boss",
       text: `${boss.problem} 在 ${platformLabel(boss.platform)} 卡了 ${boss.count} 次，值得回看题意、边界和数据范围。`,
-    });
+    })
   }
 
   const lastValidSubmit = [...currentLogs]
     .sort((a, b) => toNumber(b.time) - toNumber(a.time))
-    .find((log) => String(log.status || "").trim());
-  const lastAccepted = [...currentAcceptedLogs].sort((a, b) => toNumber(b.time) - toNumber(a.time))[0];
+    .find((log) => String(log.status || "").trim())
+  const lastAccepted = [...currentAcceptedLogs].sort(
+    (a, b) => toNumber(b.time) - toNumber(a.time),
+  )[0]
   if (lastValidSubmit && isAccepted(lastValidSubmit.status)) {
     scenes.push({
       title: "最后一发入魂",
       text: `本周最后一次有效提交在 ${platformLabel(String(lastValidSubmit.platform || ""))} 拿到 AC。`,
-    });
+    })
   } else if (lastAccepted) {
     scenes.push({
       title: "本周 AC 定格",
       text: `最近一次 AC 来自 ${platformLabel(String(lastAccepted.platform || ""))} 的 ${String(lastAccepted.problem || "一道题")}。`,
-    });
+    })
   }
 
   if (scenes.length < 3 && currentSubmit >= 45 && activeDays > 0) {
     scenes.push({
       title: "高密度训练",
       text: `本周平均活跃日提交约 ${Math.round(currentSubmit / Math.max(activeDays, 1))} 次，训练火力不低。`,
-    });
+    })
   }
   if (scenes.length === 0) {
     scenes.push({
       title: "战报生成中",
       text: "本周训练记录还不够多，继续积累后会生成更完整的战报。",
-    });
+    })
   }
   if (scenes.length < 2 && currentSubmit > 0) {
     scenes.push({
       title: "节奏留痕",
       text: "已经有训练记录留下来了，等提交样本更多，战报会更有故事感。",
-    });
+    })
   }
 
-  let tip = "当前训练节奏还在积累阶段，保持轻量接触就很好，手感会慢慢回来。";
+  let tip = "当前训练节奏还在积累阶段，保持轻量接触就很好，手感会慢慢回来。"
   if (lowAcceptRate || (currentSubmit >= 25 && currentAc <= 3)) {
-    tip = "提交量已经起来了，可以稍微减少试探性提交，先把思路、样例和反例整理清楚，通常会更赚。";
+    tip = "提交量已经起来了，可以稍微减少试探性提交，先把思路、样例和反例整理清楚，通常会更赚。"
   } else if (currentWaLogs.length >= 8) {
-    tip = "这周调试痕迹不少，遇到连续 WA 时，先停一轮检查题意、边界和数据范围，比继续硬交更稳。";
+    tip = "这周调试痕迹不少，遇到连续 WA 时，先停一轮检查题意、边界和数据范围，比继续硬交更稳。"
   } else if (activePlatforms.length >= 3) {
-    tip = "跨平台状态在线，题感覆盖面不错。不同平台的错题风格可以顺手沉淀一下，后面会省很多时间。";
+    tip = "跨平台状态在线，题感覆盖面不错。不同平台的错题风格可以顺手沉淀一下，后面会省很多时间。"
   } else if (currentAc >= 15 || clearlyRising) {
-    tip = "这周手感不错，AC 增长很明显。维持现在的节奏，再给复盘留一点空间就很舒服。";
+    tip = "这周手感不错，AC 增长很明显。维持现在的节奏，再给复盘留一点空间就很舒服。"
   } else if (currentSubmit > 0 && activeDays <= 2) {
-    tip = "这周训练比较集中，保持轻量节奏也可以，不用硬爆肝；让手感持续在线更重要。";
+    tip = "这周训练比较集中，保持轻量节奏也可以，不用硬爆肝；让手感持续在线更重要。"
   }
 
   return {
@@ -1244,21 +1281,26 @@ export const buildWeeklyReport = (
     ],
     scenes: scenes.slice(0, 3),
     tip,
-  };
-};
+  }
+}
 
 export const buildTeamDashboard = (members: TeamDashboardMember[]): TeamDashboard => {
-  const sorted = [...members].sort((a, b) => b.weekAc - a.weekAc || b.monthAc - a.monthAc || b.acTotal - a.acTotal);
-  const weekAc = members.reduce((sum, item) => sum + toNumber(item.weekAc), 0);
-  const weekSubmit = members.reduce((sum, item) => sum + toNumber(item.weekSubmit), 0);
-  const monthAc = members.reduce((sum, item) => sum + toNumber(item.monthAc), 0);
-  const activeMembers = members.filter((item) => toNumber(item.weekSubmit) > 0 || toNumber(item.weekAc) > 0).length;
-  const leader = sorted[0] || null;
-  const summary = members.length === 0
-    ? "暂无团队成员，创建团队后会生成训练看板。"
-    : activeMembers === 0
-      ? "本周团队还没有提交记录，可以从一次轻量训练开始。"
-      : `本周 ${activeMembers}/${members.length} 名成员保持活跃，团队 AC ${weekAc} 题，${leader ? `${leader.name || leader.username} 暂列本周火力位。` : ""}`;
+  const sorted = [...members].sort(
+    (a, b) => b.weekAc - a.weekAc || b.monthAc - a.monthAc || b.acTotal - a.acTotal,
+  )
+  const weekAc = members.reduce((sum, item) => sum + toNumber(item.weekAc), 0)
+  const weekSubmit = members.reduce((sum, item) => sum + toNumber(item.weekSubmit), 0)
+  const monthAc = members.reduce((sum, item) => sum + toNumber(item.monthAc), 0)
+  const activeMembers = members.filter(
+    (item) => toNumber(item.weekSubmit) > 0 || toNumber(item.weekAc) > 0,
+  ).length
+  const leader = sorted[0] || null
+  const summary =
+    members.length === 0
+      ? "暂无团队成员，创建团队后会生成训练看板。"
+      : activeMembers === 0
+        ? "本周团队还没有提交记录，可以从一次轻量训练开始。"
+        : `本周 ${activeMembers}/${members.length} 名成员保持活跃，团队 AC ${weekAc} 题，${leader ? `${leader.name || leader.username} 暂列本周火力位。` : ""}`
 
   return {
     weekAc,
@@ -1268,5 +1310,5 @@ export const buildTeamDashboard = (members: TeamDashboardMember[]): TeamDashboar
     leader,
     members: sorted,
     summary,
-  };
-};
+  }
+}

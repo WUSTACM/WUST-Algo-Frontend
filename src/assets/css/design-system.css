@@ -7,7 +7,7 @@
  */
 
 :root {
-  --ds-font-family: 'Jetbrains Mono', 'Maple Mono CN', monospace;
+  --ds-font-family: "Jetbrains Mono", "Maple Mono CN", monospace;
   --ds-radius-sm: var(--control-radius, 8px);
   --ds-radius-md: 12px;
   --ds-control-height-sm: 30px;
@@ -25,7 +25,11 @@
   --ds-control-primary: var(--neon-cyan);
   --ds-control-primary-text: var(--text-reverse-color, #fff);
   --ds-control-danger: #f44336;
-  --ds-control-danger-soft: color-mix(in srgb, var(--ds-control-danger) 14%, var(--background-color-2));
+  --ds-control-danger-soft: color-mix(
+    in srgb,
+    var(--ds-control-danger) 14%,
+    var(--background-color-2)
+  );
   --ds-motion-fast: 0.2s ease;
   --ds-focus-ring: 0 0 0 3px color-mix(in srgb, var(--ds-control-primary) 24%, transparent);
 }

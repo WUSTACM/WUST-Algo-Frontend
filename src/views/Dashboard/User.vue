@@ -6,9 +6,7 @@
           <span class="title-icon">
             <font-awesome-icon icon="fa-solid fa-user" />
           </span>
-          <span class="title-text">{{
-            userStore.isCoach ? "队员管理" : "用户管理"
-          }}</span>
+          <span class="title-text">{{ userStore.isCoach ? "队员管理" : "用户管理" }}</span>
         </div>
         <div class="header-tabs">
           <span class="tab" @click="openBroadcastModal">群发消息</span>
@@ -32,13 +30,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in data?.list" style="cursor: pointer">
+              <tr v-for="item in data?.list" :key="item.userId" style="cursor: pointer">
                 <td @click="router.push(`/profile?id=${item.userId}`)">
                   <div class="avatar">
-                    <img
-                      :src="item.avatar || '/images/defaultAvatar.png'"
-                      alt=""
-                    />
+                    <img :src="item.avatar || '/images/defaultAvatar.png'" alt="" />
                   </div>
                 </td>
                 <td @click="router.push(`/profile?id=${item.userId}`)">
@@ -48,21 +43,14 @@
                   {{ item.name }}
                 </td>
                 <td @click="router.push(`/profile?id=${item.userId}`)">
-                  {{
-                    userStore.isCoach
-                      ? getGroupName(item.groupId)
-                      : getRoleName(item.roleId)
-                  }}
+                  {{ userStore.isCoach ? getGroupName(item.groupId) : getRoleName(item.roleId) }}
                 </td>
                 <td @click="router.push(`/profile?id=${item.userId}`)">
                   {{ formatDate(item.lastSubmit) }}
                 </td>
                 <td>
                   <div class="actions" @click.stop>
-                    <button
-                      class="btn btn-primary"
-                      @click="openEditModal(item)"
-                    >
+                    <button class="btn btn-primary" @click="openEditModal(item)">
                       {{ userStore.isAdmin ? "改角色" : "改分组" }}
                     </button>
                     <button
@@ -121,12 +109,7 @@
           <div class="group">
             <div class="pageInput">
               <button @click="getData(jumppage)">跳转</button>
-              <input
-                type="number"
-                min="1"
-                :max="data.totalPage"
-                v-model="jumppage"
-              />
+              <input type="number" min="1" :max="data.totalPage" v-model="jumppage" />
             </div>
             <div class="pageSum">共 {{ data.totalPage }} 页</div>
           </div>
@@ -142,10 +125,27 @@
           <span class="title-text">抓取任务</span>
         </div>
         <div class="header-tabs">
-          <span class="tab" :class="{ active: taskStatusFilter === '' }" @click="setTaskFilter('')">全部</span>
-          <span class="tab" :class="{ active: taskStatusFilter === 'queued' }" @click="setTaskFilter('queued')">排队</span>
-          <span class="tab" :class="{ active: taskStatusFilter === 'running' }" @click="setTaskFilter('running')">抓取中</span>
-          <span class="tab" :class="{ active: taskStatusFilter === 'failed' }" @click="setTaskFilter('failed')">失败</span>
+          <span class="tab" :class="{ active: taskStatusFilter === '' }" @click="setTaskFilter('')"
+            >全部</span
+          >
+          <span
+            class="tab"
+            :class="{ active: taskStatusFilter === 'queued' }"
+            @click="setTaskFilter('queued')"
+            >排队</span
+          >
+          <span
+            class="tab"
+            :class="{ active: taskStatusFilter === 'running' }"
+            @click="setTaskFilter('running')"
+            >抓取中</span
+          >
+          <span
+            class="tab"
+            :class="{ active: taskStatusFilter === 'failed' }"
+            @click="setTaskFilter('failed')"
+            >失败</span
+          >
           <span class="tab" @click="fetchSpiderJobs">刷新</span>
         </div>
       </div>
@@ -154,7 +154,9 @@
         <div class="task-list" v-if="spiderJobs.length > 0">
           <div class="task-row" v-for="job in spiderJobs" :key="job.jobId">
             <div class="task-main">
-              <span class="task-status" :class="`status-${job.status}`">{{ formatTaskStatus(job.status) }}</span>
+              <span class="task-status" :class="`status-${job.status}`">{{
+                formatTaskStatus(job.status)
+              }}</span>
               <span>用户 #{{ job.userId }}</span>
               <span>{{ formatTaskSource(job.source) }}</span>
               <span v-if="job.currentPlatform">{{ job.currentPlatform }}</span>
@@ -199,11 +201,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button
-          class="btn btn-primary"
-          @click="handleRoleConfirm"
-          :disabled="roleLoading"
-        >
+        <button class="btn btn-primary" @click="handleRoleConfirm" :disabled="roleLoading">
           确认
         </button>
         <button class="btn" @click="closeRoleModal">取消</button>
@@ -239,11 +237,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button
-          class="btn btn-primary"
-          @click="handleGroupConfirm"
-          :disabled="groupLoading"
-        >
+        <button class="btn btn-primary" @click="handleGroupConfirm" :disabled="groupLoading">
           确认
         </button>
         <button class="btn" @click="closeGroupModal">取消</button>
@@ -252,11 +246,7 @@
   </div>
 
   <!-- 管理员重置密码弹窗 -->
-  <div
-    class="modal-overlay"
-    v-if="showPasswordModal"
-    @click="closePasswordModal"
-  >
+  <div class="modal-overlay" v-if="showPasswordModal" @click="closePasswordModal">
     <div class="modal" @click.stop>
       <div class="modal-header">
         <span>重置用户密码</span>
@@ -265,19 +255,11 @@
       <div class="modal-body">
         <div class="modal-user">
           <span class="label">用户：</span>
-          <span
-            >{{ selectedPasswordUser?.name }} ({{
-              selectedPasswordUser?.username
-            }})</span
-          >
+          <span>{{ selectedPasswordUser?.name }} ({{ selectedPasswordUser?.username }})</span>
         </div>
         <div class="modal-field">
           <label>新密码</label>
-          <input
-            type="password"
-            v-model="passwordForm.newPassword"
-            placeholder="请输入新密码"
-          />
+          <input type="password" v-model="passwordForm.newPassword" placeholder="请输入新密码" />
         </div>
         <div class="modal-field">
           <label>确认密码</label>
@@ -289,11 +271,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button
-          class="btn btn-primary"
-          @click="handlePasswordConfirm"
-          :disabled="passwordLoading"
-        >
+        <button class="btn btn-primary" @click="handlePasswordConfirm" :disabled="passwordLoading">
           确认
         </button>
         <button class="btn" @click="closePasswordModal">取消</button>
@@ -302,11 +280,7 @@
   </div>
 
   <!-- 管理员修改昵称弹窗 -->
-  <div
-    class="modal-overlay"
-    v-if="showNicknameModal"
-    @click="closeNicknameModal"
-  >
+  <div class="modal-overlay" v-if="showNicknameModal" @click="closeNicknameModal">
     <div class="modal" @click.stop>
       <div class="modal-header">
         <span>修改用户昵称</span>
@@ -315,27 +289,15 @@
       <div class="modal-body">
         <div class="modal-user">
           <span class="label">用户：</span>
-          <span
-            >{{ selectedNicknameUser?.name }} ({{
-              selectedNicknameUser?.username
-            }})</span
-          >
+          <span>{{ selectedNicknameUser?.name }} ({{ selectedNicknameUser?.username }})</span>
         </div>
         <div class="modal-field">
           <label>昵称</label>
-          <input
-            type="text"
-            v-model.trim="nicknameForm.name"
-            placeholder="请输入新的昵称"
-          />
+          <input type="text" v-model.trim="nicknameForm.name" placeholder="请输入新的昵称" />
         </div>
       </div>
       <div class="modal-footer">
-        <button
-          class="btn btn-primary"
-          @click="handleNicknameConfirm"
-          :disabled="nicknameLoading"
-        >
+        <button class="btn btn-primary" @click="handleNicknameConfirm" :disabled="nicknameLoading">
           确认
         </button>
         <button class="btn" @click="closeNicknameModal">取消</button>
@@ -344,11 +306,7 @@
   </div>
 
   <!-- 群发消息弹窗 -->
-  <div
-    class="modal-overlay"
-    v-if="showBroadcastModal"
-    @click="closeBroadcastModal"
-  >
+  <div class="modal-overlay" v-if="showBroadcastModal" @click="closeBroadcastModal">
     <div class="modal" @click.stop>
       <div class="modal-header">
         <span>群发消息</span>
@@ -385,33 +343,33 @@
 </template>
 
 <script setup lang="ts">
-import API from "@/utils/api";
-import Toast from "@/utils/toast";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import type { SpiderJobInfo, UserRole } from "@/utils/api";
-import { useUserStore } from "@/stores/user";
+import API from "@/utils/api"
+import Toast from "@/utils/toast"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
+import { computed, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
+import type { SpiderJobInfo, UserRole } from "@/utils/api"
+import { useUserStore } from "@/stores/user"
 
-const router = useRouter();
-const userStore = useUserStore();
-const loading = ref(true);
+const router = useRouter()
+const userStore = useUserStore()
+const loading = ref(true)
 
 interface Response {
-  list: User[];
-  total: number;
-  totalPage: number;
-  currentPage: number;
+  list: User[]
+  total: number
+  totalPage: number
+  currentPage: number
 }
 
 interface User {
-  avatar: string;
-  groupId: number;
-  lastSubmit: string;
-  name: string;
-  roleId?: number;
-  userId: number | string;
-  username: string;
+  avatar: string
+  groupId: number
+  lastSubmit: string
+  name: string
+  roleId?: number
+  userId: number | string
+  username: string
 }
 
 const data = ref<Response>({
@@ -419,294 +377,293 @@ const data = ref<Response>({
   total: 0,
   totalPage: 0,
   currentPage: 1,
-});
+})
 
-const jumppage = ref(1);
+const jumppage = ref(1)
 
 // 角色相关
-const roles = ref<UserRole[]>([]);
-const showRoleModal = ref(false);
-const selectedUser = ref<User | null>(null);
-const selectedRoleId = ref<number>(0);
-const roleLoading = ref(false);
+const roles = ref<UserRole[]>([])
+const showRoleModal = ref(false)
+const selectedUser = ref<User | null>(null)
+const selectedRoleId = ref<number>(0)
+const roleLoading = ref(false)
 
 // 分组相关
-const groups = ref<{ id: number; name: string }[]>([]);
-const showGroupModal = ref(false);
-const selectedGroupId = ref<number>(0);
-const groupLoading = ref(false);
+const groups = ref<{ id: number; name: string }[]>([])
+const showGroupModal = ref(false)
+const selectedGroupId = ref<number>(0)
+const groupLoading = ref(false)
 
-const showPasswordModal = ref(false);
-const selectedPasswordUser = ref<User | null>(null);
-const passwordLoading = ref(false);
+const showPasswordModal = ref(false)
+const selectedPasswordUser = ref<User | null>(null)
+const passwordLoading = ref(false)
 const passwordForm = ref({
   newPassword: "",
   newPasswordConfirm: "",
-});
-const deleteLoadingUserId = ref<number | null>(null);
-const showNicknameModal = ref(false);
-const selectedNicknameUser = ref<User | null>(null);
-const nicknameLoading = ref(false);
+})
+const deleteLoadingUserId = ref<number | null>(null)
+const showNicknameModal = ref(false)
+const selectedNicknameUser = ref<User | null>(null)
+const nicknameLoading = ref(false)
 const nicknameForm = ref({
   userId: 0,
   name: "",
   email: "",
   avatar: "",
-});
-const showBroadcastModal = ref(false);
-const broadcastLoading = ref(false);
+})
+const showBroadcastModal = ref(false)
+const broadcastLoading = ref(false)
 const broadcastForm = ref({
   content: "",
-});
-const taskLoading = ref(false);
-const taskStatusFilter = ref("");
-const spiderJobs = ref<SpiderJobInfo[]>([]);
+})
+const taskLoading = ref(false)
+const taskStatusFilter = ref("")
+const spiderJobs = ref<SpiderJobInfo[]>([])
 
 const pages = computed(() => {
-  if (!data.value) return [];
-  const currentPage = data.value.currentPage;
-  const totalPage = data.value.totalPage;
-  if (totalPage <= 3) return Array.from({ length: totalPage }, (_, i) => i + 1);
-  if (currentPage <= 1) return [1, 2, 3];
-  if (currentPage >= totalPage - 1)
-    return [totalPage - 2, totalPage - 1, totalPage];
-  return [currentPage - 1, currentPage, currentPage + 1];
-});
+  if (!data.value) return []
+  const currentPage = data.value.currentPage
+  const totalPage = data.value.totalPage
+  if (totalPage <= 3) return Array.from({ length: totalPage }, (_, i) => i + 1)
+  if (currentPage <= 1) return [1, 2, 3]
+  if (currentPage >= totalPage - 1) return [totalPage - 2, totalPage - 1, totalPage]
+  return [currentPage - 1, currentPage, currentPage + 1]
+})
 
 const getData = async (page: number) => {
-  loading.value = true;
-  const response = await API.user.profile.list(page);
-  Toast.stdResponse(response, false);
+  loading.value = true
+  const response = await API.user.profile.list(page)
+  Toast.stdResponse(response, false)
 
   if (response.success) {
-    jumppage.value = page;
-    data.value = response.data;
-    data.value.currentPage = page;
-    data.value.totalPage = Math.ceil(data.value.total / 10);
+    jumppage.value = page
+    data.value = response.data
+    data.value.currentPage = page
+    data.value.totalPage = Math.ceil(data.value.total / 10)
   }
-  loading.value = false;
-};
+  loading.value = false
+}
 
 const getRoleName = (roleId: number | undefined) => {
-  if (roleId === undefined) return "未知";
-  const role = roles.value.find((r) => r.roleId === roleId);
-  return role?.name || `角色${roleId}`;
-};
+  if (roleId === undefined) return "未知"
+  const role = roles.value.find((r) => r.roleId === roleId)
+  return role?.name || `角色${roleId}`
+}
 
 const getGroupName = (groupId: number) => {
-  const group = groups.value.find((g) => g.id === groupId);
-  return group?.name || `组${groupId}`;
-};
+  const group = groups.value.find((g) => g.id === groupId)
+  return group?.name || `组${groupId}`
+}
 
 const loadRoles = async () => {
-  const response = await API.user.role.list();
+  const response = await API.user.role.list()
   if (response.success) {
-    roles.value = response.data.roles;
+    roles.value = response.data.roles
   }
-};
+}
 
 const openEditModal = async (user: User) => {
-  selectedUser.value = user;
+  selectedUser.value = user
   if (userStore.isAdmin) {
     // 获取完整用户信息（包含 roleId）
-    const resp = await API.user.profile.getById(Number(user.userId));
+    const resp = await API.user.profile.getById(Number(user.userId))
     if (resp.success && resp.data.roleId !== undefined) {
-      selectedRoleId.value = resp.data.roleId;
+      selectedRoleId.value = resp.data.roleId
     }
-    showRoleModal.value = true;
+    showRoleModal.value = true
   } else {
     // 教练：获取分组列表 + 当前用户分组
-    selectedGroupId.value = user.groupId;
-    await loadGroups();
-    showGroupModal.value = true;
+    selectedGroupId.value = user.groupId
+    await loadGroups()
+    showGroupModal.value = true
   }
-};
+}
 
 const loadGroups = async () => {
-  const resp = await API.user.group.list(1);
+  const resp = await API.user.group.list(1)
   if (resp.success) {
-    groups.value = resp.data.list.map((g: any) => ({ id: g.id, name: g.name }));
+    groups.value = resp.data.list.map((g: any) => ({ id: g.id, name: g.name }))
   }
-};
+}
 
 const closeRoleModal = () => {
-  showRoleModal.value = false;
-  selectedUser.value = null;
-  selectedRoleId.value = 0;
-};
+  showRoleModal.value = false
+  selectedUser.value = null
+  selectedRoleId.value = 0
+}
 
 const handleRoleConfirm = async () => {
-  if (!selectedUser.value) return;
-  roleLoading.value = true;
+  if (!selectedUser.value) return
+  roleLoading.value = true
   const response = await API.user.role.setUserRole({
     userId: Number(selectedUser.value.userId),
     roleId: selectedRoleId.value,
-  });
-  Toast.stdResponse(response);
-  roleLoading.value = false;
+  })
+  Toast.stdResponse(response)
+  roleLoading.value = false
   if (response.success) {
-    closeRoleModal();
-    refresh();
+    closeRoleModal()
+    refresh()
   }
-};
+}
 
 const closeGroupModal = () => {
-  showGroupModal.value = false;
-  selectedUser.value = null;
-  selectedGroupId.value = 0;
-};
+  showGroupModal.value = false
+  selectedUser.value = null
+  selectedGroupId.value = 0
+}
 
 const handleGroupConfirm = async () => {
-  if (!selectedUser.value) return;
-  groupLoading.value = true;
+  if (!selectedUser.value) return
+  groupLoading.value = true
   const response = await API.user.profile.moveGroup({
     userId: Number(selectedUser.value.userId),
     groupId: selectedGroupId.value,
-  });
-  Toast.stdResponse(response);
-  groupLoading.value = false;
+  })
+  Toast.stdResponse(response)
+  groupLoading.value = false
   if (response.success) {
-    closeGroupModal();
-    refresh();
+    closeGroupModal()
+    refresh()
   }
-};
+}
 
 const openPasswordModal = (user: User) => {
-  selectedPasswordUser.value = user;
+  selectedPasswordUser.value = user
   passwordForm.value = {
     newPassword: "",
     newPasswordConfirm: "",
-  };
-  showPasswordModal.value = true;
-};
+  }
+  showPasswordModal.value = true
+}
 
 const closePasswordModal = () => {
-  showPasswordModal.value = false;
-  selectedPasswordUser.value = null;
+  showPasswordModal.value = false
+  selectedPasswordUser.value = null
   passwordForm.value = {
     newPassword: "",
     newPasswordConfirm: "",
-  };
-};
+  }
+}
 
 const handlePasswordConfirm = async () => {
-  if (!selectedPasswordUser.value) return;
-  passwordLoading.value = true;
+  if (!selectedPasswordUser.value) return
+  passwordLoading.value = true
   const response = await API.user.profile.changePassword({
     userId: Number(selectedPasswordUser.value.userId),
     newPassword: passwordForm.value.newPassword,
     newPasswordConfirm: passwordForm.value.newPasswordConfirm,
-  });
-  Toast.stdResponse(response);
-  passwordLoading.value = false;
+  })
+  Toast.stdResponse(response)
+  passwordLoading.value = false
   if (response.success) {
-    closePasswordModal();
+    closePasswordModal()
   }
-};
+}
 
 const openNicknameModal = async (user: User) => {
-  selectedNicknameUser.value = user;
-  nicknameLoading.value = true;
-  const response = await API.user.profile.getById(Number(user.userId));
-  nicknameLoading.value = false;
+  selectedNicknameUser.value = user
+  nicknameLoading.value = true
+  const response = await API.user.profile.getById(Number(user.userId))
+  nicknameLoading.value = false
   if (!response.success) {
-    Toast.stdResponse(response);
-    selectedNicknameUser.value = null;
-    return;
+    Toast.stdResponse(response)
+    selectedNicknameUser.value = null
+    return
   }
   nicknameForm.value = {
     userId: Number(response.data.userId),
     name: response.data.name || "",
     email: response.data.email || "",
     avatar: response.data.avatar || "",
-  };
-  showNicknameModal.value = true;
-};
+  }
+  showNicknameModal.value = true
+}
 
 const closeNicknameModal = () => {
-  showNicknameModal.value = false;
-  selectedNicknameUser.value = null;
+  showNicknameModal.value = false
+  selectedNicknameUser.value = null
   nicknameForm.value = {
     userId: 0,
     name: "",
     email: "",
     avatar: "",
-  };
-};
+  }
+}
 
 const handleNicknameConfirm = async () => {
-  if (!selectedNicknameUser.value) return;
+  if (!selectedNicknameUser.value) return
   if (!nicknameForm.value.name.trim()) {
-    Toast.error("昵称不能为空");
-    return;
+    Toast.error("昵称不能为空")
+    return
   }
 
-  nicknameLoading.value = true;
+  nicknameLoading.value = true
   const response = await API.user.profile.updateNickname({
     userId: nicknameForm.value.userId,
     name: nicknameForm.value.name.trim(),
     email: nicknameForm.value.email,
     avatar: nicknameForm.value.avatar,
-  });
-  Toast.stdResponse(response);
-  nicknameLoading.value = false;
+  })
+  Toast.stdResponse(response)
+  nicknameLoading.value = false
   if (response.success) {
-    closeNicknameModal();
-    refresh();
+    closeNicknameModal()
+    refresh()
   }
-};
+}
 
 const openBroadcastModal = () => {
-  broadcastForm.value.content = "";
-  showBroadcastModal.value = true;
-};
+  broadcastForm.value.content = ""
+  showBroadcastModal.value = true
+}
 
 const closeBroadcastModal = () => {
-  showBroadcastModal.value = false;
-  broadcastForm.value.content = "";
-};
+  showBroadcastModal.value = false
+  broadcastForm.value.content = ""
+}
 
 const handleBroadcastConfirm = async () => {
-  const content = broadcastForm.value.content.trim();
+  const content = broadcastForm.value.content.trim()
   if (!content) {
-    Toast.error("消息内容不能为空");
-    return;
+    Toast.error("消息内容不能为空")
+    return
   }
-  broadcastLoading.value = true;
-  const response = await API.user.message.broadcast(content);
-  Toast.stdResponse(response);
-  broadcastLoading.value = false;
+  broadcastLoading.value = true
+  const response = await API.user.message.broadcast(content)
+  Toast.stdResponse(response)
+  broadcastLoading.value = false
   if (response.success) {
-    closeBroadcastModal();
+    closeBroadcastModal()
   }
-};
+}
 
 const canDeleteUser = (user: User) => {
   return (
     userStore.isAdmin &&
     Number(user.roleId) !== 1 &&
     Number(user.userId) !== Number(userStore.info?.userId)
-  );
-};
+  )
+}
 
 const handleDeleteUser = async (user: User) => {
-  if (!canDeleteUser(user)) return;
-  const userId = Number(user.userId);
-  const displayName = user.name || user.username;
+  if (!canDeleteUser(user)) return
+  const userId = Number(user.userId)
+  const displayName = user.name || user.username
   if (!window.confirm(`确认删除用户「${displayName}」吗？删除后该用户不会再出现在列表和排名中。`)) {
-    return;
+    return
   }
 
-  deleteLoadingUserId.value = userId;
-  const response = await API.user.profile.delete(userId);
-  Toast.stdResponse(response);
-  deleteLoadingUserId.value = null;
+  deleteLoadingUserId.value = userId
+  const response = await API.user.profile.delete(userId)
+  Toast.stdResponse(response)
+  deleteLoadingUserId.value = null
   if (response.success) {
-    const currentPage = data.value?.currentPage || 1;
-    const shouldBackPage = data.value.list.length === 1 && currentPage > 1;
-    await getData(shouldBackPage ? currentPage - 1 : currentPage);
+    const currentPage = data.value?.currentPage || 1
+    const shouldBackPage = data.value.list.length === 1 && currentPage > 1
+    await getData(shouldBackPage ? currentPage - 1 : currentPage)
   }
-};
+}
 
 const formatDate = (date: string) => {
   return new Date(Number(date) * 1000).toLocaleString("sv-SE", {
@@ -717,28 +674,28 @@ const formatDate = (date: string) => {
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  });
-};
+  })
+}
 
 const fetchSpiderJobs = async () => {
-  taskLoading.value = true;
+  taskLoading.value = true
   const response = await API.core.spider.jobs({
     scope: "all",
     status: taskStatusFilter.value,
     page: 1,
     pageSize: 20,
-  });
-  Toast.stdResponse(response, false);
+  })
+  Toast.stdResponse(response, false)
   if (response.success) {
-    spiderJobs.value = response.data.data;
+    spiderJobs.value = response.data.data
   }
-  taskLoading.value = false;
-};
+  taskLoading.value = false
+}
 
 const setTaskFilter = (status: string) => {
-  taskStatusFilter.value = status;
-  fetchSpiderJobs();
-};
+  taskStatusFilter.value = status
+  fetchSpiderJobs()
+}
 
 const formatTaskStatus = (status: string) => {
   const map: Record<string, string> = {
@@ -746,41 +703,41 @@ const formatTaskStatus = (status: string) => {
     running: "抓取中",
     success: "完成",
     failed: "失败",
-  };
-  return map[status] || status;
-};
+  }
+  return map[status] || status
+}
 
 const formatTaskSource = (source: string) => {
   const map: Record<string, string> = {
     manual: "手动刷新",
     cron: "定时刷新",
     bind: "绑定触发",
-  };
-  return map[source] || source;
-};
+  }
+  return map[source] || source
+}
 
 const formatTaskTime = (time: number) => {
-  if (!time) return "";
-  return formatDate(String(time));
-};
+  if (!time) return ""
+  return formatDate(String(time))
+}
 
 const jobProgress = (job: SpiderJobInfo) => {
-  if (job.status === "success") return 100;
-  if (job.totalPlatforms <= 0) return job.status === "running" ? 20 : 8;
-  return Math.max(8, Math.min(100, Math.round((job.finishedPlatforms / job.totalPlatforms) * 100)));
-};
+  if (job.status === "success") return 100
+  if (job.totalPlatforms <= 0) return job.status === "running" ? 20 : 8
+  return Math.max(8, Math.min(100, Math.round((job.finishedPlatforms / job.totalPlatforms) * 100)))
+}
 
 const refresh = () => {
-  getData(data.value?.currentPage || 1);
-  fetchSpiderJobs();
-};
+  getData(data.value?.currentPage || 1)
+  fetchSpiderJobs()
+}
 
 onMounted(() => {
-  getData(1);
-  loadRoles();
-  loadGroups();
-  fetchSpiderJobs();
-});
+  getData(1)
+  loadRoles()
+  loadGroups()
+  fetchSpiderJobs()
+})
 </script>
 
 <style scoped>
@@ -900,7 +857,10 @@ onMounted(() => {
     color: var(--text-secondary-color);
     background-color: var(--background-color-2);
     font-family: inherit;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
     cursor: pointer;
   }
 
@@ -1135,7 +1095,10 @@ onMounted(() => {
       font-size: var(--text-sm);
       font-weight: 800;
       line-height: 1;
-      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
       background-color: var(--background-color-2);
       color: var(--text-secondary-color);
 
@@ -1172,7 +1135,10 @@ onMounted(() => {
       font-weight: 800;
       line-height: 1;
       cursor: pointer;
-      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
     }
 
     .btn:hover,

@@ -1,37 +1,37 @@
 /**
  * 常用类型
-*/
+ */
 
-export type platform = "AtCoder" | "NowCoder" | "LeetCode" | "LuoGu" | "CodeForces" | "QOJ";
+export type platform = "AtCoder" | "NowCoder" | "LeetCode" | "LuoGu" | "CodeForces" | "QOJ"
 
 export type Links = {
-    [Key in platform]: string;
+  [Key in platform]: string
 }
 
 export interface User {
-    avatar: string;
-    email: string;
-    emailEnabled?: boolean;
-    groupId: string;
-    name: string;
-    roleId?: number;
-    spiders: Spider[];
-    links: Links;
-    userId: number;
-    username: string;
-    [property: string]: any;
+  avatar: string
+  email: string
+  emailEnabled?: boolean
+  groupId: string
+  name: string
+  roleId?: number
+  spiders: Spider[]
+  links: Links
+  userId: number
+  username: string
+  [property: string]: any
 }
 
 export interface Spider {
-    platform: platform;
-    username: string;
-    [property: string]: any;
+  platform: platform
+  username: string
+  [property: string]: any
 }
 
 export interface Anno {
-    id: number;
-    content: string;
-    type: string;
-    isclosed: boolean;
-    [property: string]: any;
+  id: number
+  content: string
+  type: string
+  isclosed: boolean
+  [property: string]: any
 }

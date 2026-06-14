@@ -3,7 +3,9 @@
     <h2>数据统计</h2>
     <div class="stat-scope-note">
       <strong>{{ statisticExplanation.title || "统计口径说明" }}</strong>
-      <span>{{ statisticExplanation.summary || "本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。" }}</span>
+      <span>{{
+        statisticExplanation.summary || "本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。"
+      }}</span>
       <button @click="showStatisticExplanation = !showStatisticExplanation">
         {{ showStatisticExplanation ? "收起" : "查看说明" }}
       </button>
@@ -66,9 +68,7 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(periodData.ac.thisYear, periodData.ac.lastYear)
-              "
+              :class="getTrendClass(periodData.ac.thisYear, periodData.ac.lastYear)"
             >
               <span class="trend-icon">{{
                 getTrend(periodData.ac.thisYear, periodData.ac.lastYear)
@@ -92,21 +92,13 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(
-                  periodData.submit.thisYear,
-                  periodData.submit.lastYear,
-                )
-              "
+              :class="getTrendClass(periodData.submit.thisYear, periodData.submit.lastYear)"
             >
               <span class="trend-icon">{{
                 getTrend(periodData.submit.thisYear, periodData.submit.lastYear)
               }}</span>
               <span class="trend-value">{{
-                getTrendValue(
-                  periodData.submit.thisYear,
-                  periodData.submit.lastYear,
-                )
+                getTrendValue(periodData.submit.thisYear, periodData.submit.lastYear)
               }}</span>
             </div>
             <div class="footer-info">对比去年</div>
@@ -124,9 +116,7 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(periodData.ac.thisMonth, periodData.ac.lastMonth)
-              "
+              :class="getTrendClass(periodData.ac.thisMonth, periodData.ac.lastMonth)"
             >
               <span class="trend-icon">{{
                 getTrend(periodData.ac.thisMonth, periodData.ac.lastMonth)
@@ -150,24 +140,13 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(
-                  periodData.submit.thisMonth,
-                  periodData.submit.lastMonth,
-                )
-              "
+              :class="getTrendClass(periodData.submit.thisMonth, periodData.submit.lastMonth)"
             >
               <span class="trend-icon">{{
-                getTrend(
-                  periodData.submit.thisMonth,
-                  periodData.submit.lastMonth,
-                )
+                getTrend(periodData.submit.thisMonth, periodData.submit.lastMonth)
               }}</span>
               <span class="trend-value">{{
-                getTrendValue(
-                  periodData.submit.thisMonth,
-                  periodData.submit.lastMonth,
-                )
+                getTrendValue(periodData.submit.thisMonth, periodData.submit.lastMonth)
               }}</span>
             </div>
             <div class="footer-info">对比上月</div>
@@ -185,9 +164,7 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(periodData.ac.thisWeek, periodData.ac.lastWeek)
-              "
+              :class="getTrendClass(periodData.ac.thisWeek, periodData.ac.lastWeek)"
             >
               <span class="trend-icon">{{
                 getTrend(periodData.ac.thisWeek, periodData.ac.lastWeek)
@@ -211,21 +188,13 @@
           <div class="card-footer">
             <div
               class="footer-trend"
-              :class="
-                getTrendClass(
-                  periodData.submit.thisWeek,
-                  periodData.submit.lastWeek,
-                )
-              "
+              :class="getTrendClass(periodData.submit.thisWeek, periodData.submit.lastWeek)"
             >
               <span class="trend-icon">{{
                 getTrend(periodData.submit.thisWeek, periodData.submit.lastWeek)
               }}</span>
               <span class="trend-value">{{
-                getTrendValue(
-                  periodData.submit.thisWeek,
-                  periodData.submit.lastWeek,
-                )
+                getTrendValue(periodData.submit.thisWeek, periodData.submit.lastWeek)
               }}</span>
             </div>
             <div class="footer-info">对比上周</div>
@@ -264,16 +233,10 @@
       <div class="ranking-heading">
         <h2>{{ rankingMode === "user" ? "用户排名" : "团队排名" }}</h2>
         <div class="ranking-switch" aria-label="切换排名类型">
-          <button
-            :class="{ active: rankingMode === 'user' }"
-            @click="setRankingMode('user')"
-          >
+          <button :class="{ active: rankingMode === 'user' }" @click="setRankingMode('user')">
             用户排名
           </button>
-          <button
-            :class="{ active: rankingMode === 'team' }"
-            @click="setRankingMode('team')"
-          >
+          <button :class="{ active: rankingMode === 'team' }" @click="setRankingMode('team')">
             团队排名
           </button>
         </div>
@@ -292,14 +255,9 @@
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="item in rankingPageRows"
-                :key="`${rankingMode}-${item.id}`"
-              >
+              <tr v-for="item in rankingPageRows" :key="`${rankingMode}-${item.id}`">
                 <td class="rank-col">
-                  <span class="rank-badge" :class="getRankClass(item.rank)">{{
-                    item.rank
-                  }}</span>
+                  <span class="rank-badge" :class="getRankClass(item.rank)">{{ item.rank }}</span>
                 </td>
                 <td>
                   <div
@@ -307,10 +265,7 @@
                     class="rank-user"
                     @click="router.push(`/profile?id=${item.id}`)"
                   >
-                    <img
-                      :src="item.avatar || '/images/defaultAvatar.png'"
-                      alt=""
-                    />
+                    <img :src="item.avatar || '/images/defaultAvatar.png'" alt="" />
                     <div class="rank-user-info">
                       <span class="rank-name">{{ item.name }}</span>
                       <span class="rank-username">{{ item.subText }}</span>
@@ -325,12 +280,7 @@
                     </div>
                   </div>
                   <div v-else class="rank-team">
-                    <img
-                      v-if="item.avatar"
-                      class="team-avatar-img"
-                      :src="item.avatar"
-                      alt=""
-                    />
+                    <img v-if="item.avatar" class="team-avatar-img" :src="item.avatar" alt="" />
                     <span v-else class="team-avatar">队</span>
                     <div class="rank-user-info">
                       <span class="rank-name">{{ item.name }}</span>
@@ -370,12 +320,7 @@
           <div class="group">
             <div class="pageInput">
               <button @click="setRankingPage(rankingJumpPage)">跳转</button>
-              <input
-                type="number"
-                min="1"
-                :max="rankingTotalPage"
-                v-model="rankingJumpPage"
-              />
+              <input type="number" min="1" :max="rankingTotalPage" v-model="rankingJumpPage" />
             </div>
             <div class="pageSum">共 {{ rankingTotalPage }} 页</div>
           </div>
@@ -391,66 +336,66 @@ import API, {
   type Datum as DailyData,
   type Group as UserGroupItem,
   type List as ProfileListItem,
-} from "@/utils/api";
-import Toast from "@/utils/toast";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { useUserStore } from "@/stores/user";
-import { buildTrainingStatuses, type TrainingStatusBadge } from "@/utils/trainingStatus";
+} from "@/utils/api"
+import Toast from "@/utils/toast"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref } from "vue"
+import { useRouter } from "vue-router"
+import { useUserStore } from "@/stores/user"
+import { buildTrainingStatuses, type TrainingStatusBadge } from "@/utils/trainingStatus"
 
-const router = useRouter();
-const userStore = useUserStore();
-const showRanking = computed(() => userStore.isLogin);
-const AsyncLineChart = defineAsyncComponent(() => import("@/components/AsyncLineChart.vue"));
+const router = useRouter()
+const userStore = useUserStore()
+const showRanking = computed(() => userStore.isLogin)
+const AsyncLineChart = defineAsyncComponent(() => import("@/components/AsyncLineChart.vue"))
 
 export interface Response {
-  list: List[];
-  [property: string]: any;
+  list: List[]
+  [property: string]: any
 }
 
 export interface List {
-  avatar: string;
-  groupId: string;
-  lastSubmit: string;
-  name: string;
-  roleId?: number | string;
-  userId: string;
-  username: string;
-  [property: string]: any;
+  avatar: string
+  groupId: string
+  lastSubmit: string
+  name: string
+  roleId?: number | string
+  userId: string
+  username: string
+  [property: string]: any
 }
 
-const loadingStats = ref(true);
-const loadingChart = ref(true);
-const loadingRanking = ref(true);
-const userCount = ref(0);
-const showStatisticExplanation = ref(false);
+const loadingStats = ref(true)
+const loadingChart = ref(true)
+const loadingRanking = ref(true)
+const userCount = ref(0)
+const showStatisticExplanation = ref(false)
 const statisticExplanation = ref({
   title: "统计口径说明",
   summary: "本站统计基于提交日志统一去重，可能与 OJ 主页展示口径不同。",
   bullets: [] as string[],
-});
+})
 
 const getStatisticExplanation = async () => {
-  const response = await API.core.statistic.explanation();
-  Toast.stdResponse(response, false);
+  const response = await API.core.statistic.explanation()
+  Toast.stdResponse(response, false)
   if (response.success) {
     statisticExplanation.value = {
       title: response.data.title,
       summary: response.data.summary,
       bullets: response.data.bullets,
-    };
+    }
   }
-};
+}
 
 const getUserCount = async () => {
-  const response = await API.user.profile.list(1);
-  Toast.stdResponse(response, false);
+  const response = await API.user.profile.list(1)
+  Toast.stdResponse(response, false)
 
   if (response.success) {
-    userCount.value = response.data.total;
+    userCount.value = response.data.total
   }
-};
+}
 
 const periodData = ref<CoreStatisticPeriodData>({
   ac: {
@@ -473,124 +418,121 @@ const periodData = ref<CoreStatisticPeriodData>({
     today: 0,
     total: 0,
   },
-});
+})
 
 const getPeriodData = async () => {
-  const response = await API.core.statistic.period(-1);
-  Toast.stdResponse(response, false);
+  const response = await API.core.statistic.period(-1)
+  Toast.stdResponse(response, false)
 
-  periodData.value = response.data.data;
-};
+  periodData.value = response.data.data
+}
 
 const getTrendClass = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
+  curr = Number(curr)
+  prev = Number(prev)
   if (curr === prev) {
-    return "equal";
+    return "equal"
   } else if (curr > prev) {
-    return "up";
+    return "up"
   } else {
-    return "down";
+    return "down"
   }
-};
+}
 
 const getTrendValue = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
-  return (curr - prev >= 0 ? "+" : "") + (curr - prev);
-};
+  curr = Number(curr)
+  prev = Number(prev)
+  return (curr - prev >= 0 ? "+" : "") + (curr - prev)
+}
 
 const getTrend = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
+  curr = Number(curr)
+  prev = Number(prev)
   if (curr === prev) {
-    return "-";
+    return "-"
   } else if (curr > prev) {
-    return "↗";
+    return "↗"
   } else {
-    return "↘";
+    return "↘"
   }
-};
+}
 
-const groupCount = ref(0);
+const groupCount = ref(0)
 
 const getGroupCount = async () => {
-  const response = await API.user.group.list(1);
+  const response = await API.user.group.list(1)
 
   if (response.success) {
-    Toast.stdResponse(response, false);
-    groupCount.value = response.data.total;
+    Toast.stdResponse(response, false)
+    groupCount.value = response.data.total
   }
-};
+}
 
-const acDataDaily = ref<DailyData[]>([]);
-const submitDataDaily = ref<DailyData[]>([]);
-const isCompactScreen = ref(false);
+const acDataDaily = ref<DailyData[]>([])
+const submitDataDaily = ref<DailyData[]>([])
+const isCompactScreen = ref(false)
 
 const syncScreenSize = () => {
-  isCompactScreen.value = window.innerWidth <= 640;
-};
+  isCompactScreen.value = window.innerWidth <= 640
+}
 
 const padZero = (num: number): string => {
-  return num < 10 ? "0" + num : num.toString();
-};
+  return num < 10 ? "0" + num : num.toString()
+}
 
 const getDailyData = async () => {
-  const dateObj = new Date();
-  const date =
-    dateObj.getFullYear() +
-    padZero(dateObj.getMonth() + 1) +
-    padZero(dateObj.getDate());
+  const dateObj = new Date()
+  const date = dateObj.getFullYear() + padZero(dateObj.getMonth() + 1) + padZero(dateObj.getDate())
   const responseAc = await API.core.statistic.heatmap({
     startDate: "20230101",
     endDate: date,
     isAc: true,
-  });
+  })
   const responseSubmit = await API.core.statistic.heatmap({
     startDate: "20230101",
     endDate: date,
     isAc: false,
-  });
-  Toast.stdResponse(responseAc, false);
-  Toast.stdResponse(responseAc, false);
+  })
+  Toast.stdResponse(responseAc, false)
+  Toast.stdResponse(responseAc, false)
   if (responseAc.success && responseSubmit.success) {
-    acDataDaily.value = responseAc.data.data;
-    submitDataDaily.value = responseSubmit.data.data;
+    acDataDaily.value = responseAc.data.data
+    submitDataDaily.value = responseSubmit.data.data
   }
-};
+}
 
 const calculateDefaultRange = (dates: string[]) => {
   if (dates.length <= 30) {
     return {
       startIndex: 0,
       endIndex: dates.length - 1,
-    };
+    }
   } else {
-    const endIndex = dates.length - 1;
-    const startIndex = Math.max(0, endIndex - 29);
+    const endIndex = dates.length - 1
+    const startIndex = Math.max(0, endIndex - 29)
     return {
       startIndex,
       endIndex,
-    };
+    }
   }
-};
+}
 
 const chartOption = computed(() => {
   const sortedAcData = [...acDataDaily.value].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  )
   const sortedSubmitData = [...submitDataDaily.value].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
+  )
 
-  const dates = sortedAcData.map((item) => item.date);
-  const acValues = sortedAcData.map((item) => item.count);
-  const submitValues = sortedSubmitData.map((item) => item.count);
+  const dates = sortedAcData.map((item) => item.date)
+  const acValues = sortedAcData.map((item) => item.count)
+  const submitValues = sortedSubmitData.map((item) => item.count)
 
-  const { startIndex, endIndex } = calculateDefaultRange(dates);
+  const { startIndex, endIndex } = calculateDefaultRange(dates)
 
-  const startPercent = (startIndex / dates.length) * 100;
-  const endPercent = (endIndex / dates.length) * 100;
+  const startPercent = (startIndex / dates.length) * 100
+  const endPercent = (endIndex / dates.length) * 100
 
   return {
     darkmode: "auto",
@@ -630,8 +572,8 @@ const chartOption = computed(() => {
           hideOverlap: true,
           interval: isCompactScreen.value ? "auto" : 0,
           formatter: function (value: string) {
-            const date = new Date(value);
-            return date.getMonth() + 1 + "-" + date.getDate();
+            const date = new Date(value)
+            return date.getMonth() + 1 + "-" + date.getDate()
           },
         },
         splitLine: {
@@ -682,81 +624,75 @@ const chartOption = computed(() => {
         showSymbol: false,
       },
     ],
-  };
-});
+  }
+})
 
-type RankingMode = "user" | "team";
+type RankingMode = "user" | "team"
 
 interface RankingRow {
-  rank: number;
-  id: number;
-  avatar: string;
-  name: string;
-  subText: string;
-  acTotal: number;
-  submitTotal: number;
-  lastSubmit: string;
-  members: number;
-  status?: TrainingStatusBadge;
-  scoreMembers?: number;
-  groupId?: number;
+  rank: number
+  id: number
+  avatar: string
+  name: string
+  subText: string
+  acTotal: number
+  submitTotal: number
+  lastSubmit: string
+  members: number
+  status?: TrainingStatusBadge
+  scoreMembers?: number
+  groupId?: number
 }
 
-const rankingMode = ref<RankingMode>("user");
-const userRankingRows = ref<RankingRow[]>([]);
-const teamRankingRows = ref<RankingRow[]>([]);
-const rankingPage = ref(1);
-const rankingJumpPage = ref(1);
-const rankingPageSize = 10;
+const rankingMode = ref<RankingMode>("user")
+const userRankingRows = ref<RankingRow[]>([])
+const teamRankingRows = ref<RankingRow[]>([])
+const rankingPage = ref(1)
+const rankingJumpPage = ref(1)
+const rankingPageSize = 10
 
 const activeRankingRows = computed(() =>
   rankingMode.value === "user" ? userRankingRows.value : teamRankingRows.value,
-);
+)
 
-const rankingTotalPage = computed(() =>
-  Math.ceil(activeRankingRows.value.length / rankingPageSize),
-);
+const rankingTotalPage = computed(() => Math.ceil(activeRankingRows.value.length / rankingPageSize))
 
 const rankingPageRows = computed(() => {
-  const start = (rankingPage.value - 1) * rankingPageSize;
-  return activeRankingRows.value.slice(start, start + rankingPageSize);
-});
+  const start = (rankingPage.value - 1) * rankingPageSize
+  return activeRankingRows.value.slice(start, start + rankingPageSize)
+})
 
 const rankingPages = computed(() => {
-  const currentPage = rankingPage.value;
-  const totalPage = rankingTotalPage.value;
-  if (totalPage <= 3) return Array.from({ length: totalPage }, (_, i) => i + 1);
-  if (currentPage <= 1) return [1, 2, 3];
-  if (currentPage >= totalPage - 1)
-    return [totalPage - 2, totalPage - 1, totalPage];
-  return [currentPage - 1, currentPage, currentPage + 1];
-});
+  const currentPage = rankingPage.value
+  const totalPage = rankingTotalPage.value
+  if (totalPage <= 3) return Array.from({ length: totalPage }, (_, i) => i + 1)
+  if (currentPage <= 1) return [1, 2, 3]
+  if (currentPage >= totalPage - 1) return [totalPage - 2, totalPage - 1, totalPage]
+  return [currentPage - 1, currentPage, currentPage + 1]
+})
 
 const setRankingPage = (page: number) => {
-  const safePage = Math.min(
-    Math.max(Number(page) || 1, 1),
-    Math.max(rankingTotalPage.value, 1),
-  );
-  rankingPage.value = safePage;
-  rankingJumpPage.value = safePage;
-};
+  const safePage = Math.min(Math.max(Number(page) || 1, 1), Math.max(rankingTotalPage.value, 1))
+  rankingPage.value = safePage
+  rankingJumpPage.value = safePage
+}
 
 const setRankingMode = (mode: RankingMode) => {
-  if (rankingMode.value === mode) return;
-  rankingMode.value = mode;
-  setRankingPage(1);
-};
+  if (rankingMode.value === mode) return
+  rankingMode.value = mode
+  setRankingPage(1)
+}
 
 const getRankClass = (rank: number): string => {
-  if (rank === 1) return "gold";
-  if (rank === 2) return "silver";
-  if (rank === 3) return "bronze";
-  return "";
-};
+  if (rank === 1) return "gold"
+  if (rank === 2) return "silver"
+  if (rank === 3) return "bronze"
+  return ""
+}
 
 const formatDate = (timestamp: string): string => {
-  const time = Number(timestamp);
-  if (!time) return "暂无提交";
+  const time = Number(timestamp)
+  if (!time) return "暂无提交"
   return new Date(time * 1000).toLocaleString("zh-CN", {
     year: "numeric",
     month: "2-digit",
@@ -764,83 +700,81 @@ const formatDate = (timestamp: string): string => {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  });
-};
+  })
+}
 
 const chunkedMap = async <T, R>(
   items: T[],
   size: number,
   mapper: (item: T) => Promise<R>,
 ): Promise<R[]> => {
-  const results: R[] = [];
+  const results: R[] = []
   for (let i = 0; i < items.length; i += size) {
-    const chunk = items.slice(i, i + size);
-    results.push(...(await Promise.all(chunk.map(mapper))));
+    const chunk = items.slice(i, i + size)
+    results.push(...(await Promise.all(chunk.map(mapper))))
   }
-  return results;
-};
+  return results
+}
 
 const getAllUsers = async (): Promise<ProfileListItem[]> => {
-  const firstResponse = await API.user.profile.list(1);
-  Toast.stdResponse(firstResponse, false);
-  if (!firstResponse.success) return [];
+  const firstResponse = await API.user.profile.list(1)
+  Toast.stdResponse(firstResponse, false)
+  if (!firstResponse.success) return []
 
-  const totalPage = Math.ceil(firstResponse.data.total / 10);
-  const users = [...firstResponse.data.list];
-  if (totalPage <= 1) return users;
+  const totalPage = Math.ceil(firstResponse.data.total / 10)
+  const users = [...firstResponse.data.list]
+  if (totalPage <= 1) return users
 
   const pageResponses = await chunkedMap(
     Array.from({ length: totalPage - 1 }, (_, index) => index + 2),
     4,
     (page) => API.user.profile.list(page),
-  );
+  )
 
   pageResponses.forEach((response) => {
     if (response.success) {
-      users.push(...response.data.list);
+      users.push(...response.data.list)
     }
-  });
+  })
 
-  return users;
-};
+  return users
+}
 
 const getAllGroups = async (): Promise<UserGroupItem[]> => {
-  const firstResponse = await API.user.group.list(1);
-  if (!firstResponse.success) return [];
+  const firstResponse = await API.user.group.list(1)
+  if (!firstResponse.success) return []
 
-  const totalPage = Math.ceil(firstResponse.data.total / 5);
-  const groups = [...firstResponse.data.list];
-  if (totalPage <= 1) return groups;
+  const totalPage = Math.ceil(firstResponse.data.total / 5)
+  const groups = [...firstResponse.data.list]
+  if (totalPage <= 1) return groups
 
   const pageResponses = await chunkedMap(
     Array.from({ length: totalPage - 1 }, (_, index) => index + 2),
     4,
     (page) => API.user.group.list(page),
-  );
+  )
 
   pageResponses.forEach((response) => {
     if (response.success) {
-      groups.push(...response.data.list);
+      groups.push(...response.data.list)
     }
-  });
+  })
 
-  return groups;
-};
+  return groups
+}
 
-const getTeamAvatarMap = async (
-  groups: UserGroupItem[],
-): Promise<Map<number, string>> => {
-  const teamGroups = groups.filter((group) => Number(group.id) > 0);
+const getTeamAvatarMap = async (groups: UserGroupItem[]): Promise<Map<number, string>> => {
+  const teamGroups = groups.filter((group) => Number(group.id) > 0)
   const details = await chunkedMap(teamGroups, 4, async (group) => {
-    const groupId = Number(group.id);
-    const response = await API.user.team.detail(groupId);
+    const groupId = Number(group.id)
+    const response = await API.user.team.detail(groupId)
     return {
       groupId,
-      avatar: response.success ? response.data.avatar : (group.avatar || ""),
-    };
-  });
-  return new Map(details.map((item) => [item.groupId, item.avatar]));
-};
+      avatar: response.success ? response.data.avatar : group.avatar || "",
+    }
+  })
+  return new Map(details.map((item) => [item.groupId, item.avatar]))
+}
 
 const rankRows = (rows: RankingRow[]): RankingRow[] => {
   return rows
@@ -851,25 +785,25 @@ const rankRows = (rows: RankingRow[]): RankingRow[] => {
         b.members - a.members ||
         a.id - b.id,
     )
-    .map((item, index) => ({ ...item, rank: index + 1 }));
-};
+    .map((item, index) => ({ ...item, rank: index + 1 }))
+}
 
 const getLatestSubmit = (a: string, b: string): string => {
-  return Number(a) >= Number(b) ? a : b;
-};
+  return Number(a) >= Number(b) ? a : b
+}
 
 const isSystemAdminAccount = (user: ProfileListItem): boolean => {
-  return user.username === "admin";
-};
+  return user.username === "admin"
+}
 
 const getRankingData = async () => {
-  loadingRanking.value = true;
-  const [allUsers, groups] = await Promise.all([getAllUsers(), getAllGroups()]);
-  const teamAvatars = await getTeamAvatarMap(groups);
-  const users = allUsers.filter((user) => !isSystemAdminAccount(user));
+  loadingRanking.value = true
+  const [allUsers, groups] = await Promise.all([getAllUsers(), getAllGroups()])
+  const teamAvatars = await getTeamAvatarMap(groups)
+  const users = allUsers.filter((user) => !isSystemAdminAccount(user))
   const rows = await chunkedMap(users, 6, async (user): Promise<RankingRow> => {
-    const response = await API.core.statistic.period(user.userId);
-    const period = response.success ? response.data.data : null;
+    const response = await API.core.statistic.period(user.userId)
+    const period = response.success ? response.data.data : null
     return {
       rank: 0,
       id: Number(user.userId),
@@ -886,14 +820,14 @@ const getRankingData = async () => {
         lastSubmit: user.lastSubmit,
         maxCount: 1,
       })[0],
-    };
-  });
+    }
+  })
 
-  const teamRows = new Map<number, RankingRow>();
+  const teamRows = new Map<number, RankingRow>()
   groups
     .filter((group) => Number(group.id) !== 0)
     .forEach((group) => {
-      const groupId = Number(group.id);
+      const groupId = Number(group.id)
       teamRows.set(groupId, {
         rank: 0,
         id: groupId,
@@ -905,12 +839,12 @@ const getRankingData = async () => {
         lastSubmit: "",
         members: group.users?.length || 0,
         scoreMembers: 0,
-      });
-    });
+      })
+    })
 
   rows.forEach((row) => {
-    const groupId = Number(row.groupId);
-    if (groupId === 0) return;
+    const groupId = Number(row.groupId)
+    if (groupId === 0) return
     const current = teamRows.get(groupId) || {
       rank: 0,
       id: groupId,
@@ -922,44 +856,44 @@ const getRankingData = async () => {
       lastSubmit: "",
       members: 0,
       scoreMembers: 0,
-    };
-    current.acTotal += row.acTotal;
-    current.submitTotal += row.submitTotal;
-    current.lastSubmit = getLatestSubmit(current.lastSubmit, row.lastSubmit);
-    current.scoreMembers = (current.scoreMembers || 0) + 1;
-    teamRows.set(groupId, current);
-  });
+    }
+    current.acTotal += row.acTotal
+    current.submitTotal += row.submitTotal
+    current.lastSubmit = getLatestSubmit(current.lastSubmit, row.lastSubmit)
+    current.scoreMembers = (current.scoreMembers || 0) + 1
+    teamRows.set(groupId, current)
+  })
 
-  userRankingRows.value = rankRows(rows);
+  userRankingRows.value = rankRows(rows)
   teamRankingRows.value = rankRows(
     [...teamRows.values()].filter((row) => (row.scoreMembers || 0) > 0),
-  );
-  setRankingPage(1);
-  loadingRanking.value = false;
-};
+  )
+  setRankingPage(1)
+  loadingRanking.value = false
+}
 
 onMounted(async () => {
-  syncScreenSize();
-  window.addEventListener("resize", syncScreenSize);
-  loadingStats.value = true;
-  loadingChart.value = true;
-  loadingRanking.value = showRanking.value;
+  syncScreenSize()
+  window.addEventListener("resize", syncScreenSize)
+  loadingStats.value = true
+  loadingChart.value = true
+  loadingRanking.value = showRanking.value
   try {
-    await Promise.all([getUserCount(), getPeriodData(), getGroupCount(), getStatisticExplanation()]);
-    loadingStats.value = false;
+    await Promise.all([getUserCount(), getPeriodData(), getGroupCount(), getStatisticExplanation()])
+    loadingStats.value = false
   } finally {
     // loadingStats handled above
   }
-  await getDailyData();
-  loadingChart.value = false;
+  await getDailyData()
+  loadingChart.value = false
   if (showRanking.value) {
-    await getRankingData();
+    await getRankingData()
   }
-});
+})
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", syncScreenSize);
-});
+  window.removeEventListener("resize", syncScreenSize)
+})
 </script>
 
 <style scoped>
@@ -1171,7 +1105,10 @@ onBeforeUnmount(() => {
     font-weight: 800;
     line-height: 1;
     outline: none;
-    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
   }
 
   .ranking-switch button:hover {

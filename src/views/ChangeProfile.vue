@@ -11,11 +11,7 @@
         @dragleave.prevent="isDraggingAvatar = false"
         @drop.prevent="handleAvatarDrop"
       >
-        <img
-          :src="avatarPreview"
-          alt="头像预览"
-          @error="avatarLoadFailed = true"
-        />
+        <img :src="avatarPreview" alt="头像预览" @error="avatarLoadFailed = true" />
         <div class="avatar-overlay">拖入图片<br />或点击上传</div>
         <input
           ref="avatarInput"
@@ -30,16 +26,8 @@
         <div class="item avatar-url">
           <label>头像链接</label>
           <div class="avatar-url-control">
-            <input
-              type="url"
-              placeholder="请输入头像图片链接"
-              v-model.trim="formData.avatar"
-            />
-            <button
-              type="button"
-              class="clear-avatar"
-              @click="formData.avatar = ''"
-            >
+            <input type="url" placeholder="请输入头像图片链接" v-model.trim="formData.avatar" />
+            <button type="button" class="clear-avatar" @click="formData.avatar = ''">
               默认头像
             </button>
           </div>
@@ -55,33 +43,19 @@
         </div>
         <div class="item email-enabled">
           <label>邮件通知</label>
-          <div
-            class="switch"
-            :class="{ active: emailEnabled }"
-            @click="handleEmailToggle"
-          >
+          <div class="switch" :class="{ active: emailEnabled }" @click="handleEmailToggle">
             <div class="slider"></div>
           </div>
-          <span class="email-hint">{{
-            emailEnabled ? "已开启" : "已关闭"
-          }}</span>
+          <span class="email-hint">{{ emailEnabled ? "已开启" : "已关闭" }}</span>
         </div>
         <div class="title password-title">修改密码</div>
         <div class="item">
           <label>旧密码</label>
-          <input
-            type="password"
-            placeholder="请输入旧密码"
-            v-model="passwordForm.oldPassword"
-          />
+          <input type="password" placeholder="请输入旧密码" v-model="passwordForm.oldPassword" />
         </div>
         <div class="item">
           <label>新密码</label>
-          <input
-            type="password"
-            placeholder="请输入新密码"
-            v-model="passwordForm.newPassword"
-          />
+          <input type="password" placeholder="请输入新密码" v-model="passwordForm.newPassword" />
         </div>
         <div class="item">
           <label>确认密码</label>
@@ -93,9 +67,7 @@
         </div>
         <div class="actions">
           <button @click="handleConfirm" :disabled="wait">确认</button>
-          <button @click="handlePasswordConfirm" :disabled="wait">
-            改密码
-          </button>
+          <button @click="handlePasswordConfirm" :disabled="wait">改密码</button>
           <button @click="handleCancel">返回</button>
         </div>
       </div>
@@ -122,16 +94,10 @@
           <div class="select">
             <div class="selected">{{ ojData.platform }}</div>
             <div class="options">
-              <div class="option" @click="ojData.platform = 'AtCoder'">
-                AtCoder
-              </div>
+              <div class="option" @click="ojData.platform = 'AtCoder'">AtCoder</div>
               <div class="option" @click="ojData.platform = 'LuoGu'">洛谷</div>
-              <div class="option" @click="ojData.platform = 'NowCoder'">
-                牛客
-              </div>
-              <div class="option" @click="ojData.platform = 'CodeForces'">
-                CodeForces
-              </div>
+              <div class="option" @click="ojData.platform = 'NowCoder'">牛客</div>
+              <div class="option" @click="ojData.platform = 'CodeForces'">CodeForces</div>
               <div class="option" @click="ojData.platform = 'QOJ'">QOJ</div>
               <!-- <div class="option" @click="ojData.platform = 'LeetCode'">力扣</div> -->
             </div>
@@ -139,12 +105,20 @@
         </div>
         <div class="item">
           <label>{{
-            ojData.platform === "NowCoder" ? "牛客学号" : ojData.platform === "LuoGu" ? "用户编号" : "用户名"
+            ojData.platform === "NowCoder"
+              ? "牛客学号"
+              : ojData.platform === "LuoGu"
+                ? "用户编号"
+                : "用户名"
           }}</label>
           <input
             type="text"
             :placeholder="
-              ojData.platform === 'NowCoder' ? '请输入牛客学号' : ojData.platform === 'LuoGu' ? '请输入用户编号' : '请输入用户名'
+              ojData.platform === 'NowCoder'
+                ? '请输入牛客学号'
+                : ojData.platform === 'LuoGu'
+                  ? '请输入用户编号'
+                  : '请输入用户名'
             "
             v-model="ojData.username"
           />
@@ -157,208 +131,195 @@
   </BaseLayout>
 </template>
 <script setup lang="ts">
-import BaseLayout from "@/components/BaseLayout.vue";
-import { computed, ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import API from "@/utils/api";
-import type { UserProfileUpdateRequest as FormData } from "@/utils/api";
-import Toast from "@/utils/toast";
-import type { platform } from "@/utils/link";
-import { useUserStore } from "@/stores/user";
-import type { User } from "@/utils/type";
+import BaseLayout from "@/components/BaseLayout.vue"
+import { computed, ref, watch } from "vue"
+import { useRouter, useRoute } from "vue-router"
+import API from "@/utils/api"
+import type { UserProfileUpdateRequest as FormData } from "@/utils/api"
+import Toast from "@/utils/toast"
+import type { platform } from "@/utils/link"
+import { useUserStore } from "@/stores/user"
+import type { User } from "@/utils/type"
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 
 // 该页面配置了路由守卫，user一定不为null
-const user = computed(() => userStore.info as User);
-const oj = route.query.oj;
+const user = computed(() => userStore.info as User)
+const oj = route.query.oj
 
 const formData = ref<FormData>({
   userId: user.value.userId,
   name: user.value.name,
   email: user.value.email,
   avatar: user.value.avatar,
-});
+})
 
 const passwordForm = ref({
   oldPassword: "",
   newPassword: "",
   newPasswordConfirm: "",
-});
+})
 
-const defaultAvatar = "/images/defaultAvatar.png";
-const avatarLoadFailed = ref(false);
-const isDraggingAvatar = ref(false);
-const avatarInput = ref<HTMLInputElement | null>(null);
+const defaultAvatar = "/images/defaultAvatar.png"
+const avatarLoadFailed = ref(false)
+const isDraggingAvatar = ref(false)
+const avatarInput = ref<HTMLInputElement | null>(null)
 const avatarPreview = computed(() => {
   if (!formData.value.avatar || avatarLoadFailed.value) {
-    return defaultAvatar;
+    return defaultAvatar
   }
-  return formData.value.avatar;
-});
+  return formData.value.avatar
+})
 
 watch(
   () => formData.value.avatar,
   () => {
-    avatarLoadFailed.value = false;
+    avatarLoadFailed.value = false
   },
-);
+)
 
 const setAvatarFromFile = async (file?: File) => {
-  if (!file) return;
+  if (!file) return
 
   if (!file.type.startsWith("image/")) {
-    Toast.error("请拖入图片文件");
-    return;
+    Toast.error("请拖入图片文件")
+    return
   }
 
   if (file.size > 8 * 1024 * 1024) {
-    Toast.error("图片不能超过 8MB");
-    return;
+    Toast.error("图片不能超过 8MB")
+    return
   }
 
   try {
-    const imageUrl = URL.createObjectURL(file);
+    const imageUrl = URL.createObjectURL(file)
     const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = imageUrl;
-    });
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = imageUrl
+    })
 
-    const size = 256;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("无法处理头像图片");
+    const size = 256
+    const canvas = document.createElement("canvas")
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext("2d")
+    if (!ctx) throw new Error("无法处理头像图片")
 
-    const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
-    const sourceX = (image.naturalWidth - sourceSize) / 2;
-    const sourceY = (image.naturalHeight - sourceSize) / 2;
+    const sourceSize = Math.min(image.naturalWidth, image.naturalHeight)
+    const sourceX = (image.naturalWidth - sourceSize) / 2
+    const sourceY = (image.naturalHeight - sourceSize) / 2
 
-    ctx.drawImage(
-      image,
-      sourceX,
-      sourceY,
-      sourceSize,
-      sourceSize,
-      0,
-      0,
-      size,
-      size,
-    );
-    formData.value.avatar = canvas.toDataURL("image/webp", 0.86);
-    URL.revokeObjectURL(imageUrl);
-    Toast.success("头像已载入，点击确认后保存");
+    ctx.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size)
+    formData.value.avatar = canvas.toDataURL("image/webp", 0.86)
+    URL.revokeObjectURL(imageUrl)
+    Toast.success("头像已载入，点击确认后保存")
   } catch (error) {
-    console.error(error);
-    Toast.error("头像处理失败，请换一张图片试试");
+    console.error(error)
+    Toast.error("头像处理失败，请换一张图片试试")
   }
-};
+}
 
 const handleAvatarDrop = async (event: DragEvent) => {
-  isDraggingAvatar.value = false;
-  await setAvatarFromFile(event.dataTransfer?.files?.[0]);
-};
+  isDraggingAvatar.value = false
+  await setAvatarFromFile(event.dataTransfer?.files?.[0])
+}
 
 const handleAvatarFileChange = async (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  await setAvatarFromFile(input.files?.[0]);
-  input.value = "";
-};
+  const input = event.target as HTMLInputElement
+  await setAvatarFromFile(input.files?.[0])
+  input.value = ""
+}
 
-const emailEnabled = ref<boolean>(user.value.emailEnabled ?? false);
+const emailEnabled = ref<boolean>(user.value.emailEnabled ?? false)
 
 const handleEmailToggle = async () => {
-  const newValue = !emailEnabled.value;
-  const response = await API.user.profile.setEmailEnabled(
-    user.value.userId,
-    newValue,
-  );
-  Toast.stdResponse(response);
+  const newValue = !emailEnabled.value
+  const response = await API.user.profile.setEmailEnabled(user.value.userId, newValue)
+  Toast.stdResponse(response)
   if (response.success) {
-    emailEnabled.value = newValue;
+    emailEnabled.value = newValue
   }
-};
+}
 
 const ojData = ref({
   userId: user.value.userId,
   platform: "" as platform,
   username: "",
-});
+})
 
 switch (oj) {
   case "AtCoder":
-    ojData.value.platform = "AtCoder";
-    break;
+    ojData.value.platform = "AtCoder"
+    break
   case "luogu":
-    ojData.value.platform = "LuoGu";
-    break;
+    ojData.value.platform = "LuoGu"
+    break
   case "NowCoder":
-    ojData.value.platform = "NowCoder";
-    break;
+    ojData.value.platform = "NowCoder"
+    break
   case "CodeForces":
-    ojData.value.platform = "CodeForces";
-    break;
+    ojData.value.platform = "CodeForces"
+    break
   case "QOJ":
-    ojData.value.platform = "QOJ";
-    break;
+    ojData.value.platform = "QOJ"
+    break
   // case "LeetCode":
   //     ojData.value.platform = "LeetCode"
   //     break;
   default:
-    ojData.value.platform = "AtCoder";
+    ojData.value.platform = "AtCoder"
 }
 
 // 如果wait为true，则禁用按钮
-const wait = ref<boolean>(false);
+const wait = ref<boolean>(false)
 
 const handleCancel = () => {
-  router.push("/profile");
-};
+  router.push("/profile")
+}
 
 const handleConfirm = async () => {
-  wait.value = true;
+  wait.value = true
 
-  const response = await API.user.profile.update(formData.value);
-  Toast.stdResponse(response);
+  const response = await API.user.profile.update(formData.value)
+  Toast.stdResponse(response)
 
-  wait.value = false;
-};
+  wait.value = false
+}
 
 const handlePasswordConfirm = async () => {
-  wait.value = true;
+  wait.value = true
 
   const response = await API.user.profile.changePassword({
     userId: user.value.userId,
     oldPassword: passwordForm.value.oldPassword,
     newPassword: passwordForm.value.newPassword,
     newPasswordConfirm: passwordForm.value.newPasswordConfirm,
-  });
-  Toast.stdResponse(response);
+  })
+  Toast.stdResponse(response)
   if (response.success) {
     passwordForm.value = {
       oldPassword: "",
       newPassword: "",
       newPasswordConfirm: "",
-    };
+    }
   }
 
-  wait.value = false;
-};
+  wait.value = false
+}
 
 const handleOjConfirm = async () => {
-  wait.value = true;
+  wait.value = true
 
-  const response = await API.core.spider.set(ojData.value);
-  Toast.stdResponse(response);
+  const response = await API.core.spider.set(ojData.value)
+  Toast.stdResponse(response)
 
-  wait.value = false;
-};
+  wait.value = false
+}
 </script>
 <style scoped>
 .addOj,
@@ -399,7 +360,11 @@ const handleOjConfirm = async () => {
     font-size: var(--text-sm);
     font-weight: 800;
     line-height: 1;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease,
+      opacity 0.2s ease;
   }
 
   button:hover {

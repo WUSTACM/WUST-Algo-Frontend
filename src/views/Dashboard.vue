@@ -10,29 +10,15 @@ TODO:
     <div class="dashboardContainer">
       <div class="tip">建议使用大屏设备访问该页面</div>
       <div class="sections">
-        <router-link
-          to="/dashboard/statistics"
-          class="section"
-          active-class="active"
-        >
-          <font-awesome-icon
-            icon="fa-solid fa-chart-line"
-            class="section-icon"
-          />
+        <router-link to="/dashboard/statistics" class="section" active-class="active">
+          <font-awesome-icon icon="fa-solid fa-chart-line" class="section-icon" />
           <div class="title">
             <div class="zh">数据统计</div>
             <div class="en">Statistics</div>
           </div>
         </router-link>
-        <router-link
-          to="/dashboard/group"
-          class="section"
-          active-class="active"
-        >
-          <font-awesome-icon
-            icon="fa-solid fa-people-group"
-            class="section-icon"
-          />
+        <router-link to="/dashboard/group" class="section" active-class="active">
+          <font-awesome-icon icon="fa-solid fa-people-group" class="section-icon" />
           <div class="title">
             <div class="zh">组管理</div>
             <div class="en">Group</div>
@@ -85,10 +71,10 @@ TODO:
 </template>
 
 <script setup lang="ts">
-import BaseLayout from "@/components/BaseLayout.vue";
-import { useUserStore } from "@/stores/user";
+import BaseLayout from "@/components/BaseLayout.vue"
+import { useUserStore } from "@/stores/user"
 
-const userStore = useUserStore();
+const userStore = useUserStore()
 </script>
 
 <style scoped>

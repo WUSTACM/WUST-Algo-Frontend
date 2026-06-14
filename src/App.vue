@@ -2,7 +2,6 @@
   <div class="container">
     <!-- 侧边栏 -->
     <div class="sidebar">
-
       <div class="sidebar-logo">
         <div class="logo-icon">
           <div class="logo-glitch">WUST-Algo</div>
@@ -70,7 +69,12 @@
           <div class="item-indicator">▶</div>
         </router-link>
 
-        <router-link to="/profile" class="section navigation-item" active-class="active" v-if="isLogin">
+        <router-link
+          to="/profile"
+          class="section navigation-item"
+          active-class="active"
+          v-if="isLogin"
+        >
           <font-awesome-icon icon="fa-solid fa-user" class="item-icon" />
           <div class="item-content">
             <div class="item-title">
@@ -118,20 +122,25 @@
           <div class="item-indicator">▶</div>
         </router-link> -->
 
-        <router-link to="/dashboard" class="section navigation-item" active-class="active" v-if="isLogin && (isAdmin || isCoach)">
+        <router-link
+          to="/dashboard"
+          class="section navigation-item"
+          active-class="active"
+          v-if="isLogin && (isAdmin || isCoach)"
+        >
           <font-awesome-icon icon="fa-solid fa-gauge-high" class="item-icon" />
           <div class="item-content">
             <div class="item-title">
-              <span class="zh">{{ isAdmin ? '后台管理' : '教练管理' }}</span>
-              <span class="en">{{ isAdmin ? 'Dashboard' : 'Coach' }}</span>
+              <span class="zh">{{ isAdmin ? "后台管理" : "教练管理" }}</span>
+              <span class="en">{{ isAdmin ? "Dashboard" : "Coach" }}</span>
             </div>
-            <div class="item-description">{{ isAdmin ? '管理学生和小组' : '管理队员和分组' }}</div>
+            <div class="item-description">{{ isAdmin ? "管理学生和小组" : "管理队员和分组" }}</div>
           </div>
           <div class="item-indicator">▶</div>
         </router-link>
 
         <a href="https://blog.wustacm.org/" target="_blank" class="section navigation-item">
-          <font-awesome-icon icon="fa-solid fa-comment" class=" item-icon" />
+          <font-awesome-icon icon="fa-solid fa-comment" class="item-icon" />
           <div class="item-content">
             <div class="item-title">
               <span class="zh">论坛</span>
@@ -151,8 +160,13 @@
               <span class="en">Theme</span>
             </div>
             <div class="theme-selector" @click.stop>
-              <div v-for="opt in themeOptions" :key="opt.key" class="theme-swatch"
-                :class="{ active: currentTheme === opt.key }" @click="setTheme(opt.key)">
+              <div
+                v-for="opt in themeOptions"
+                :key="opt.key"
+                class="theme-swatch"
+                :class="{ active: currentTheme === opt.key }"
+                @click="setTheme(opt.key)"
+              >
                 <div class="swatch-dot" :style="{ background: themePreviewColors[opt.key] }"></div>
                 <span>{{ opt.label }}</span>
               </div>
@@ -160,7 +174,12 @@
           </div>
         </div>
 
-        <router-link to="/login" class="section navigation-item" active-class="active" v-if="!isLogin">
+        <router-link
+          to="/login"
+          class="section navigation-item"
+          active-class="active"
+          v-if="!isLogin"
+        >
           <font-awesome-icon icon="fa-solid fa-gauge-high" class="item-icon" />
           <div class="item-content">
             <div class="item-title">
@@ -172,7 +191,12 @@
           <div class="item-indicator">▶</div>
         </router-link>
 
-        <router-link to="/register" class="section navigation-item" active-class="active" v-if="!isLogin">
+        <router-link
+          to="/register"
+          class="section navigation-item"
+          active-class="active"
+          v-if="!isLogin"
+        >
           <font-awesome-icon icon="fa-solid fa-gauge-high" class="item-icon" />
           <div class="item-content">
             <div class="item-title">
@@ -183,7 +207,6 @@
           </div>
           <div class="item-indicator">▶</div>
         </router-link>
-
       </div>
 
       <!-- 状态栏 -->
@@ -213,7 +236,13 @@
       </div>
 
       <div class="announcements">
-        <div class="announcement" v-for="anno in annos" :class="anno.type" v-show="!anno.isclosed">
+        <div
+          class="announcement"
+          v-for="anno in annos"
+          :key="anno.id"
+          :class="anno.type"
+          v-show="!anno.isclosed"
+        >
           <span class="content">{{ anno.content }}</span>
           <span class="close" @click="closeAnno(anno.id)"></span>
         </div>
@@ -232,16 +261,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import generateRainbowText from './utils/format'
-import { useUserStore } from '@/stores/user'
-import router from './router'
-import ToastNotification from './components/ToastNotification.vue'
-import type { Anno } from './utils/type'
-import AnnoStore from './utils/anno'
-import Bot from './utils/bot'
-import Random from './utils/random'
+import { ref, onMounted, onUnmounted, computed } from "vue"
+import { useRoute } from "vue-router"
+import generateRainbowText from "./utils/format"
+import { useUserStore } from "@/stores/user"
+import router from "./router"
+import ToastNotification from "./components/ToastNotification.vue"
+import type { Anno } from "./utils/type"
+import AnnoStore from "./utils/anno"
+import Bot from "./utils/bot"
+import Random from "./utils/random"
 
 const route = useRoute()
 
@@ -253,11 +282,12 @@ const isCoach = computed(() => userStore.isCoach)
 
 // 获取当前路由名称用于显示
 const currentRouteName = computed(() => {
-  const name = route.name?.toString() || 'home'
-  return name.replace(/_/g, ' ')
+  const name = route.name?.toString() || "home"
+  return name.replace(/_/g, " ")
 })
 
-const text = `
+if (import.meta.env.DEV) {
+  const text = `
  ██████╗██╗    ██╗██╗  ██╗██╗   ██╗       █████╗ ██╗      ██████╗  ██████╗
 ██╔════╝██║    ██║╚██╗██╔╝██║   ██║      ██╔══██╗██║     ██╔════╝ ██╔═══██╗
 ██║     ██║ █╗ ██║ ╚███╔╝ ██║   ██║█████╗███████║██║     ██║  ███╗██║   ██║
@@ -265,7 +295,7 @@ const text = `
 ╚██████╗╚███╔███╔╝██╔╝ ██╗╚██████╔╝      ██║  ██║███████╗╚██████╔╝╚██████╔╝
  ╚═════╝ ╚══╝╚══╝ ╚═╝  ╚═╝ ╚═════╝       ╚═╝  ╚═╝╚══════╝ ╚═════╝  ╚═════╝ `
 
-const info = `
+  const info = `
 ===================================
 GitHash   ${__GIT_HASH__}
 GitDate   ${__GIT_DATE__}
@@ -279,69 +309,75 @@ Backend   srcenchen
           hyhgfrgh
 ===================================`
 
-const rainbowText = generateRainbowText(text)
-const rainbowInfo = generateRainbowText(info)
+  const rainbowText = generateRainbowText(text)
+  const rainbowInfo = generateRainbowText(info)
 
-console.log(`
+  console.log(
+    `
 ${rainbowText.string}
 
 Welcome to WUST - Algo
 
 ${rainbowInfo.string}
-`, ...rainbowText.format, ...rainbowInfo.format);
+`,
+    ...rainbowText.format,
+    ...rainbowInfo.format,
+  )
+}
 
 // 主题系统
-type ThemeName = 'nordic' | 'github' | 'wxu-purple' | 'sakura'
+type ThemeName = "nordic" | "github" | "wxu-purple" | "sakura"
 
 const themeOptions: { key: ThemeName; label: string }[] = [
-  { key: 'github', label: '专业' },
-  { key: 'nordic', label: '极客' },
-  { key: 'wxu-purple', label: '锡院紫' },
-  { key: 'sakura', label: '樱花' },
+  { key: "github", label: "专业" },
+  { key: "nordic", label: "极客" },
+  { key: "wxu-purple", label: "锡院紫" },
+  { key: "sakura", label: "樱花" },
 ]
 
 const themePreviewColors: Record<ThemeName, string> = {
-  nordic: '#88C0D0',
-  github: '#0070F3',
-  'wxu-purple': '#7928CA',
-  sakura: '#FF6B8A',
+  nordic: "#88C0D0",
+  github: "#0070F3",
+  "wxu-purple": "#7928CA",
+  sakura: "#FF6B8A",
 }
 
-const validThemes = new Set<string>(themeOptions.map(t => t.key))
+const validThemes = new Set<string>(themeOptions.map((t) => t.key))
 
 const getTheme = (): ThemeName => {
-  const theme = localStorage.getItem('theme');
+  const theme = localStorage.getItem("theme")
   if (theme && validThemes.has(theme)) {
-    return theme as ThemeName;
+    return theme as ThemeName
   }
-  localStorage.setItem('theme', 'github');
-  return 'github';
+  localStorage.setItem("theme", "github")
+  return "github"
 }
 
 const setTheme = (theme: ThemeName) => {
-  localStorage.setItem('theme', theme);
-  currentTheme.value = theme;
-  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem("theme", theme)
+  currentTheme.value = theme
+  document.documentElement.setAttribute("data-theme", theme)
 }
 
 const currentTheme = ref<ThemeName>(getTheme())
 
 const currentThemeLabel = computed(() => {
-  return themeOptions.find(t => t.key === currentTheme.value)?.label.toUpperCase() || 'DARK_MODE'
+  return themeOptions.find((t) => t.key === currentTheme.value)?.label.toUpperCase() || "DARK_MODE"
 })
 
 const annos = ref<Anno[]>([])
 
-const currentTime = ref('')
+const currentTime = ref("")
 let clockInterval: ReturnType<typeof setInterval> | null = null
 
 const updateClock = () => {
   const now = new Date()
-  currentTime.value = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0')
+  currentTime.value =
+    now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0")
 }
 
 const closeAnno = (id: number) => {
-  AnnoStore.closeAnno(id);
+  AnnoStore.closeAnno(id)
   annos.value = AnnoStore.getStorageAnnos()
 }
 
@@ -352,11 +388,11 @@ onMounted(() => {
   userStore.syncStatus()
   AnnoStore.syncAnnos()
   if (Random.range(0, 1)) {
-    Bot.getHitokoto();
+    Bot.getHitokoto()
   } else {
-    Bot.tip.timeTip();
+    Bot.tip.timeTip()
   }
-  Bot.tip.loginTip();
+  Bot.tip.loginTip()
   annos.value = AnnoStore.getStorageAnnos()
 })
 
@@ -369,7 +405,9 @@ onUnmounted(() => {
 /* 过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-enter-from {
@@ -392,7 +430,7 @@ onUnmounted(() => {
 }
 
 /* 侧边栏 */
-.container>.sidebar {
+.container > .sidebar {
   position: fixed;
   top: 0;
   left: 0;
@@ -403,7 +441,9 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   z-index: 1100;
-  transition: background-color 0.3s ease, width 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    width 0.3s ease;
 }
 
 /* 侧边栏logo区域 */
@@ -483,13 +523,16 @@ onUnmounted(() => {
   cursor: pointer;
   text-decoration: none;
   color: var(--text-light-color);
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   position: relative;
   overflow: hidden;
 }
 
 .navigation-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -531,7 +574,10 @@ onUnmounted(() => {
 .item-icon {
   font-size: var(--text-lg);
   color: var(--section-default-color);
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
   min-width: 24px;
   text-align: center;
 }
@@ -594,7 +640,9 @@ onUnmounted(() => {
   color: var(--text-light-color);
   background-color: var(--section-background-color);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   border: 1.5px solid transparent;
 }
 
@@ -618,7 +666,9 @@ onUnmounted(() => {
   font-size: var(--text-sm);
   color: var(--neon-cyan);
   opacity: 0.7;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .navigation-item:hover .item-indicator {
@@ -655,7 +705,7 @@ onUnmounted(() => {
 }
 
 /* 主内容区域 */
-.container>.content {
+.container > .content {
   padding-left: 320px;
   flex: 1;
   display: flex;
@@ -686,7 +736,9 @@ onUnmounted(() => {
       font-size: var(--text-base);
       white-space: nowrap;
       cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease;
+      transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
       -webkit-user-select: none;
       user-select: none;
       &:hover {
@@ -738,7 +790,7 @@ onUnmounted(() => {
       }
 
       &::before {
-        content: '';
+        content: "";
         position: absolute;
         height: 50%;
         width: 3px;
@@ -749,7 +801,7 @@ onUnmounted(() => {
       }
 
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         height: 50%;
         width: 3px;
@@ -796,7 +848,7 @@ onUnmounted(() => {
 
 /* 响应式设计 */
 @media (max-width: 1024px) {
-  .container>.content {
+  .container > .content {
     padding-left: 320px;
   }
 

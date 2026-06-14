@@ -1,118 +1,125 @@
 .pageNavigation {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    font-size: var(--text-sm);
-    color: var(--text-default-color);
-    gap: 10px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  font-size: var(--text-sm);
+  color: var(--text-default-color);
+  gap: 10px;
 }
 
 .group {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
 }
 
-.pageInput{
-    display: flex;
-    gap: 10px;
+.pageInput {
+  display: flex;
+  gap: 10px;
 }
 
 .pageInput input {
-    width: 50px;
-    font-size: var(--text-sm);
-    text-align: center;
-    border: 1px solid var(--divider-color);
-    border-radius: var(--control-radius);
-    padding: 5px 10px;
-    background-color: var(--background-color-1);
-    color: var(--text-default-color);
-    outline: none;
-    transition: border-color 0.3s ease;
+  width: 50px;
+  font-size: var(--text-sm);
+  text-align: center;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  padding: 5px 10px;
+  background-color: var(--background-color-1);
+  color: var(--text-default-color);
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
 .pageInput input:focus {
-    border-color: var(--input-active-color)
+  border-color: var(--input-active-color);
 }
 
 .pageButtons {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
 }
 
 .pageInput button,
 .pageButtons button {
-    width: max-content;
-    font-size: var(--text-sm);
-    font-weight: 800;
-    text-align: center;
-    border: 1px solid var(--divider-color);
-    border-radius: var(--control-radius);
-    padding: 5px 10px;
-    background-color: var(--background-color-2);
-    color: var(--text-secondary-color);
-    outline: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  width: max-content;
+  font-size: var(--text-sm);
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  padding: 5px 10px;
+  background-color: var(--background-color-2);
+  color: var(--text-secondary-color);
+  outline: none;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .pageInput button:hover,
 .pageButtons button:hover {
-    color: white;
-    border-color: var(--input-active-color);
-    background-color: var(--input-active-color);
+  color: white;
+  border-color: var(--input-active-color);
+  background-color: var(--input-active-color);
 }
 
 .pageButtons button.active {
-    color: white;
-    border-color: var(--input-active-color);
-    background-color: var(--input-active-color);
+  color: white;
+  border-color: var(--input-active-color);
+  background-color: var(--input-active-color);
 }
 
 .page-nav-btn {
-    font-size: var(--text-sm);
-    font-weight: 800;
-    text-align: center;
-    border: 1px solid var(--divider-color);
-    border-radius: var(--control-radius);
-    padding: 5px 10px;
-    background-color: var(--background-color-2);
-    color: var(--text-secondary-color);
-    outline: none;
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  font-size: var(--text-sm);
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  padding: 5px 10px;
+  background-color: var(--background-color-2);
+  color: var(--text-secondary-color);
+  outline: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .page-nav-btn:hover:not(:disabled) {
-    color: white;
-    border-color: var(--input-active-color);
-    background-color: var(--input-active-color);
+  color: white;
+  border-color: var(--input-active-color);
+  background-color: var(--input-active-color);
 }
 
 .page-nav-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .pageSum {
-    font-size: var(--text-sm);
-    color: var(--text-default-color);
+  font-size: var(--text-sm);
+  color: var(--text-default-color);
 }
 
-@media (max-width:860px) {
-    .pageNavigation {
-        flex-direction: column;
-    }
+@media (max-width: 860px) {
+  .pageNavigation {
+    flex-direction: column;
+  }
 
-    .pageNavigation {
-        width: 100%;
-        font-size: var(--text-sm);
-        color: var(--text-default-color);
-        gap: 10px;
-    }
+  .pageNavigation {
+    width: 100%;
+    font-size: var(--text-sm);
+    color: var(--text-default-color);
+    gap: 10px;
+  }
 }

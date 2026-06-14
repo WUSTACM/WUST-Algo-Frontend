@@ -3,9 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
+import { use } from "echarts/core"
+import { CanvasRenderer } from "echarts/renderers"
+import { LineChart } from "echarts/charts"
 import {
   DataZoomComponent,
   GridComponent,
@@ -13,17 +13,17 @@ import {
   TitleComponent,
   ToolboxComponent,
   TooltipComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
+} from "echarts/components"
+import VChart from "vue-echarts"
 
 defineOptions({
   inheritAttrs: false,
-});
+})
 
 defineProps<{
-  option: any;
-  autoresize?: boolean;
-}>();
+  option: any
+  autoresize?: boolean
+}>()
 
 use([
   CanvasRenderer,
@@ -34,5 +34,5 @@ use([
   GridComponent,
   ToolboxComponent,
   DataZoomComponent,
-]);
+])
 </script>

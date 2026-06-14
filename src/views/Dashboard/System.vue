@@ -52,13 +52,18 @@
               <strong>{{ service.name }}</strong>
               <span>{{ service.description }}</span>
             </div>
-            <em>{{ service.status === "ok" ? "正常" : service.status === "checking" ? "检查中" : "异常" }}</em>
+            <em>{{
+              service.status === "ok" ? "正常" : service.status === "checking" ? "检查中" : "异常"
+            }}</em>
           </div>
         </div>
         <div class="failure-panel" v-if="recentFailedJobs.length > 0">
           <div class="failure-title">最近失败任务</div>
           <div class="failure-row" v-for="job in recentFailedJobs" :key="`failed-${job.jobId}`">
-            <span>#{{ job.jobId }} · 用户 {{ job.userId }} · {{ job.currentPlatform || "全平台" }}</span>
+            <span
+              >#{{ job.jobId }} · 用户 {{ job.userId }} ·
+              {{ job.currentPlatform || "全平台" }}</span
+            >
             <p>{{ job.error || "未记录失败原因" }}</p>
           </div>
         </div>
@@ -83,9 +88,15 @@
           <input v-model="operationAction" type="text" placeholder="按 action 精确筛选，可留空" />
           <button class="action-btn" @click="loadOperationLogs">查看日志</button>
         </div>
-        <div class="hint">记录改角色、删用户、清缓存、重爬数据、改团队等高风险操作，方便线上问题回溯。</div>
+        <div class="hint">
+          记录改角色、删用户、清缓存、重爬数据、改团队等高风险操作，方便线上问题回溯。
+        </div>
         <div class="operation-list" v-if="operationLogs.length > 0">
-          <div class="operation-card" v-for="item in operationLogs" :key="`${item.service}-${item.id}`">
+          <div
+            class="operation-card"
+            v-for="item in operationLogs"
+            :key="`${item.service}-${item.id}`"
+          >
             <div class="operation-main">
               <div class="operation-title">
                 <strong>{{ actionLabel(item.action) }}</strong>
@@ -93,9 +104,13 @@
               </div>
               <div class="operation-meta">
                 操作者 {{ item.operatorId || "未知" }} · {{ roleLabel(item.operatorRole) }}
-                <template v-if="item.targetType"> · 目标 {{ item.targetType }} #{{ item.targetId }}</template>
+                <template v-if="item.targetType">
+                  · 目标 {{ item.targetType }} #{{ item.targetId }}</template
+                >
               </div>
-              <pre v-if="formatDetail(item.detail)" class="operation-detail">{{ formatDetail(item.detail) }}</pre>
+              <pre v-if="formatDetail(item.detail)" class="operation-detail">{{
+                formatDetail(item.detail)
+              }}</pre>
             </div>
             <div class="operation-time">{{ formatTime(item.createdAt) }}</div>
           </div>
@@ -120,21 +135,11 @@
         <div class="form-grid">
           <div class="field">
             <label>注册邀请码</label>
-            <input
-              v-model="inviteCode"
-              type="text"
-              placeholder="请输入注册邀请码"
-            />
-            <div class="hint">
-              默认邀请码为 <code>wustacm666</code>，只有管理员可以修改。
-            </div>
+            <input v-model="inviteCode" type="text" placeholder="请输入注册邀请码" />
+            <div class="hint">默认邀请码为 <code>wustacm666</code>，只有管理员可以修改。</div>
           </div>
           <div class="actions">
-            <button
-              class="action-btn"
-              :disabled="loading"
-              @click="saveInviteCode"
-            >
+            <button class="action-btn" :disabled="loading" @click="saveInviteCode">
               保存邀请码
             </button>
           </div>
@@ -212,9 +217,7 @@
               </div>
               <div class="job-meta">
                 用户 {{ job.userId }} · {{ sourceLabel(job.source) }}
-                <template v-if="job.currentPlatform">
-                  · {{ job.currentPlatform }}
-                </template>
+                <template v-if="job.currentPlatform"> · {{ job.currentPlatform }} </template>
               </div>
               <div v-if="job.error" class="job-error">{{ job.error }}</div>
             </div>
@@ -223,16 +226,14 @@
               <div class="job-progress">
                 <div :style="{ width: jobProgress(job) + '%' }"></div>
               </div>
-              <div class="job-count">
-                {{ job.finishedPlatforms }}/{{ job.totalPlatforms || 0 }}
-              </div>
+              <div class="job-count">{{ job.finishedPlatforms }}/{{ job.totalPlatforms || 0 }}</div>
               <button
                 v-if="job.status === 'failed'"
                 class="action-btn retry-btn"
                 :disabled="retryingJobs[job.jobId]"
                 @click="retrySpiderJob(job.jobId)"
               >
-                {{ retryingJobs[job.jobId] ? '重试中' : '重试' }}
+                {{ retryingJobs[job.jobId] ? "重试中" : "重试" }}
               </button>
             </div>
           </div>
@@ -258,7 +259,9 @@
           <input v-model.number="auditUserId" type="number" placeholder="输入用户 ID" />
           <button class="action-btn" @click="loadSpiderAudit">查看审计</button>
         </div>
-        <div class="hint">展示每个平台从“原始抓取”到“最终计入 AC”的完整链路，用来解释 AC 数和 OJ 主页口径差异。</div>
+        <div class="hint">
+          展示每个平台从“原始抓取”到“最终计入 AC”的完整链路，用来解释 AC 数和 OJ 主页口径差异。
+        </div>
         <div class="audit-list" v-if="spiderAuditRows.length > 0">
           <div class="audit-card" v-for="item in spiderAuditRows" :key="item.platform">
             <div class="audit-head">
@@ -267,18 +270,48 @@
                 <span>@{{ item.username }} · {{ formatTime(item.lastSuccessAt) }}</span>
               </div>
               <em :class="{ stale: item.isStale, failed: item.status === 'failed' }">
-                {{ item.status === 'success' && !item.isStale ? '已同步' : item.status === 'running' ? '抓取中' : '未同步' }}
+                {{
+                  item.status === "success" && !item.isStale
+                    ? "已同步"
+                    : item.status === "running"
+                      ? "抓取中"
+                      : "未同步"
+                }}
               </em>
             </div>
             <div class="audit-metrics">
-              <div><b>{{ item.lastRawFetchedCount || 0 }}</b><span>本次原始</span></div>
-              <div><b>{{ item.lastFetchedCount || 0 }}</b><span>本次有效</span></div>
-              <div><b>{{ item.rawSubmitCount }}</b><span>库内原始</span></div>
-              <div><b>{{ item.distinctSubmitCount }}</b><span>去重提交</span></div>
-              <div><b>{{ item.acceptedSubmitCount }}</b><span>AC 提交</span></div>
-              <div><b>{{ item.distinctAcCount }}</b><span>去重 AC</span></div>
-              <div><b>{{ item.filteredDuplicateCount || 0 }}</b><span>去重过滤</span></div>
-              <div><b>{{ item.filteredAbnormalCount || 0 }}</b><span>异常/跳过</span></div>
+              <div>
+                <b>{{ item.lastRawFetchedCount || 0 }}</b
+                ><span>本次原始</span>
+              </div>
+              <div>
+                <b>{{ item.lastFetchedCount || 0 }}</b
+                ><span>本次有效</span>
+              </div>
+              <div>
+                <b>{{ item.rawSubmitCount }}</b
+                ><span>库内原始</span>
+              </div>
+              <div>
+                <b>{{ item.distinctSubmitCount }}</b
+                ><span>去重提交</span>
+              </div>
+              <div>
+                <b>{{ item.acceptedSubmitCount }}</b
+                ><span>AC 提交</span>
+              </div>
+              <div>
+                <b>{{ item.distinctAcCount }}</b
+                ><span>去重 AC</span>
+              </div>
+              <div>
+                <b>{{ item.filteredDuplicateCount || 0 }}</b
+                ><span>去重过滤</span>
+              </div>
+              <div>
+                <b>{{ item.filteredAbnormalCount || 0 }}</b
+                ><span>异常/跳过</span>
+              </div>
             </div>
             <div class="audit-notes">
               <p v-for="note in item.auditNotes" :key="note">{{ note }}</p>
@@ -293,52 +326,60 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import API from "@/utils/api";
-import Toast from "@/utils/toast";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import type { OperationLogItem, SpiderAuditItem, SpiderJobInfo } from "@/utils/api";
+import { computed, onMounted, ref } from "vue"
+import API from "@/utils/api"
+import Toast from "@/utils/toast"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
+import type { OperationLogItem, SpiderAuditItem, SpiderJobInfo } from "@/utils/api"
 
-const loading = ref(false);
-const loadingJobs = ref(false);
-const loadingOps = ref(false);
-const loadingOperationLogs = ref(false);
-const inviteCode = ref("");
-const spiderJobs = ref<SpiderJobInfo[]>([]);
-const operationLogs = ref<OperationLogItem[]>([]);
-const operationAction = ref("");
-const jobStatus = ref("");
-const retryingJobs = ref<Record<number, boolean>>({});
-const loadingCache = ref(false);
-const clearingCache = ref(false);
-const loadingAudit = ref(false);
-const cacheUserId = ref(-1);
-const auditUserId = ref<number | null>(null);
-const cacheKeys = ref<{ key: string; exists: boolean; ttl: number }[]>([]);
-const spiderAuditRows = ref<SpiderAuditItem[]>([]);
+const loading = ref(false)
+const loadingJobs = ref(false)
+const loadingOps = ref(false)
+const loadingOperationLogs = ref(false)
+const inviteCode = ref("")
+const spiderJobs = ref<SpiderJobInfo[]>([])
+const operationLogs = ref<OperationLogItem[]>([])
+const operationAction = ref("")
+const jobStatus = ref("")
+const retryingJobs = ref<Record<number, boolean>>({})
+const loadingCache = ref(false)
+const clearingCache = ref(false)
+const loadingAudit = ref(false)
+const cacheUserId = ref(-1)
+const auditUserId = ref<number | null>(null)
+const cacheKeys = ref<{ key: string; exists: boolean; ttl: number }[]>([])
+const spiderAuditRows = ref<SpiderAuditItem[]>([])
 const serviceStatuses = ref([
   { key: "user", name: "User 服务", description: "邀请码、用户和权限接口", status: "checking" },
   { key: "core", name: "Core Data 服务", description: "统计、缓存和抓取接口", status: "checking" },
   { key: "spider", name: "Spider 队列", description: "抓取任务查询与重试", status: "checking" },
-]);
+])
 
-const shortGitHash = __GIT_HASH__ ? __GIT_HASH__.slice(0, 7) : "unknown";
-const gitDateLabel = __GIT_DATE__ || "unknown";
+const shortGitHash = __GIT_HASH__ ? __GIT_HASH__.slice(0, 7) : "unknown"
+const gitDateLabel = __GIT_DATE__ || "unknown"
 
-const activeCacheCount = computed(() => cacheKeys.value.filter((item) => item.exists).length);
-const activeJobCount = computed(() => spiderJobs.value.filter((job) => ["queued", "running"].includes(job.status)).length);
-const failedJobCount = computed(() => spiderJobs.value.filter((job) => job.status === "failed").length);
-const recentFailedJobs = computed(() => spiderJobs.value.filter((job) => job.status === "failed").slice(0, 3));
-const healthyServiceCount = computed(() => serviceStatuses.value.filter((service) => service.status === "ok").length);
+const activeCacheCount = computed(() => cacheKeys.value.filter((item) => item.exists).length)
+const activeJobCount = computed(
+  () => spiderJobs.value.filter((job) => ["queued", "running"].includes(job.status)).length,
+)
+const failedJobCount = computed(
+  () => spiderJobs.value.filter((job) => job.status === "failed").length,
+)
+const recentFailedJobs = computed(() =>
+  spiderJobs.value.filter((job) => job.status === "failed").slice(0, 3),
+)
+const healthyServiceCount = computed(
+  () => serviceStatuses.value.filter((service) => service.status === "ok").length,
+)
 const serviceHealthClass = computed(() => ({
   warn: healthyServiceCount.value > 0 && healthyServiceCount.value < serviceStatuses.value.length,
   danger: healthyServiceCount.value === 0,
-}));
+}))
 const serviceHealthSummary = computed(() => {
-  const failed = serviceStatuses.value.filter((service) => service.status === "failed");
-  if (failed.length === 0) return "全部探测正常";
-  return `${failed.map((item) => item.name).join("、")} 异常`;
-});
+  const failed = serviceStatuses.value.filter((service) => service.status === "failed")
+  if (failed.length === 0) return "全部探测正常"
+  return `${failed.map((item) => item.name).join("、")} 异常`
+})
 
 const actionLabels: Record<string, string> = {
   "profile.delete": "删除用户",
@@ -363,7 +404,7 @@ const actionLabels: Record<string, string> = {
   "statistic.clear_cache": "清理统计缓存",
   "snapshot.save": "保存功能快照",
   "snapshot.cleanup": "清理功能快照",
-};
+}
 
 const jobFilters = [
   { label: "全部", value: "" },
@@ -371,155 +412,174 @@ const jobFilters = [
   { label: "抓取中", value: "running" },
   { label: "失败", value: "failed" },
   { label: "已完成", value: "success" },
-];
+]
 
 const loadInviteCode = async () => {
-  loading.value = true;
-  const response = await API.user.system.getRegisterInviteCode();
-  Toast.stdResponse(response, false);
+  loading.value = true
+  const response = await API.user.system.getRegisterInviteCode()
+  Toast.stdResponse(response, false)
   if (response.success) {
-    inviteCode.value = response.data.inviteCode;
+    inviteCode.value = response.data.inviteCode
   }
-  loading.value = false;
-};
+  loading.value = false
+}
 
 const saveInviteCode = async () => {
-  loading.value = true;
+  loading.value = true
   const response = await API.user.system.updateRegisterInviteCode({
     inviteCode: inviteCode.value.trim(),
-  });
-  Toast.stdResponse(response);
+  })
+  Toast.stdResponse(response)
   if (response.success) {
-    inviteCode.value = response.data.inviteCode;
+    inviteCode.value = response.data.inviteCode
   }
-  loading.value = false;
-};
+  loading.value = false
+}
 
 const loadCacheStatus = async () => {
-  loadingCache.value = true;
-  const response = await API.core.statistic.cacheStatus(Number(cacheUserId.value || -1));
-  Toast.stdResponse(response, false);
+  loadingCache.value = true
+  const response = await API.core.statistic.cacheStatus(Number(cacheUserId.value || -1))
+  Toast.stdResponse(response, false)
   if (response.success) {
-    cacheKeys.value = response.data.keys || [];
+    cacheKeys.value = response.data.keys || []
   }
-  loadingCache.value = false;
-};
+  loadingCache.value = false
+}
 
 const clearStatisticCache = async () => {
-  clearingCache.value = true;
-  const response = await API.core.statistic.clearCache(Number(cacheUserId.value || -1));
-  Toast.stdResponse(response);
-  clearingCache.value = false;
+  clearingCache.value = true
+  const response = await API.core.statistic.clearCache(Number(cacheUserId.value || -1))
+  Toast.stdResponse(response)
+  clearingCache.value = false
   if (response.success) {
-    await loadCacheStatus();
+    await loadCacheStatus()
   }
-};
+}
 
 const loadSpiderAudit = async () => {
-  const userId = Number(auditUserId.value || 0);
+  const userId = Number(auditUserId.value || 0)
   if (!userId || userId <= 0) {
-    Toast.error("请输入需要审计的用户 ID");
-    return;
+    Toast.error("请输入需要审计的用户 ID")
+    return
   }
-  loadingAudit.value = true;
-  const response = await API.core.spider.audit(userId);
-  Toast.stdResponse(response, false, true);
+  loadingAudit.value = true
+  const response = await API.core.spider.audit(userId)
+  Toast.stdResponse(response, false, true)
   if (response.success) {
-    spiderAuditRows.value = response.data.data || [];
+    spiderAuditRows.value = response.data.data || []
   }
-  loadingAudit.value = false;
-};
+  loadingAudit.value = false
+}
 
 const loadOperationLogs = async () => {
-  loadingOperationLogs.value = true;
+  loadingOperationLogs.value = true
   const request = {
     page: 1,
     pageSize: 50,
     action: operationAction.value.trim() || undefined,
-  };
+  }
   const [userResult, coreResult] = await Promise.allSettled([
     API.user.system.operationLogs(request),
     API.core.operationLogs(request),
-  ]);
-  const rows: OperationLogItem[] = [];
+  ])
+  const rows: OperationLogItem[] = []
   if (userResult.status === "fulfilled" && userResult.value.success) {
-    rows.push(...(userResult.value.data.data || []));
+    rows.push(...(userResult.value.data.data || []))
   }
   if (coreResult.status === "fulfilled" && coreResult.value.success) {
-    rows.push(...(coreResult.value.data.data || []));
+    rows.push(...(coreResult.value.data.data || []))
   }
-  const failed = [userResult, coreResult].some((item) => item.status === "fulfilled" && !item.value.success);
+  const failed = [userResult, coreResult].some(
+    (item) => item.status === "fulfilled" && !item.value.success,
+  )
   if (failed) {
-    Toast.error("部分操作日志获取失败");
+    Toast.error("部分操作日志获取失败")
   }
   operationLogs.value = rows
     .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
-    .slice(0, 80);
-  loadingOperationLogs.value = false;
-};
+    .slice(0, 80)
+  loadingOperationLogs.value = false
+}
 
 const formatTTL = (ttl: number) => {
-  if (ttl === -1) return "永久";
-  if (ttl < 0) return "-";
-  if (ttl < 60) return `${ttl}s`;
-  if (ttl < 3600) return `${Math.round(ttl / 60)}min`;
-  return `${Math.round(ttl / 3600)}h`;
-};
+  if (ttl === -1) return "永久"
+  if (ttl < 0) return "-"
+  if (ttl < 60) return `${ttl}s`
+  if (ttl < 3600) return `${Math.round(ttl / 60)}min`
+  return `${Math.round(ttl / 3600)}h`
+}
 
 const loadSpiderJobs = async () => {
-  loadingJobs.value = true;
+  loadingJobs.value = true
   const response = await API.core.spider.jobs({
     scope: "all",
     status: jobStatus.value || undefined,
     page: 1,
     pageSize: 30,
-  });
-  Toast.stdResponse(response, false);
+  })
+  Toast.stdResponse(response, false)
   if (response.success) {
-    spiderJobs.value = response.data.data || [];
+    spiderJobs.value = response.data.data || []
   }
-  loadingJobs.value = false;
-};
+  loadingJobs.value = false
+}
 
 const setServiceStatus = (key: string, status: string) => {
-  serviceStatuses.value = serviceStatuses.value.map((service) => (
-    service.key === key ? { ...service, status } : service
-  ));
-};
+  serviceStatuses.value = serviceStatuses.value.map((service) =>
+    service.key === key ? { ...service, status } : service,
+  )
+}
 
 const loadServiceStatuses = async () => {
-  serviceStatuses.value = serviceStatuses.value.map((service) => ({ ...service, status: "checking" }));
+  serviceStatuses.value = serviceStatuses.value.map((service) => ({
+    ...service,
+    status: "checking",
+  }))
   const [userResult, coreResult, spiderResult] = await Promise.allSettled([
     API.user.system.getRegisterInviteCode(),
     API.core.statistic.explanation(),
     API.core.spider.jobs({ scope: "all", page: 1, pageSize: 1 }),
-  ]);
+  ])
 
-  setServiceStatus("user", userResult.status === "fulfilled" && userResult.value.success ? "ok" : "failed");
-  setServiceStatus("core", coreResult.status === "fulfilled" && coreResult.value.success ? "ok" : "failed");
-  setServiceStatus("spider", spiderResult.status === "fulfilled" && spiderResult.value.success ? "ok" : "failed");
-};
+  setServiceStatus(
+    "user",
+    userResult.status === "fulfilled" && userResult.value.success ? "ok" : "failed",
+  )
+  setServiceStatus(
+    "core",
+    coreResult.status === "fulfilled" && coreResult.value.success ? "ok" : "failed",
+  )
+  setServiceStatus(
+    "spider",
+    spiderResult.status === "fulfilled" && spiderResult.value.success ? "ok" : "failed",
+  )
+}
 
 const refreshOperations = async () => {
-  loadingOps.value = true;
-  await Promise.all([loadServiceStatuses(), loadCacheStatus(), loadSpiderJobs(), loadOperationLogs()]);
-  loadingOps.value = false;
-};
+  loadingOps.value = true
+  await Promise.all([
+    loadServiceStatuses(),
+    loadCacheStatus(),
+    loadSpiderJobs(),
+    loadOperationLogs(),
+  ])
+  loadingOps.value = false
+}
 
 const setJobStatus = (status: string) => {
-  jobStatus.value = status;
-  loadSpiderJobs();
-};
+  jobStatus.value = status
+  loadSpiderJobs()
+}
 
 const retrySpiderJob = async (jobId: number) => {
-  retryingJobs.value = { ...retryingJobs.value, [jobId]: true };
-  const response = await API.core.spider.retry(jobId);
-  Toast.stdResponse(response);
-  retryingJobs.value = { ...retryingJobs.value, [jobId]: false };
+  retryingJobs.value = { ...retryingJobs.value, [jobId]: true }
+  const response = await API.core.spider.retry(jobId)
+  Toast.stdResponse(response)
+  retryingJobs.value = { ...retryingJobs.value, [jobId]: false }
   if (response.success) {
-    await loadSpiderJobs();
+    await loadSpiderJobs()
   }
-};
+}
 
 const jobStatusLabel = (status: string) => {
   const map: Record<string, string> = {
@@ -527,59 +587,62 @@ const jobStatusLabel = (status: string) => {
     running: "抓取中",
     success: "已完成",
     failed: "失败",
-  };
-  return map[status] || status;
-};
+  }
+  return map[status] || status
+}
 
 const sourceLabel = (source: string) => {
   const map: Record<string, string> = {
     manual: "手动刷新",
     cron: "定时刷新",
     bind: "绑定触发",
-  };
-  return map[source] || source || "未知来源";
-};
+  }
+  return map[source] || source || "未知来源"
+}
 
 const jobProgress = (job: SpiderJobInfo) => {
-  if (job.status === "success") return 100;
-  if (job.totalPlatforms <= 0) return job.status === "running" ? 20 : 8;
-  return Math.max(8, Math.min(100, Math.round((job.finishedPlatforms / job.totalPlatforms) * 100)));
-};
+  if (job.status === "success") return 100
+  if (job.totalPlatforms <= 0) return job.status === "running" ? 20 : 8
+  return Math.max(8, Math.min(100, Math.round((job.finishedPlatforms / job.totalPlatforms) * 100)))
+}
 
 const formatTime = (timestamp: number) => {
-  if (!timestamp) return "未知时间";
+  if (!timestamp) return "未知时间"
   return new Date(timestamp * 1000).toLocaleString("zh-CN", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  });
-};
+  })
+}
 
-const actionLabel = (action: string) => actionLabels[action] || action || "未知操作";
+const actionLabel = (action: string) => actionLabels[action] || action || "未知操作"
 
 const roleLabel = (roleId: number) => {
-  if (roleId === 1) return "管理员";
-  if (roleId === 2) return "教练";
-  return "普通用户";
-};
+  if (roleId === 1) return "管理员"
+  if (roleId === 2) return "教练"
+  return "普通用户"
+}
 
 const formatDetail = (detail: Record<string, any> = {}) => {
-  const entries = Object.entries(detail || {}).filter(([, value]) => (
-    value !== undefined && value !== null && value !== ""
-  ));
-  if (entries.length === 0) return "";
+  const entries = Object.entries(detail || {}).filter(
+    ([, value]) => value !== undefined && value !== null && value !== "",
+  )
+  if (entries.length === 0) return ""
   return entries
     .slice(0, 6)
-    .map(([key, value]) => `${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`)
-    .join(" · ");
-};
+    .map(
+      ([key, value]) =>
+        `${key}: ${typeof value === "object" ? JSON.stringify(value) : String(value)}`,
+    )
+    .join(" · ")
+}
 
 onMounted(() => {
-  loadInviteCode();
-  refreshOperations();
-});
+  loadInviteCode()
+  refreshOperations()
+})
 </script>
 
 <style scoped>

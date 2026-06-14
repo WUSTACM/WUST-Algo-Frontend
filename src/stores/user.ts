@@ -1,11 +1,11 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
-import JWT, { type JwtPayload } from '@/utils/jwt'
-import type { User } from '@/utils/type'
-import API from '@/utils/api'
-import Toast from '@/utils/toast'
+import { ref } from "vue"
+import { defineStore } from "pinia"
+import JWT, { type JwtPayload } from "@/utils/jwt"
+import type { User } from "@/utils/type"
+import API from "@/utils/api"
+import Toast from "@/utils/toast"
 
-export const useUserStore = defineStore('user', () => {
+export const useUserStore = defineStore("user", () => {
   // 状态
   const isLogin = ref<boolean>(JWT.isValid())
   const isAdmin = ref<boolean>(JWT.getUserInfo()?.roleId === 1)
@@ -25,29 +25,29 @@ export const useUserStore = defineStore('user', () => {
         isLogin.value = false
         isAdmin.value = false
         isCoach.value = false
-        Toast.error('登录状态已过期，请重新登录')
+        Toast.error("登录状态已过期，请重新登录")
         return
       }
 
-      isLogin.value = true;
+      isLogin.value = true
       isAdmin.value = jwtPayload.roleId === 1
       isCoach.value = jwtPayload.roleId === 2
 
-      const response = await API.user.profile.getById(jwtPayload.userId);
-      Toast.stdResponse(response, false);
+      const response = await API.user.profile.getById(jwtPayload.userId)
+      Toast.stdResponse(response, false)
 
       if (response.success) {
-        info.value = response.data;
+        info.value = response.data
       } else {
-        info.value = null;
-        isLogin.value = false;
-        isAdmin.value = false;
-        isCoach.value = false;
+        info.value = null
+        isLogin.value = false
+        isAdmin.value = false
+        isCoach.value = false
       }
     } else {
-      info.value = null;
-      isLogin.value = false;
-      isAdmin.value = false;
+      info.value = null
+      isLogin.value = false
+      isAdmin.value = false
     }
   }
 
@@ -56,6 +56,6 @@ export const useUserStore = defineStore('user', () => {
     isAdmin,
     isCoach,
     info,
-    syncStatus
+    syncStatus,
   }
 })

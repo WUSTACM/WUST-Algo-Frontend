@@ -1,20 +1,20 @@
-import { ref } from 'vue'
-import { defineStore } from 'pinia'
+import { ref } from "vue"
+import { defineStore } from "pinia"
 
 interface Log {
-  time: string;
-  content: string;
+  time: string
+  content: string
 }
 
-export const useBotLogStore = defineStore('botLog', () => {
+export const useBotLogStore = defineStore("botLog", () => {
   const log = ref<Log[]>([])
 
-  const MAX_LOG_SIZE = 200;
+  const MAX_LOG_SIZE = 200
 
   const push = (content: string) => {
     log.value.push({
       time: new Date().toLocaleString(),
-      content
+      content,
     })
     if (log.value.length > MAX_LOG_SIZE) {
       log.value = log.value.slice(-MAX_LOG_SIZE)
@@ -23,6 +23,6 @@ export const useBotLogStore = defineStore('botLog', () => {
 
   return {
     log,
-    push
+    push,
   }
 })

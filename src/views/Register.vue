@@ -5,63 +5,31 @@
       <div class="register-form">
         <div class="form-item">
           <label>账号</label>
-          <input
-            type="text"
-            v-model="formData.username"
-            placeholder="请输入账号"
-          />
+          <input type="text" v-model="formData.username" placeholder="请输入账号" />
         </div>
         <div class="form-item">
           <label>密码</label>
-          <input
-            type="password"
-            v-model="formData.password"
-            placeholder="请输入密码"
-          />
+          <input type="password" v-model="formData.password" placeholder="请输入密码" />
         </div>
         <div class="form-item">
           <label>请再次输入密码</label>
-          <input
-            type="password"
-            v-model="formData.passwordConfirm"
-            placeholder="请确认密码"
-          />
+          <input type="password" v-model="formData.passwordConfirm" placeholder="请确认密码" />
         </div>
         <div class="form-item">
           <label>姓名</label>
-          <input
-            type="text"
-            v-model="formData.name"
-            placeholder="请输入您的真实姓名"
-          />
+          <input type="text" v-model="formData.name" placeholder="请输入您的真实姓名" />
         </div>
         <div class="form-item">
           <label>邮箱</label>
-          <input
-            type="text"
-            v-model="formData.email"
-            placeholder="请输入邮箱"
-          />
+          <input type="text" v-model="formData.email" placeholder="请输入邮箱" />
         </div>
         <div class="form-item">
           <label>邀请码</label>
-          <input
-            type="text"
-            v-model="formData.inviteCode"
-            placeholder="请输入邀请码"
-          />
+          <input type="text" v-model="formData.inviteCode" placeholder="请输入邀请码" />
         </div>
         <div class="form-actions">
-          <div class="to-register">
-            已有账号？<router-link to="/login">立即登录</router-link>
-          </div>
-          <button
-            class="register-btn"
-            @click="handleRegister()"
-            :disabled="wait"
-          >
-            注册
-          </button>
+          <div class="to-register">已有账号？<router-link to="/login">立即登录</router-link></div>
+          <button class="register-btn" @click="handleRegister()" :disabled="wait">注册</button>
         </div>
       </div>
     </div>
@@ -69,17 +37,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import BaseLayout from "@/components/BaseLayout.vue";
-import type { UserAuthRegisterRequest as FormData } from "@/utils/api";
-import Toast from "@/utils/toast";
-import API from "@/utils/api";
+import { ref } from "vue"
+import { useRouter } from "vue-router"
+import BaseLayout from "@/components/BaseLayout.vue"
+import type { UserAuthRegisterRequest as FormData } from "@/utils/api"
+import Toast from "@/utils/toast"
+import API from "@/utils/api"
 
-const router = useRouter();
+const router = useRouter()
 
 // 如果wait为true，则禁用按钮
-const wait = ref<boolean>(false);
+const wait = ref<boolean>(false)
 
 const formData = ref<FormData>({
   email: "",
@@ -89,23 +57,23 @@ const formData = ref<FormData>({
   password: "",
   passwordConfirm: "",
   name: "",
-});
+})
 
 // 处理注册
 const handleRegister = async () => {
-  wait.value = true;
+  wait.value = true
 
-  const response = await API.user.auth.register(formData.value);
-  Toast.stdResponse(response);
+  const response = await API.user.auth.register(formData.value)
+  Toast.stdResponse(response)
 
   if (response.success) {
     setTimeout(() => {
-      router.push("/login");
-    }, 1000);
+      router.push("/login")
+    }, 1000)
   }
 
-  wait.value = false;
-};
+  wait.value = false
+}
 </script>
 
 <style scoped>
@@ -176,7 +144,11 @@ const handleRegister = async () => {
   font-size: var(--text-sm);
   font-weight: 800;
   line-height: 1;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .register-btn:hover {

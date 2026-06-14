@@ -44,6 +44,7 @@ Vite proxies `/api/*` to `VITE_API_URL/v1/*` in development (configured in `vite
 ### Routing & Auth
 
 Routes in `src/router/index.ts` with two guards:
+
 - `loginGuard` — requires `userStore.isLogin`, redirects to `/login?redirect=...`
 - `adminGuard` — requires `userStore.isAdmin`, redirects to `/`
 
@@ -52,6 +53,7 @@ All route components are lazy-loaded via dynamic `import()`.
 ### State Management
 
 Two Pinia stores using Composition API style:
+
 - `useUserStore` (`src/stores/user.ts`) — auth state (derived from JWT), user profile, role checks
 - `useBotLogStore` (`src/stores/bot-log.ts`) — bot message log with timestamps
 

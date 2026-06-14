@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS from "crypto-js"
 
 /**
  * 使用SHA256对密码进行哈希加密
@@ -6,5 +6,5 @@ import CryptoJS from 'crypto-js';
  * @returns 加密后的哈希值
  */
 export const hashPassword = (password: string): string => {
-  return CryptoJS.SHA256(password).toString();
-};
+  return CryptoJS.SHA256(password).toString()
+}

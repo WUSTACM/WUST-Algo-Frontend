@@ -10,19 +10,22 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
-  variant?: "default" | "primary" | "danger" | "ghost";
-  size?: "sm" | "md";
-  type?: "button" | "submit" | "reset";
-  disabled?: boolean;
-  block?: boolean;
-}>(), {
-  variant: "default",
-  size: "md",
-  type: "button",
-  disabled: false,
-  block: false,
-});
+withDefaults(
+  defineProps<{
+    variant?: "default" | "primary" | "danger" | "ghost"
+    size?: "sm" | "md"
+    type?: "button" | "submit" | "reset"
+    disabled?: boolean
+    block?: boolean
+  }>(),
+  {
+    variant: "default",
+    size: "md",
+    type: "button",
+    disabled: false,
+    block: false,
+  },
+)
 </script>
 
 <style scoped>
@@ -41,7 +44,12 @@ withDefaults(defineProps<{
   line-height: 1;
   letter-spacing: 0.02em;
   white-space: nowrap;
-  transition: background-color var(--ds-motion-fast), border-color var(--ds-motion-fast), color var(--ds-motion-fast), opacity var(--ds-motion-fast), box-shadow var(--ds-motion-fast);
+  transition:
+    background-color var(--ds-motion-fast),
+    border-color var(--ds-motion-fast),
+    color var(--ds-motion-fast),
+    opacity var(--ds-motion-fast),
+    box-shadow var(--ds-motion-fast);
 }
 
 .app-button-sm {

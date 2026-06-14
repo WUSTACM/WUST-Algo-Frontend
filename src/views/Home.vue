@@ -15,16 +15,10 @@
             <span class="action-export">⬇ 导出</span>
           </div> -->
           <div class="header-tabs">
-            <span
-              class="tab"
-              :class="mode === 'ac' ? 'active' : ''"
-              @click="mode = 'ac'"
+            <span class="tab" :class="mode === 'ac' ? 'active' : ''" @click="mode = 'ac'"
               >AC数据</span
             >
-            <span
-              class="tab"
-              :class="mode === 'submit' ? 'active' : ''"
-              @click="mode = 'submit'"
+            <span class="tab" :class="mode === 'submit' ? 'active' : ''" @click="mode = 'submit'"
               >提交数据</span
             >
           </div>
@@ -140,24 +134,13 @@
             <div class="card-footer">
               <div
                 class="footer-trend"
-                :class="
-                  getTrendClass(
-                    currentPeriodData.thisYear,
-                    currentPeriodData.lastYear,
-                  )
-                "
+                :class="getTrendClass(currentPeriodData.thisYear, currentPeriodData.lastYear)"
               >
                 <span class="trend-icon">{{
-                  getTrend(
-                    currentPeriodData.thisYear,
-                    currentPeriodData.lastYear,
-                  )
+                  getTrend(currentPeriodData.thisYear, currentPeriodData.lastYear)
                 }}</span>
                 <span class="trend-value">{{
-                  getTrendValue(
-                    currentPeriodData.thisYear,
-                    currentPeriodData.lastYear,
-                  )
+                  getTrendValue(currentPeriodData.thisYear, currentPeriodData.lastYear)
                 }}</span>
               </div>
               <div class="footer-info">VS last year</div>
@@ -191,24 +174,13 @@
             <div class="card-footer">
               <div
                 class="footer-trend"
-                :class="
-                  getTrendClass(
-                    currentPeriodData.thisMonth,
-                    currentPeriodData.lastMonth,
-                  )
-                "
+                :class="getTrendClass(currentPeriodData.thisMonth, currentPeriodData.lastMonth)"
               >
                 <span class="trend-icon">{{
-                  getTrend(
-                    currentPeriodData.thisMonth,
-                    currentPeriodData.lastMonth,
-                  )
+                  getTrend(currentPeriodData.thisMonth, currentPeriodData.lastMonth)
                 }}</span>
                 <span class="trend-value">{{
-                  getTrendValue(
-                    currentPeriodData.thisMonth,
-                    currentPeriodData.lastMonth,
-                  )
+                  getTrendValue(currentPeriodData.thisMonth, currentPeriodData.lastMonth)
                 }}</span>
               </div>
               <div class="footer-info">VS last month</div>
@@ -219,10 +191,7 @@
           <!-- 本周统计 -->
           <div class="stat-card">
             <div class="card-header">
-              <font-awesome-icon
-                icon="fa-solid fa-crosshairs"
-                class="card-icon"
-              />
+              <font-awesome-icon icon="fa-solid fa-crosshairs" class="card-icon" />
               <div class="card-title">
                 <div class="title-main">WEEKLY</div>
                 <div class="title-sub">本周{{ mode.toUpperCase() }}</div>
@@ -245,24 +214,13 @@
             <div class="card-footer">
               <div
                 class="footer-trend"
-                :class="
-                  getTrendClass(
-                    currentPeriodData.thisWeek,
-                    currentPeriodData.lastWeek,
-                  )
-                "
+                :class="getTrendClass(currentPeriodData.thisWeek, currentPeriodData.lastWeek)"
               >
                 <span class="trend-icon">{{
-                  getTrend(
-                    currentPeriodData.thisWeek,
-                    currentPeriodData.lastWeek,
-                  )
+                  getTrend(currentPeriodData.thisWeek, currentPeriodData.lastWeek)
                 }}</span>
                 <span class="trend-value">{{
-                  getTrendValue(
-                    currentPeriodData.thisWeek,
-                    currentPeriodData.lastWeek,
-                  )
+                  getTrendValue(currentPeriodData.thisWeek, currentPeriodData.lastWeek)
                 }}</span>
               </div>
               <div class="footer-info">VS last week</div>
@@ -305,11 +263,7 @@
                 </div>
                 <div class="weekly-scenes">
                   <div class="weekly-block-title">本周名场面</div>
-                  <div
-                    class="weekly-scene"
-                    v-for="scene in weeklyReport.scenes"
-                    :key="scene.title"
-                  >
+                  <div class="weekly-scene" v-for="scene in weeklyReport.scenes" :key="scene.title">
                     <strong>{{ scene.title }}</strong>
                     <span>{{ scene.text }}</span>
                   </div>
@@ -397,11 +351,7 @@
                     <div class="desc">牛客tracker</div>
                   </div>
                 </a>
-                <a
-                  class="card"
-                  href="https://www.luogu.com.cn/"
-                  target="_blank"
-                >
+                <a class="card" href="https://www.luogu.com.cn/" target="_blank">
                   <div class="icon">
                     <img
                       src="https://fecdn.luogu.com.cn/columba/static.325908fec383795b.logo-single-color.svg"
@@ -420,8 +370,7 @@
                   <div class="info">
                     <div class="title">AtCoder</div>
                     <div class="desc">
-                      AtCoder is a programming contest site for anyone from
-                      beginners to experts
+                      AtCoder is a programming contest site for anyone from beginners to experts
                     </div>
                   </div>
                 </a>
@@ -508,7 +457,7 @@
 
             <div class="section-secondary-container" style="position: relative">
               <LoadingOverlay :show="loadingAi" />
-              <div v-for="item in aiSummary" class="analyseItem">
+              <div v-for="(item, index) in aiSummary" :key="`${index}-${item}`" class="analyseItem">
                 {{ item }}
               </div>
               <div class="aiTip">内容由AI生成，请仔细甄别。</div>
@@ -527,11 +476,7 @@
             </div>
 
             <div class="section-secondary-container update-feed">
-              <div
-                class="update-item"
-                v-for="item in recentUpdates"
-                :key="item.title"
-              >
+              <div class="update-item" v-for="item in recentUpdates" :key="item.title">
                 <div class="update-marker" :class="`tone-${item.tone}`">
                   {{ item.type }}
                 </div>
@@ -552,40 +497,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import BaseLayout from "@/components/BaseLayout.vue";
-import Calendar from "@/components/Calendar.vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue"
+import BaseLayout from "@/components/BaseLayout.vue"
+import Calendar from "@/components/Calendar.vue"
 // import Rank from '@/components/Rank.vue';
-import JWT from "@/utils/jwt";
+import JWT from "@/utils/jwt"
 import API, {
   type CoreSubmitLogGetByIdData,
   type CoreStatisticHeatmapRequest,
   type CoreStatisticPeriodData,
   type CoreStatisticPeriodItem,
   type CoreStatisticPlatformPeriodItem,
-} from "@/utils/api";
-import Toast from "@/utils/toast";
-import Analyse from "@/utils/analyse";
-import { useUserStore } from "@/stores/user";
-import LoadingOverlay from "@/components/LoadingOverlay.vue";
-import BulletinBoard from "@/components/BulletinBoard.vue";
-import type { WeeklyReport } from "@/utils/v11Features";
+} from "@/utils/api"
+import Toast from "@/utils/toast"
+import Analyse from "@/utils/analyse"
+import { useUserStore } from "@/stores/user"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
+import BulletinBoard from "@/components/BulletinBoard.vue"
+import type { WeeklyReport } from "@/utils/v11Features"
 
-const userStore = useUserStore();
-const isLogin = computed(() => userStore.isLogin);
+const userStore = useUserStore()
+const isLogin = computed(() => userStore.isLogin)
 
-const loadingStats = ref(true);
-const loadingHeatmap = ref(true);
-const loadingAi = ref(true);
-const loadingWeekly = ref(false);
+const loadingStats = ref(true)
+const loadingHeatmap = ref(true)
+const loadingAi = ref(true)
+const loadingWeekly = ref(false)
 
 interface HeatmapData {
-  date: string;
-  count: number;
+  date: string
+  count: number
 }
 
-const analyse = ref<string[]>([]);
-const aiSummary = ref<string[]>([]);
+const analyse = ref<string[]>([])
+const aiSummary = ref<string[]>([])
 
 const recentUpdates = [
   {
@@ -616,56 +561,53 @@ const recentUpdates = [
     description: "团队总 AC 与提交改为成员数据累加，修复本周看板异常值。",
     date: "06/09",
   },
-];
+]
 
-const submitData = ref<HeatmapData[]>([]);
-const acData = ref<HeatmapData[]>([]);
-const recentSubmitLogs = ref<CoreSubmitLogGetByIdData[]>([]);
+const submitData = ref<HeatmapData[]>([])
+const acData = ref<HeatmapData[]>([])
+const recentSubmitLogs = ref<CoreSubmitLogGetByIdData[]>([])
 
-const dynamicYear = ref<number>(new Date().getFullYear());
+const dynamicYear = ref<number>(new Date().getFullYear())
 
 const handleYearChange = (year: number) => {
-  dynamicYear.value = year;
-};
+  dynamicYear.value = year
+}
 const padZero = (num: number): string => {
-  return num < 10 ? "0" + num : num.toString();
-};
+  return num < 10 ? "0" + num : num.toString()
+}
 
 const getHeatmapData = async () => {
-  loadingHeatmap.value = true;
-  const dateObj = new Date();
-  const date =
-    dateObj.getFullYear() +
-    padZero(dateObj.getMonth() + 1) +
-    padZero(dateObj.getDate());
+  loadingHeatmap.value = true
+  const dateObj = new Date()
+  const date = dateObj.getFullYear() + padZero(dateObj.getMonth() + 1) + padZero(dateObj.getDate())
 
   let request: CoreStatisticHeatmapRequest = {
     startDate: "20230101",
     endDate: date,
     isAc: false,
-  };
+  }
 
   if (isLogin.value) {
-    request.userId = JWT.getUserInfo()!.userId;
+    request.userId = JWT.getUserInfo()!.userId
   }
 
-  const response1 = await API.core.statistic.heatmap(request);
-  Toast.stdResponse(response1, false);
+  const response1 = await API.core.statistic.heatmap(request)
+  Toast.stdResponse(response1, false)
 
   if (response1.success) {
-    submitData.value = response1.data.data.filter((item) => item.count > 0);
+    submitData.value = response1.data.data.filter((item) => item.count > 0)
   }
 
-  request.isAc = true;
+  request.isAc = true
 
-  const response2 = await API.core.statistic.heatmap(request);
-  Toast.stdResponse(response2, false);
+  const response2 = await API.core.statistic.heatmap(request)
+  Toast.stdResponse(response2, false)
 
   if (response2.success) {
-    acData.value = response2.data.data.filter((item) => item.count > 0);
-    loadingHeatmap.value = false;
+    acData.value = response2.data.data.filter((item) => item.count > 0)
+    loadingHeatmap.value = false
   }
-};
+}
 
 const rankData = ref({
   data: [
@@ -685,10 +627,10 @@ const rankData = ref({
   userName: "赵六",
   userScore: 1145,
   totalPage: 1,
-});
+})
 
-const currentRank = ref(0);
-const currentCalendar = ref(0);
+const currentRank = ref(0)
+const currentCalendar = ref(0)
 
 const periodData = ref<CoreStatisticPeriodData>({
   ac: {
@@ -711,268 +653,284 @@ const periodData = ref<CoreStatisticPeriodData>({
     today: 0,
     total: 0,
   },
-});
+})
 
-type PeriodMetricKey = keyof CoreStatisticPeriodItem | "percentage";
+type PeriodMetricKey = keyof CoreStatisticPeriodItem | "percentage"
 
-const platformPeriodData = ref<CoreStatisticPlatformPeriodItem[]>([]);
+const platformPeriodData = ref<CoreStatisticPlatformPeriodItem[]>([])
 const platformLabels: Record<string, string> = {
   AtCoder: "AtCoder",
   NowCoder: "牛客",
   LuoGu: "洛谷",
   CodeForces: "CodeForces",
   QOJ: "QOJ",
-};
+}
 
-const mode = ref<"ac" | "submit">("ac");
+const mode = ref<"ac" | "submit">("ac")
 
 const currentPeriodData = computed<CoreStatisticPeriodItem>(() => {
-  return periodData.value[mode.value];
-});
+  return periodData.value[mode.value]
+})
 
-const weeklyReport = ref<WeeklyReport | null>(null);
-let weeklyReportSignature = "";
-const spiderRefreshEventKey = "wust-spider-refresh-done";
+const weeklyReport = ref<WeeklyReport | null>(null)
+let weeklyReportSignature = ""
+const spiderRefreshEventKey = "wust-spider-refresh-done"
 const spiderSnapshotState = ref({
   checkedAt: 0,
   active: false,
-});
+})
 
-const weeklyCacheKey = (userId: number, signature: string) => `wust-weekly-report:${userId}:${signature}`;
+const weeklyCacheKey = (userId: number, signature: string) =>
+  `wust-weekly-report:${userId}:${signature}`
 
 const hasActiveSpiderRefresh = async (userId: number) => {
-  if (!userId || !JWT.isValid()) return false;
-  const now = Date.now();
+  if (!userId || !JWT.isValid()) return false
+  const now = Date.now()
   if (now - spiderSnapshotState.value.checkedAt < 5000) {
-    return spiderSnapshotState.value.active;
+    return spiderSnapshotState.value.active
   }
 
   const [queuedResponse, runningResponse] = await Promise.all([
     API.core.spider.jobs({ scope: "mine", status: "queued", page: 1, pageSize: 1, userId }),
     API.core.spider.jobs({ scope: "mine", status: "running", page: 1, pageSize: 1, userId }),
-  ]);
+  ])
   const active = Boolean(
     (queuedResponse.success && queuedResponse.data.data.length > 0) ||
     (runningResponse.success && runningResponse.data.data.length > 0),
-  );
-  spiderSnapshotState.value = { checkedAt: now, active };
-  return active;
-};
+  )
+  spiderSnapshotState.value = { checkedAt: now, active }
+  return active
+}
 
 const buildWeeklySignature = () => {
-  const userId = Number(JWT.getUserInfo()?.userId || 0);
-  const newestLogTime = Math.max(0, ...recentSubmitLogs.value.map((item) => Number(item.time || 0)));
+  const userId = Number(JWT.getUserInfo()?.userId || 0)
+  const newestLogTime = Math.max(0, ...recentSubmitLogs.value.map((item) => Number(item.time || 0)))
   const periodMarker = [
     periodData.value.ac.thisWeek,
     periodData.value.ac.lastWeek,
     periodData.value.ac.total,
     periodData.value.submit.thisWeek,
     periodData.value.submit.total,
-  ].join(":");
+  ].join(":")
   const platformMarker = platformPeriodData.value
-    .map((item) => `${item.platform}:${item.ac.thisWeek}:${item.ac.total}:${item.submit.thisWeek}:${item.submit.total}`)
-    .join("|");
-  return `${userId}:${periodMarker}:${recentSubmitLogs.value.length}:${newestLogTime}:${platformMarker}`;
-};
+    .map(
+      (item) =>
+        `${item.platform}:${item.ac.thisWeek}:${item.ac.total}:${item.submit.thisWeek}:${item.submit.total}`,
+    )
+    .join("|")
+  return `${userId}:${periodMarker}:${recentSubmitLogs.value.length}:${newestLogTime}:${platformMarker}`
+}
 
 const refreshWeeklyReport = async () => {
   if (!isLogin.value) {
-    weeklyReport.value = null;
-    weeklyReportSignature = "";
-    return;
+    weeklyReport.value = null
+    weeklyReportSignature = ""
+    return
   }
-  const userId = Number(JWT.getUserInfo()?.userId || 0);
-  const signature = buildWeeklySignature();
-  if (!userId || signature === weeklyReportSignature) return;
-  if (await hasActiveSpiderRefresh(userId)) return;
+  const userId = Number(JWT.getUserInfo()?.userId || 0)
+  const signature = buildWeeklySignature()
+  if (!userId || signature === weeklyReportSignature) return
+  if (await hasActiveSpiderRefresh(userId)) return
 
-  weeklyReportSignature = signature;
-  const cacheKey = weeklyCacheKey(userId, signature);
+  weeklyReportSignature = signature
+  const cacheKey = weeklyCacheKey(userId, signature)
   try {
-    const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null");
-    if (cached?.generatedAt && Date.now() - Number(cached.generatedAt) < 10 * 60 * 1000 && cached?.report) {
-      weeklyReport.value = cached.report;
-      return;
+    const cached = JSON.parse(sessionStorage.getItem(cacheKey) || "null")
+    if (
+      cached?.generatedAt &&
+      Date.now() - Number(cached.generatedAt) < 10 * 60 * 1000 &&
+      cached?.report
+    ) {
+      weeklyReport.value = cached.report
+      return
     }
   } catch {
     // Ignore broken cache entries and rebuild below.
   }
 
-  const snapshot = await API.core.snapshot.get<WeeklyReport>(userId, "weekly_report", signature);
+  const snapshot = await API.core.snapshot.get<WeeklyReport>(userId, "weekly_report", signature)
   if (snapshot.success && snapshot.data.exists && !snapshot.data.stale && snapshot.data.payload) {
-    weeklyReport.value = snapshot.data.payload;
+    weeklyReport.value = snapshot.data.payload
     try {
-      sessionStorage.setItem(cacheKey, JSON.stringify({ generatedAt: Date.now(), report: snapshot.data.payload }));
+      sessionStorage.setItem(
+        cacheKey,
+        JSON.stringify({ generatedAt: Date.now(), report: snapshot.data.payload }),
+      )
     } catch {
       // Snapshot is enough when browser storage is unavailable.
     }
-    return;
+    return
   }
 
-  const { buildWeeklyReport } = await import("@/utils/v11Features");
-  const report = buildWeeklyReport(periodData.value, recentSubmitLogs.value, platformPeriodData.value);
-  weeklyReport.value = report;
+  const { buildWeeklyReport } = await import("@/utils/v11Features")
+  const report = buildWeeklyReport(
+    periodData.value,
+    recentSubmitLogs.value,
+    platformPeriodData.value,
+  )
+  weeklyReport.value = report
   try {
-    sessionStorage.setItem(cacheKey, JSON.stringify({ generatedAt: Date.now(), report }));
+    sessionStorage.setItem(cacheKey, JSON.stringify({ generatedAt: Date.now(), report }))
   } catch {
     // Storage can be unavailable in private mode; rendering should still work.
   }
-  API.core.snapshot.save(userId, "weekly_report", signature, report);
-};
+  API.core.snapshot.save(userId, "weekly_report", signature, report)
+}
 
 const refreshHomeAfterSpider = async () => {
-  spiderSnapshotState.value = { checkedAt: 0, active: false };
-  weeklyReportSignature = "";
-  await Promise.all([
-    getPeriodData(),
-    getWeeklySubmitLogs(),
-  ]);
-  await refreshWeeklyReport();
-};
+  spiderSnapshotState.value = { checkedAt: 0, active: false }
+  weeklyReportSignature = ""
+  await Promise.all([getPeriodData(), getWeeklySubmitLogs()])
+  await refreshWeeklyReport()
+}
 
 const handleSpiderRefreshDone = (event: StorageEvent) => {
-  if (event.key !== spiderRefreshEventKey || !event.newValue) return;
+  if (event.key !== spiderRefreshEventKey || !event.newValue) return
   try {
-    const payload = JSON.parse(event.newValue);
-    const currentUserId = Number(JWT.getUserInfo()?.userId || 0);
-    if (!currentUserId || Number(payload?.userId || 0) !== currentUserId) return;
-    refreshHomeAfterSpider();
+    const payload = JSON.parse(event.newValue)
+    const currentUserId = Number(JWT.getUserInfo()?.userId || 0)
+    if (!currentUserId || Number(payload?.userId || 0) !== currentUserId) return
+    refreshHomeAfterSpider()
   } catch {
     // Ignore malformed cross-tab notifications.
   }
-};
+}
 
-watch([periodData, recentSubmitLogs, platformPeriodData, isLogin], () => {
-  refreshWeeklyReport();
-}, { deep: true });
+watch(
+  [periodData, recentSubmitLogs, platformPeriodData, isLogin],
+  () => {
+    refreshWeeklyReport()
+  },
+  { deep: true },
+)
 
 const formatRate = (ac: number, submit: number): string => {
-  if (!submit) return "0.00%";
-  return `${((ac / submit) * 100).toFixed(2)}%`;
-};
+  if (!submit) return "0.00%"
+  return `${((ac / submit) * 100).toFixed(2)}%`
+}
 
 const platformBreakdown = (metric: PeriodMetricKey) => {
   return platformPeriodData.value.map((item) => {
     const value =
       metric === "percentage"
         ? formatRate(Number(item.ac.total), Number(item.submit.total))
-        : Number(item[mode.value][metric] || 0).toLocaleString();
+        : Number(item[mode.value][metric] || 0).toLocaleString()
 
     return {
       platform: item.platform,
       label: platformLabels[item.platform] || item.platform,
       value,
-    };
-  });
-};
+    }
+  })
+}
 
 const getPeriodData = async () => {
-  loadingStats.value = true;
-  const userId = JWT.getUserInfo()?.userId || -1;
-  const response = await API.core.statistic.period(userId);
-  Toast.stdResponse(response, false);
+  loadingStats.value = true
+  const userId = JWT.getUserInfo()?.userId || -1
+  const response = await API.core.statistic.period(userId)
+  Toast.stdResponse(response, false)
   if (response.success) {
-    periodData.value = response.data.data;
-    analyse.value = Analyse.period(response.data.data);
+    periodData.value = response.data.data
+    analyse.value = Analyse.period(response.data.data)
   }
-  loadingStats.value = false;
+  loadingStats.value = false
 
-  const platformResponse = await API.core.statistic.platformPeriod(userId);
-  Toast.stdResponse(platformResponse, false);
+  const platformResponse = await API.core.statistic.platformPeriod(userId)
+  Toast.stdResponse(platformResponse, false)
   if (platformResponse.success) {
-    platformPeriodData.value = platformResponse.data.data;
+    platformPeriodData.value = platformResponse.data.data
   }
-};
+}
 
 const getWeeklySubmitLogs = async () => {
-  if (!isLogin.value) return;
-  loadingWeekly.value = true;
-  const userId = JWT.getUserInfo()?.userId || 0;
-  const logs: CoreSubmitLogGetByIdData[] = [];
-  let cursor = -1;
-  const pageSize = 300;
-  const maxLogs = 1000;
-  const minTime = Math.floor(Date.now() / 1000) - 21 * 86400;
+  if (!isLogin.value) return
+  loadingWeekly.value = true
+  const userId = JWT.getUserInfo()?.userId || 0
+  const logs: CoreSubmitLogGetByIdData[] = []
+  let cursor = -1
+  const pageSize = 300
+  const maxLogs = 1000
+  const minTime = Math.floor(Date.now() / 1000) - 21 * 86400
 
   try {
     while (logs.length < maxLogs) {
-      const response = await API.core.submitLog.getById(userId, cursor, pageSize);
-      Toast.stdResponse(response, false);
-      if (!response.success) break;
+      const response = await API.core.submitLog.getById(userId, cursor, pageSize)
+      Toast.stdResponse(response, false)
+      if (!response.success) break
 
-      const pageLogs = response.data.data || [];
-      logs.push(...pageLogs);
-      if (pageLogs.length === 0 || pageLogs.length < pageSize) break;
+      const pageLogs = response.data.data || []
+      logs.push(...pageLogs)
+      if (pageLogs.length === 0 || pageLogs.length < pageSize) break
 
-      const lastLog = pageLogs[pageLogs.length - 1];
-      cursor = Number(lastLog?.time || 0);
-      if (!cursor || cursor < minTime) break;
+      const lastLog = pageLogs[pageLogs.length - 1]
+      cursor = Number(lastLog?.time || 0)
+      if (!cursor || cursor < minTime) break
     }
-    recentSubmitLogs.value = logs;
+    recentSubmitLogs.value = logs
   } finally {
-    loadingWeekly.value = false;
+    loadingWeekly.value = false
   }
-};
+}
 
 const getAiSummary = async () => {
-  loadingAi.value = true;
-  const userId = JWT.getUserInfo()?.userId;
+  loadingAi.value = true
+  const userId = JWT.getUserInfo()?.userId
   if (!userId) {
-    aiSummary.value = ["登录后查看AI总结"];
-    loadingAi.value = false;
-    return;
+    aiSummary.value = ["登录后查看AI总结"]
+    loadingAi.value = false
+    return
   }
-  const response = await API.agent.summary.recent(userId);
-  Toast.stdResponse(response, false);
-  aiSummary.value = response.data.msg;
-  loadingAi.value = false;
-};
+  const response = await API.agent.summary.recent(userId)
+  Toast.stdResponse(response, false)
+  aiSummary.value = response.data.msg
+  loadingAi.value = false
+}
 
 /*
 卧槽了惊天大无语，传的明明是数字却变成字符串了，逆天
 */
 const getTrendClass = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
+  curr = Number(curr)
+  prev = Number(prev)
   if (curr === prev) {
-    return "equal";
+    return "equal"
   } else if (curr > prev) {
-    return "up";
+    return "up"
   } else {
-    return "down";
+    return "down"
   }
-};
+}
 
 const getTrendValue = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
+  curr = Number(curr)
+  prev = Number(prev)
   // return (curr - prev >= 0 ? '+' : '') + ((curr - prev) / (prev === 0 ? 1 : prev) * 100).toFixed(2) + '%'
-  return (curr - prev >= 0 ? "+" : "") + (curr - prev);
-};
+  return (curr - prev >= 0 ? "+" : "") + (curr - prev)
+}
 
 const getTrend = (curr: number, prev: number): string => {
-  curr = Number(curr);
-  prev = Number(prev);
+  curr = Number(curr)
+  prev = Number(prev)
   if (curr === prev) {
-    return "-";
+    return "-"
   } else if (curr > prev) {
-    return "↗";
+    return "↗"
   } else {
-    return "↘";
+    return "↘"
   }
-};
+}
 
 onMounted(() => {
-  window.addEventListener("storage", handleSpiderRefreshDone);
-  getHeatmapData();
-  getPeriodData();
-  getWeeklySubmitLogs();
-  getAiSummary();
-});
+  window.addEventListener("storage", handleSpiderRefreshDone)
+  getHeatmapData()
+  getPeriodData()
+  getWeeklySubmitLogs()
+  getAiSummary()
+})
 
 onBeforeUnmount(() => {
-  window.removeEventListener("storage", handleSpiderRefreshDone);
-});
+  window.removeEventListener("storage", handleSpiderRefreshDone)
+})
 </script>
 
 <style scoped>

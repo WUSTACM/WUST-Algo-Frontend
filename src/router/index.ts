@@ -1,44 +1,43 @@
-import { createRouter, createWebHistory } from "vue-router";
-import JWT from "@/utils/jwt";
-import { useUserStore } from "@/stores/user";
+import { createRouter, createWebHistory } from "vue-router"
+import { useUserStore } from "@/stores/user"
 // 登录守卫路由
 const loginGuard = (to: any, from: any, next: any) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
   if (userStore.isLogin) {
-    next();
+    next()
   } else {
     next({
       name: "Login",
       query: {
         redirect: to.fullPath,
       },
-    });
+    })
   }
-};
+}
 
 // 管理员守卫路由
 const adminGuard = (to: any, from: any, next: any) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
   if (userStore.isAdmin) {
-    next();
+    next()
   } else {
     next({
       name: "Home",
-    });
+    })
   }
-};
+}
 
 // 教练守卫路由
 const coachGuard = (to: any, from: any, next: any) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
   if (userStore.isAdmin || userStore.isCoach) {
-    next();
+    next()
   } else {
     next({
       name: "Home",
-    });
+    })
   }
-};
+}
 
 const routes = [
   {
@@ -150,11 +149,11 @@ const routes = [
     name: "NotFound",
     component: () => import("@/views/NotFound.vue"),
   },
-];
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
-});
+})
 
-export default router;
+export default router

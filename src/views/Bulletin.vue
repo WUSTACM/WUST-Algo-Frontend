@@ -53,25 +53,37 @@
           </button>
 
           <template v-if="userStore.isLogin">
-            <div v-if="conversations.length === 0 && !dmLoading" class="empty-tip compact">暂无私信</div>
+            <div v-if="conversations.length === 0 && !dmLoading" class="empty-tip compact">
+              暂无私信
+            </div>
             <button
               v-for="conversation in conversations"
               :key="conversation.threadId"
               class="conversation-item"
-              :class="{ active: activeTab === 'dm' && selectedUserId === conversation.otherUser.userId }"
+              :class="{
+                active: activeTab === 'dm' && selectedUserId === conversation.otherUser.userId,
+              }"
               @click="openThread(conversation.otherUser.userId)"
             >
-              <img :src="avatarOf(conversation.otherUser.avatar)" :alt="conversation.otherUser.name">
+              <img
+                :src="avatarOf(conversation.otherUser.avatar)"
+                :alt="conversation.otherUser.name"
+              />
               <div class="conversation-main">
                 <div class="conversation-top">
-                  <span class="conversation-name">{{ conversation.otherUser.name || conversation.otherUser.username || '已注销用户' }}</span>
+                  <span class="conversation-name">{{
+                    conversation.otherUser.name || conversation.otherUser.username || "已注销用户"
+                  }}</span>
                   <span class="conversation-time">{{ shortTime(conversation.lastSentAt) }}</span>
                 </div>
                 <div class="conversation-preview">
-                  <span v-if="conversation.lastSenderId === currentUserId">我：</span>{{ conversation.lastMessagePreview || '暂无消息' }}
+                  <span v-if="conversation.lastSenderId === currentUserId">我：</span
+                  >{{ conversation.lastMessagePreview || "暂无消息" }}
                 </div>
               </div>
-              <span v-if="conversation.unreadCount > 0" class="unread-dot">{{ conversation.unreadCount }}</span>
+              <span v-if="conversation.unreadCount > 0" class="unread-dot">{{
+                conversation.unreadCount
+              }}</span>
             </button>
           </template>
           <div v-else class="empty-tip compact">登录后可以收发私信</div>
@@ -89,9 +101,14 @@
               </div>
             </div>
             <div class="system-message-panel">
-              <div class="bulletin-list" style="position: relative;">
+              <div class="bulletin-list" style="position: relative">
                 <LoadingOverlay :show="loading" />
-                <div v-if="bulletins.length === 0 && invites.length === 0 && !loading" class="empty-tip">暂无系统消息</div>
+                <div
+                  v-if="bulletins.length === 0 && invites.length === 0 && !loading"
+                  class="empty-tip"
+                >
+                  暂无系统消息
+                </div>
                 <div
                   v-for="invite in invites"
                   :key="`invite-${invite.id}`"
@@ -103,15 +120,22 @@
                         <font-awesome-icon icon="fa-solid fa-user-group" />
                         邀请
                       </span>
-                      <span class="card-title">{{ invite.inviterName || '队长' }} 邀请你加入 {{ invite.groupName || `团队 ${invite.groupId}` }}</span>
+                      <span class="card-title"
+                        >{{ invite.inviterName || "队长" }} 邀请你加入
+                        {{ invite.groupName || `团队 ${invite.groupId}` }}</span
+                      >
                     </div>
                     <div class="card-meta">
                       <span class="meta-time">{{ formatTime(invite.createdAt) }}</span>
                     </div>
                   </div>
                   <div class="invite-actions">
-                    <button class="invite-action primary" @click="respondInvite(invite.id, true)">同意</button>
-                    <button class="invite-action" @click="respondInvite(invite.id, false)">拒绝</button>
+                    <button class="invite-action primary" @click="respondInvite(invite.id, true)">
+                      同意
+                    </button>
+                    <button class="invite-action" @click="respondInvite(invite.id, false)">
+                      拒绝
+                    </button>
                   </div>
                 </div>
                 <div
@@ -136,7 +160,11 @@
                     </div>
                   </div>
                   <transition name="expand">
-                    <div v-if="expandedId === item.id" class="card-content" v-html="item.content"></div>
+                    <div
+                      v-if="expandedId === item.id"
+                      class="card-content"
+                      v-html="item.content"
+                    ></div>
                   </transition>
                 </div>
               </div>
@@ -152,7 +180,9 @@
                       :key="value"
                       :class="value === currentPage ? 'active' : ''"
                       @click="value === currentPage ? null : fetchBulletins(value)"
-                    >{{ value }}</button>
+                    >
+                      {{ value }}
+                    </button>
                   </div>
                   <div class="pageButtons" v-if="currentPage < totalPage">
                     <button @click="fetchBulletins(currentPage + 1)">下一页</button>
@@ -161,7 +191,7 @@
                 <div class="group">
                   <div class="pageInput">
                     <button @click="fetchBulletins(jumpPage)">跳转</button>
-                    <input type="number" min="1" :max="totalPage" v-model="jumpPage">
+                    <input type="number" min="1" :max="totalPage" v-model="jumpPage" />
                   </div>
                   <div class="pageSum">共 {{ totalPage }} 页</div>
                 </div>
@@ -176,15 +206,19 @@
           </template>
           <template v-else>
             <div class="thread-header">
-              <img :src="avatarOf(activeOther.avatar)" :alt="activeOther.name">
+              <img :src="avatarOf(activeOther.avatar)" :alt="activeOther.name" />
               <div>
-                <div class="thread-name">{{ activeOther.name || activeOther.username || '已注销用户' }}</div>
-                <div class="thread-subtitle">@{{ activeOther.username || 'deleted' }}</div>
+                <div class="thread-name">
+                  {{ activeOther.name || activeOther.username || "已注销用户" }}
+                </div>
+                <div class="thread-subtitle">@{{ activeOther.username || "deleted" }}</div>
               </div>
             </div>
             <div class="message-list" ref="messageListRef">
               <LoadingOverlay :show="threadLoading" />
-              <div v-if="messages.length === 0 && !threadLoading" class="empty-tip compact">还没有消息，发一句打个招呼吧</div>
+              <div v-if="messages.length === 0 && !threadLoading" class="empty-tip compact">
+                还没有消息，发一句打个招呼吧
+              </div>
               <div
                 v-for="message in messages"
                 :key="message.id"
@@ -218,11 +252,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import BaseLayout from '@/components/BaseLayout.vue'
-import LoadingOverlay from '@/components/LoadingOverlay.vue'
-import { useUserStore } from '@/stores/user'
+import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from "vue"
+import { useRoute } from "vue-router"
+import BaseLayout from "@/components/BaseLayout.vue"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
+import { useUserStore } from "@/stores/user"
 import API, {
   type BulletinInfo,
   type DirectMessage,
@@ -230,8 +264,8 @@ import API, {
   type MessageUser,
   type UserProfileGetByNameList,
   type UserTeamInvite,
-} from '@/utils/api'
-import Toast from '@/utils/toast'
+} from "@/utils/api"
+import Toast from "@/utils/toast"
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -243,10 +277,10 @@ const totalPage = ref(1)
 const total = ref(0)
 const jumpPage = ref(1)
 const expandedId = ref<number | null>(null)
-const routeTab = (query = route.query): 'dm' | 'system' => {
-  return query.tab === 'system' || query.expand ? 'system' : 'dm'
+const routeTab = (query = route.query): "dm" | "system" => {
+  return query.tab === "system" || query.expand ? "system" : "dm"
 }
-const activeTab = ref<'dm' | 'system'>(routeTab())
+const activeTab = ref<"dm" | "system">(routeTab())
 
 const dmLoading = ref(false)
 const threadLoading = ref(false)
@@ -254,10 +288,16 @@ const sending = ref(false)
 const conversations = ref<MessageConversation[]>([])
 const messages = ref<DirectMessage[]>([])
 const selectedUserId = ref<number>(Number(route.query.userId || 0))
-const activeOther = ref<MessageUser>({ userId: 0, username: '', name: '', avatar: '', deleted: false })
+const activeOther = ref<MessageUser>({
+  userId: 0,
+  username: "",
+  name: "",
+  avatar: "",
+  deleted: false,
+})
 const unreadCount = ref(0)
-const messageDraft = ref('')
-const dmSearchKeyword = ref('')
+const messageDraft = ref("")
+const dmSearchKeyword = ref("")
 const dmSearchCandidates = ref<UserProfileGetByNameList[]>([])
 const dmSearchLoading = ref(false)
 const messageListRef = ref<HTMLElement | null>(null)
@@ -269,7 +309,8 @@ const currentUserId = computed(() => Number(userStore.info?.userId || 0))
 const pages = computed(() => {
   if (totalPage.value <= 3) return Array.from({ length: totalPage.value }, (_, i) => i + 1)
   if (currentPage.value <= 1) return [1, 2, 3]
-  if (currentPage.value >= totalPage.value - 1) return [totalPage.value - 2, totalPage.value - 1, totalPage.value]
+  if (currentPage.value >= totalPage.value - 1)
+    return [totalPage.value - 2, totalPage.value - 1, totalPage.value]
   return [currentPage.value - 1, currentPage.value, currentPage.value + 1]
 })
 
@@ -282,8 +323,8 @@ const scrollMessagesToBottom = async () => {
 }
 
 const openSystemMessages = async () => {
-  if (activeTab.value === 'system') return
-  activeTab.value = 'system'
+  if (activeTab.value === "system") return
+  activeTab.value = "system"
   await fetchBulletins(currentPage.value)
 }
 
@@ -291,7 +332,7 @@ const fetchBulletins = async (page: number) => {
   loading.value = true
   const [bulletinResponse, inviteResponse] = await Promise.all([
     API.core.bulletin.list(page, pageSize),
-    userStore.isLogin ? API.user.team.invites() : Promise.resolve(null)
+    userStore.isLogin ? API.user.team.invites() : Promise.resolve(null),
   ])
   Toast.stdResponse(bulletinResponse, false)
   if (bulletinResponse.success) {
@@ -323,7 +364,7 @@ const fetchConversations = async () => {
         selectedUserId.value = firstConversation.otherUser.userId
       }
     }
-    if (activeTab.value === 'dm' && selectedUserId.value) {
+    if (activeTab.value === "dm" && selectedUserId.value) {
       await fetchThread(selectedUserId.value)
     }
   }
@@ -343,7 +384,7 @@ const updateConversationPreview = (message: DirectMessage) => {
   if (!otherUserId) return
 
   let found = false
-  const nextConversations = conversations.value.map(item => {
+  const nextConversations = conversations.value.map((item) => {
     if (item.otherUser.userId !== otherUserId) return item
     found = true
     return {
@@ -352,7 +393,7 @@ const updateConversationPreview = (message: DirectMessage) => {
       lastMessagePreview: message.content,
       lastSenderId: message.senderId,
       lastSentAt: message.createdAt,
-      unreadCount: 0
+      unreadCount: 0,
     }
   })
 
@@ -363,11 +404,13 @@ const updateConversationPreview = (message: DirectMessage) => {
       lastMessagePreview: message.content,
       lastSenderId: message.senderId,
       lastSentAt: message.createdAt,
-      unreadCount: 0
+      unreadCount: 0,
     })
   }
 
-  conversations.value = nextConversations.sort((a, b) => Number(b.lastSentAt || 0) - Number(a.lastSentAt || 0))
+  conversations.value = nextConversations.sort(
+    (a, b) => Number(b.lastSentAt || 0) - Number(a.lastSentAt || 0),
+  )
 }
 
 const fetchThread = async (userId: number) => {
@@ -382,15 +425,15 @@ const fetchThread = async (userId: number) => {
     await scrollMessagesToBottom()
     await API.user.message.markRead(userId)
     await fetchUnreadCount()
-    conversations.value = conversations.value.map(item =>
-      item.otherUser.userId === userId ? { ...item, unreadCount: 0 } : item
+    conversations.value = conversations.value.map((item) =>
+      item.otherUser.userId === userId ? { ...item, unreadCount: 0 } : item,
     )
   }
   threadLoading.value = false
 }
 
 const openThread = async (userId: number) => {
-  activeTab.value = 'dm'
+  activeTab.value = "dm"
   selectedUserId.value = userId
   dmSearchCandidates.value = []
   await fetchThread(userId)
@@ -399,16 +442,18 @@ const openThread = async (userId: number) => {
 const searchDirectMessageUsers = async () => {
   const keyword = dmSearchKeyword.value.trim()
   if (!keyword) {
-    Toast.warn('请输入用户昵称')
+    Toast.warn("请输入用户昵称")
     return
   }
   dmSearchLoading.value = true
   const response = await API.user.profile.getByName(keyword)
   Toast.stdResponse(response, false)
   if (response.success) {
-    dmSearchCandidates.value = response.data.list.filter(item => Number(item.userId) !== currentUserId.value)
+    dmSearchCandidates.value = response.data.list.filter(
+      (item) => Number(item.userId) !== currentUserId.value,
+    )
     if (dmSearchCandidates.value.length === 0) {
-      Toast.info('没有找到可私信的用户')
+      Toast.info("没有找到可私信的用户")
     }
   }
   dmSearchLoading.value = false
@@ -425,40 +470,40 @@ const sendDirectMessage = async () => {
     const sentMessage = response.data.data
     messages.value.push(sentMessage)
     updateConversationPreview(sentMessage)
-    messageDraft.value = ''
+    messageDraft.value = ""
     await scrollMessagesToBottom()
   }
   sending.value = false
 }
 
 const handleCardClick = (event: MouseEvent, id: number) => {
-  if (event.composedPath().some(el => el instanceof HTMLAnchorElement)) return
+  if (event.composedPath().some((el) => el instanceof HTMLAnchorElement)) return
   expandedId.value = expandedId.value === id ? null : id
 }
 
 const avatarOf = (avatar?: string): string => {
-  return avatar || '/images/defaultAvatar.png'
+  return avatar || "/images/defaultAvatar.png"
 }
 
 const formatTime = (timestamp: number): string => {
-  return new Date(timestamp * 1000).toLocaleString('sv-SE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Date(timestamp * 1000).toLocaleString("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   })
 }
 
 const shortTime = (timestamp: number): string => {
-  if (!timestamp) return ''
+  if (!timestamp) return ""
   const d = new Date(timestamp * 1000)
   const now = new Date()
   const diff = now.getTime() - d.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  if (days === 0) return d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+  if (days === 0) return d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })
   if (days < 7) return `${days}天前`
-  return d.toLocaleDateString('sv-SE', { month: '2-digit', day: '2-digit' })
+  return d.toLocaleDateString("sv-SE", { month: "2-digit", day: "2-digit" })
 }
 
 const respondInvite = async (inviteId: number, accept: boolean) => {
@@ -469,27 +514,30 @@ const respondInvite = async (inviteId: number, accept: boolean) => {
   }
 }
 
-watch(() => route.query, async query => {
-  const previousTab = activeTab.value
-  const nextTab = routeTab(query)
-  activeTab.value = nextTab
-  const nextUserId = Number(query.userId || 0)
-  if (nextTab === 'dm') {
-    if (nextUserId && nextUserId !== selectedUserId.value) {
-      selectedUserId.value = nextUserId
-      await fetchThread(nextUserId)
-      return
+watch(
+  () => route.query,
+  async (query) => {
+    const previousTab = activeTab.value
+    const nextTab = routeTab(query)
+    activeTab.value = nextTab
+    const nextUserId = Number(query.userId || 0)
+    if (nextTab === "dm") {
+      if (nextUserId && nextUserId !== selectedUserId.value) {
+        selectedUserId.value = nextUserId
+        await fetchThread(nextUserId)
+        return
+      }
+      if (previousTab !== "dm" || conversations.value.length === 0) {
+        await fetchConversations()
+      }
+    } else if (previousTab !== "system") {
+      await fetchBulletins(currentPage.value)
+      if (userStore.isLogin && conversations.value.length === 0) {
+        await fetchConversations()
+      }
     }
-    if (previousTab !== 'dm' || conversations.value.length === 0) {
-      await fetchConversations()
-    }
-  } else if (previousTab !== 'system') {
-    await fetchBulletins(currentPage.value)
-    if (userStore.isLogin && conversations.value.length === 0) {
-      await fetchConversations()
-    }
-  }
-})
+  },
+)
 
 onMounted(() => {
   const expandParam = route.query.expand
@@ -519,7 +567,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-@import '@/assets/css/navagation.css';
+@import "@/assets/css/navagation.css";
 
 .bulletin-page {
   padding: 20px;
@@ -575,7 +623,10 @@ onBeforeUnmount(() => {
   font-family: inherit;
   font-size: var(--text-sm);
   font-weight: 800;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .message-tabs button:hover,
@@ -685,7 +736,10 @@ onBeforeUnmount(() => {
   font-family: inherit;
   font-size: var(--text-sm);
   text-align: left;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .dm-candidate:hover {

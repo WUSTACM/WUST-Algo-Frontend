@@ -18,7 +18,7 @@
 
 ```vue
 <script setup lang="ts">
-import AppButton from "@/components/ui/AppButton.vue";
+import AppButton from "@/components/ui/AppButton.vue"
 </script>
 
 <template>

@@ -1,356 +1,370 @@
 <template>
-    <div class="ACCalendar">
-        <div class="title" v-if="props.title">{{ props.title }}</div>
-        <div class="content">
-            <div class="calendar">
-                <div class="dayAxis">
-                    <div class="dayLable">周一</div>
-                    <div class="dayLable">周三</div>
-                    <div class="dayLable">周五</div>
-                </div>
-                <div class="dayCharts">
-                    <div class="monthAxis">
-                        <div class="monthLable">一月</div>
-                        <div class="monthLable">二月</div>
-                        <div class="monthLable">三月</div>
-                        <div class="monthLable">四月</div>
-                        <div class="monthLable">五月</div>
-                        <div class="monthLable">六月</div>
-                        <div class="monthLable">七月</div>
-                        <div class="monthLable">八月</div>
-                        <div class="monthLable">九月</div>
-                        <div class="monthLable">十月</div>
-                        <div class="monthLable">十一月</div>
-                        <div class="monthLable">十二月</div>
-                    </div>
-                    <div class="dayGrid">
-                        <div class="dayBlockReserve" v-for="i in mod(fristDay - 1, 7)"></div>
-                        <div class="dayBlock" v-for="day in yearDays" @mouseenter="setInfo(day)">
-                            <!-- <div class="detailContainer">
+  <div class="ACCalendar">
+    <div class="title" v-if="props.title">{{ props.title }}</div>
+    <div class="content">
+      <div class="calendar">
+        <div class="dayAxis">
+          <div class="dayLable">周一</div>
+          <div class="dayLable">周三</div>
+          <div class="dayLable">周五</div>
+        </div>
+        <div class="dayCharts">
+          <div class="monthAxis">
+            <div class="monthLable">一月</div>
+            <div class="monthLable">二月</div>
+            <div class="monthLable">三月</div>
+            <div class="monthLable">四月</div>
+            <div class="monthLable">五月</div>
+            <div class="monthLable">六月</div>
+            <div class="monthLable">七月</div>
+            <div class="monthLable">八月</div>
+            <div class="monthLable">九月</div>
+            <div class="monthLable">十月</div>
+            <div class="monthLable">十一月</div>
+            <div class="monthLable">十二月</div>
+          </div>
+          <div class="dayGrid">
+            <div
+              class="dayBlockReserve"
+              v-for="reserveIndex in mod(fristDay - 1, 7)"
+              :key="`reserve-${reserveIndex}`"
+            ></div>
+            <div class="dayBlock" v-for="day in yearDays" :key="day" @mouseenter="setInfo(day)">
+              <!-- <div class="detailContainer">
                                 <div class="date">{{ getDateByYearAndDay(selectedYear, day) }}</div>
                                 <div class="count">{{ getCountByYearAndDay(selectedYear, day) }}</div>
                             </div> -->
-                            <div class="colorBlock" :style="'background-color:' + getBlockColor(day)"></div>
-                        </div>
-                    </div>
-                </div>
+              <div class="colorBlock" :style="'background-color:' + getBlockColor(day)"></div>
             </div>
-            <div class="yearSelector">
-                <div class="section" @click="changeYear(value)" :class="value === selectedYear ? 'selected' : ''"
-                    v-for="value in yearArray">{{ value }}</div>
-            </div>
+          </div>
         </div>
-        <div class="detailContainer">
-            <span class="date">{{ info.date }}</span>
-            <span class="count">{{ info.count }}</span>
+      </div>
+      <div class="yearSelector">
+        <div
+          class="section"
+          @click="changeYear(value)"
+          :class="value === selectedYear ? 'selected' : ''"
+          v-for="value in yearArray"
+          :key="value"
+        >
+          {{ value }}
         </div>
+      </div>
     </div>
+    <div class="detailContainer">
+      <span class="date">{{ info.date }}</span>
+      <span class="count">{{ info.count }}</span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref } from "vue"
 
 /**
  * 贡献日历
  * 我的想法是直接仿照Github做个差不多一样的
  * 列表示星期
  * 实现方法是获取一整年第一天是星期几，在第一列对应位置开始沿着Grid网格绘制方格
-*/
+ */
 
 // 定义props接收父组件传入的数据
 const props = defineProps({
-    data: {
-        type: Array as () => Array<{ date: string; count: number }>,
-        default: () => []
-    },
-    title: {
-        type: String,
-        default: ''
-    },
-    year: {
-        type: Number,
-    }
+  data: {
+    type: Array as () => Array<{ date: string; count: number }>,
+    default: () => [],
+  },
+  title: {
+    type: String,
+    default: "",
+  },
+  year: {
+    type: Number,
+  },
 })
 
-const selectedYear = ref<number>(props.year || new Date().getFullYear());
+const selectedYear = ref<number>(props.year || new Date().getFullYear())
 
 // 计算选中年共多少天
 const yearDays = computed(() => {
-    if ((selectedYear.value % 4 === 0 && selectedYear.value % 100 !== 0) || selectedYear.value % 400 === 0) {
-        return 366;
-    } else {
-        return 365;
-    }
+  if (
+    (selectedYear.value % 4 === 0 && selectedYear.value % 100 !== 0) ||
+    selectedYear.value % 400 === 0
+  ) {
+    return 366
+  } else {
+    return 365
+  }
 })
 
 // 计算data包含的年份
 const yearArray = computed(() => {
-    // 如果没有数据则认为是今年
-    if (props.data.length === 0) return [new Date().getFullYear()]
-    const years = new Set<number>()
-    props.data.forEach(item => {
-        years.add(new Date(item.date).getFullYear())
-    })
-    return Array.from(years).reverse()
+  // 如果没有数据则认为是今年
+  if (props.data.length === 0) return [new Date().getFullYear()]
+  const years = new Set<number>()
+  props.data.forEach((item) => {
+    years.add(new Date(item.date).getFullYear())
+  })
+  return Array.from(years).reverse()
 })
 
 const setInfo = (day: number) => {
-    info.value = {
-        date: getDateByYearAndDay(selectedYear.value, day),
-        count: getCountByYearAndDay(selectedYear.value, day)
-    }
+  info.value = {
+    date: getDateByYearAndDay(selectedYear.value, day),
+    count: getCountByYearAndDay(selectedYear.value, day),
+  }
 }
 
-const info = ref<{ date: string; count: number }>({ date: '', count: 0 })
+const info = ref<{ date: string; count: number }>({ date: "", count: 0 })
 
 // 每年第一天星期几（1,2,3,4,5,6,0）
-const fristDay = computed(() => new Date(selectedYear.value, 0, 2).getDay());
+const fristDay = computed(() => new Date(selectedYear.value, 0, 2).getDay())
 
 // 扩展 % 运算符，增加负数支持，处理星期循环
 const mod = (n: number, m: number): number => {
-    return ((n % m) + m) % m;
+  return ((n % m) + m) % m
 }
 
 // 日期补零
 const padZero = (num: number) => {
-    return num < 10 ? '0' + num : num.toString()
+  return num < 10 ? "0" + num : num.toString()
 }
 
 const getDateByYearAndDay = (year: number, day: number) => {
-    const dateObj = new Date(selectedYear.value, 0, day)
-    const date = `${dateObj.getFullYear()}-${padZero(dateObj.getMonth() + 1)}-${padZero(dateObj.getDate())}`
-    return date
+  const dateObj = new Date(selectedYear.value, 0, day)
+  const date = `${dateObj.getFullYear()}-${padZero(dateObj.getMonth() + 1)}-${padZero(dateObj.getDate())}`
+  return date
 }
 
 const getCountByYearAndDay = (year: number, day: number) => {
-    const dateObj = new Date(selectedYear.value, 0, day)
-    const date = `${dateObj.getFullYear()}-${padZero(dateObj.getMonth() + 1)}-${padZero(dateObj.getDate())}`
-    const count = props.data.find(item => item.date === date)?.count || 0
-    return count
+  const dateObj = new Date(selectedYear.value, 0, day)
+  const date = `${dateObj.getFullYear()}-${padZero(dateObj.getMonth() + 1)}-${padZero(dateObj.getDate())}`
+  const count = props.data.find((item) => item.date === date)?.count || 0
+  return count
 }
 
 // 根据天数获取颜色
 const getBlockColor = (day: number) => {
-    const count = getCountByYearAndDay(selectedYear.value, day)
+  const count = getCountByYearAndDay(selectedYear.value, day)
 
-    // 颜色梯度
-    if (count === 0) {
-        return 'rgba(0, 160, 0, 0)'
-    } else if (count <= 1) {
-        return 'rgba(0, 160, 0, 0.2)'
-    } else if (count <= 2) {
-        return 'rgba(0, 160, 0, 0.4)'
-    } else if (count <= 6) {
-        return 'rgba(0, 160, 0, 0.6)'
-    } else if (count <= 12) {
-        return 'rgba(0, 160, 0, 0.8)'
-    } else {
-        return 'rgba(0, 160, 0, 1)'
-    }
+  // 颜色梯度
+  if (count === 0) {
+    return "rgba(0, 160, 0, 0)"
+  } else if (count <= 1) {
+    return "rgba(0, 160, 0, 0.2)"
+  } else if (count <= 2) {
+    return "rgba(0, 160, 0, 0.4)"
+  } else if (count <= 6) {
+    return "rgba(0, 160, 0, 0.6)"
+  } else if (count <= 12) {
+    return "rgba(0, 160, 0, 0.8)"
+  } else {
+    return "rgba(0, 160, 0, 1)"
+  }
 }
 
 // 用户点击更改年份
 const changeYear = (year: number) => {
-    selectedYear.value = year
-    emit('changeYear', year)
+  selectedYear.value = year
+  emit("changeYear", year)
 }
 
 const emit = defineEmits<{
-  (e: 'changeYear', id: number): void
+  (e: "changeYear", id: number): void
 }>()
 </script>
 
 <style scoped>
 .ACCalendar {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    -webkit-user-select: none;
-    user-select: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.ACCalendar>.title {
-    width: 100%;
-    height: 50px;
-    line-height: 50px;
-    font-size: 1.5rem;
-    color: var(--text-default-color);
+.ACCalendar > .title {
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+  font-size: 1.5rem;
+  color: var(--text-default-color);
 }
 
 .ACCalendar .content {
-    display: flex;
-    position: relative;
-    flex-direction: row;
-    gap: 5px;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    overflow: hidden;
+  display: flex;
+  position: relative;
+  flex-direction: row;
+  gap: 5px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar {
-    position: relative;
-    flex: 1 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 0 0 0 40px;
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0 0 0 40px;
 }
 
 .monthAxis {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 634px;
-    height: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 634px;
+  height: 20px;
 }
 
 .monthLable {
-    width: 50px;
-    height: 20px;
-    line-height: 20px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-default-color);
+  width: 50px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-default-color);
 }
 
 .dayAxis {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 40px;
-    height: calc((10px * 7) + (2px * 6));
-    top: 20px;
-    left: 0;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 40px;
+  height: calc((10px * 7) + (2px * 6));
+  top: 20px;
+  left: 0;
 }
 
 .dayLable {
-    width: 40px;
-    height: 10px;
-    line-height: 10px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-default-color);
+  width: 40px;
+  height: 10px;
+  line-height: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-default-color);
 }
 
 .dayCharts {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    padding: 0 0 5px 0;
-    overflow-x: auto;
-    overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0 0 5px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .dayCharts::-webkit-scrollbar {
-    height: 5px;
+  height: 5px;
 }
 
 .dayCharts::-webkit-scrollbar-thumb {
-    background-color: var(--divider-color);
-    border-radius: 5px;
+  background-color: var(--divider-color);
+  border-radius: 5px;
 }
 
 .dayCharts::-webkit-scrollbar-track {
-    background-color: var(--background-color-1);
+  background-color: var(--background-color-1);
 }
 
 .dayGrid {
-    display: grid;
-    grid-template-columns: repeat(53, 10px);
-    grid-template-rows: repeat(7, 10px);
-    grid-auto-flow: column;
-    gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(53, 10px);
+  grid-template-rows: repeat(7, 10px);
+  grid-auto-flow: column;
+  gap: 2px;
 }
 
 .dayBlock {
-    width: 10px;
-    height: 10px;
-    border-radius: 2px;
-    background-color: var(--divider-color);
-    cursor: pointer;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background-color: var(--divider-color);
+  cursor: pointer;
 }
 
 .dayBlock:hover .detailContainer {
-    opacity: 1;
+  opacity: 1;
 }
 
 .colorBlock {
-    width: 100%;
-    height: 100%;
-    border-radius: 2px;
-    transition: transform 0.2s ease-in-out;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  transition: transform 0.2s ease-in-out;
 }
 
 .colorBlock:hover {
-    transform: scale(1.5);
+  transform: scale(1.5);
 }
 
 .detailContainer {
-    display: flex;
-    gap: 10px;
-    pointer-events: none;
+  display: flex;
+  gap: 10px;
+  pointer-events: none;
 
-    color: var(--text-default-color)
+  color: var(--text-default-color);
 }
 
 .yearSelector {
-    max-width: 100%;
-    height: calc((10px * 7) + (2px * 6) + 20px);
-    position: relative;
-    display: flex;
-    flex-shrink: 0;
-    flex-direction: column;
-    padding-bottom: 5px;
-    padding-right: 5px;
-    gap: 5px;
-    overflow: auto;
+  max-width: 100%;
+  height: calc((10px * 7) + (2px * 6) + 20px);
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  padding-bottom: 5px;
+  padding-right: 5px;
+  gap: 5px;
+  overflow: auto;
 }
 
 .yearSelector::-webkit-scrollbar {
-    height: 5px;
-    width: 5px;
+  height: 5px;
+  width: 5px;
 }
 
 .yearSelector::-webkit-scrollbar-thumb {
-    background-color: var(--divider-color);
-    border-radius: 2px;
+  background-color: var(--divider-color);
+  border-radius: 2px;
 }
 
 .yearSelector::-webkit-scrollbar-track {
-    background-color: var(--background-color-1);
+  background-color: var(--background-color-1);
 }
 
 .yearSelector .section {
-    flex-shrink: 0;
-    width: 80px;
-    line-height: 30px;
-    text-align: center;
-    font-size: 1.2rem;
-    color: var(--text-default-color);
-    border-radius: 10px;
-    border: 1px solid var(--divider-color);
+  flex-shrink: 0;
+  width: 80px;
+  line-height: 30px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: var(--text-default-color);
+  border-radius: 10px;
+  border: 1px solid var(--divider-color);
 }
 
 .yearSelector .section.selected {
-    background-color: var(--divider-color);
+  background-color: var(--divider-color);
 }
 
-@media (max-width:900px) {
-    .ACCalendar .content {
-        flex-direction: column;
-        overflow: visible;
-    }
+@media (max-width: 900px) {
+  .ACCalendar .content {
+    flex-direction: column;
+    overflow: visible;
+  }
 
-    .yearSelector {
-        width: 100%;
-        height: auto;
-        flex-direction: row;
-    }
+  .yearSelector {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+  }
 }
 </style>

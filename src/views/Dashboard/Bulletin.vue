@@ -14,42 +14,44 @@
         </div>
       </div>
       <div class="content">
-        <div style="position: relative;">
+        <div style="position: relative">
           <LoadingOverlay :show="loading" />
           <template v-if="bulletins.length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 60px;">ID</th>
-                <th style="width: 200px;">标题</th>
-                <th style="width: 100px;">作者</th>
-                <th style="width: 80px;">置顶</th>
-                <th style="width: 160px;">创建时间</th>
-                <th style="width: 160px;">更新时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in bulletins" :key="item.id">
-                <td>{{ item.id }}</td>
-                <td>{{ item.title }}</td>
-                <td>{{ item.authorName }}</td>
-                <td>
-                  <span :class="item.isPinned ? 'pinned-yes' : 'pinned-no'">
-                    {{ item.isPinned ? '是' : '否' }}
-                  </span>
-                </td>
-                <td>{{ formatTime(item.createdAt) }}</td>
-                <td>{{ formatTime(item.updatedAt) }}</td>
-                <td>
-                  <div class="actions">
-                    <button class="btn btn-primary" @click="openEditModal(item)">编辑</button>
-                    <button class="btn btn-danger" @click="handleDelete(item.id, item.title)">删除</button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 60px">ID</th>
+                  <th style="width: 200px">标题</th>
+                  <th style="width: 100px">作者</th>
+                  <th style="width: 80px">置顶</th>
+                  <th style="width: 160px">创建时间</th>
+                  <th style="width: 160px">更新时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in bulletins" :key="item.id">
+                  <td>{{ item.id }}</td>
+                  <td>{{ item.title }}</td>
+                  <td>{{ item.authorName }}</td>
+                  <td>
+                    <span :class="item.isPinned ? 'pinned-yes' : 'pinned-no'">
+                      {{ item.isPinned ? "是" : "否" }}
+                    </span>
+                  </td>
+                  <td>{{ formatTime(item.createdAt) }}</td>
+                  <td>{{ formatTime(item.updatedAt) }}</td>
+                  <td>
+                    <div class="actions">
+                      <button class="btn btn-primary" @click="openEditModal(item)">编辑</button>
+                      <button class="btn btn-danger" @click="handleDelete(item.id, item.title)">
+                        删除
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </template>
           <div v-else-if="!loading" class="empty-placeholder">暂无公告</div>
         </div>
@@ -64,7 +66,9 @@
                 :key="value"
                 :class="value === currentPage ? 'active' : ''"
                 @click="value === currentPage ? null : fetchBulletins(value)"
-              >{{ value }}</button>
+              >
+                {{ value }}
+              </button>
             </div>
             <div class="pageButtons" v-if="currentPage < totalPage">
               <button @click="fetchBulletins(currentPage + 1)">下一页</button>
@@ -73,7 +77,7 @@
           <div class="group">
             <div class="pageInput">
               <button @click="fetchBulletins(jumpPage)">跳转</button>
-              <input type="number" min="1" :max="totalPage" v-model="jumpPage">
+              <input type="number" min="1" :max="totalPage" v-model="jumpPage" />
             </div>
             <div class="pageSum">共 {{ totalPage }} 页</div>
           </div>
@@ -85,36 +89,51 @@
     <div class="modal-overlay" v-if="showModal" @click="closeModal">
       <div class="modal" @click.stop>
         <div class="modal-header">
-          <span>{{ editingId ? '编辑公告' : '创建公告' }}</span>
+          <span>{{ editingId ? "编辑公告" : "创建公告" }}</span>
           <button class="modal-close" @click="closeModal">&times;</button>
         </div>
         <div class="modal-body">
           <div class="form-group">
             <label>标题</label>
-            <input type="text" v-model="form.title" placeholder="请输入公告标题">
+            <input type="text" v-model="form.title" placeholder="请输入公告标题" />
           </div>
           <div class="form-group">
             <label>内容（支持HTML）</label>
             <div class="editor-toolbar">
-              <button type="button" class="toolbar-btn" @click="insertTag('b')" title="加粗"><b>B</b></button>
-              <button type="button" class="toolbar-btn" @click="insertTag('i')" title="斜体"><i>I</i></button>
-              <button type="button" class="toolbar-btn" @click="insertTag('u')" title="下划线"><u>U</u></button>
-              <button type="button" class="toolbar-btn" @click="insertTag('s')" title="删除线"><s>S</s></button>
+              <button type="button" class="toolbar-btn" @click="insertTag('b')" title="加粗">
+                <b>B</b>
+              </button>
+              <button type="button" class="toolbar-btn" @click="insertTag('i')" title="斜体">
+                <i>I</i>
+              </button>
+              <button type="button" class="toolbar-btn" @click="insertTag('u')" title="下划线">
+                <u>U</u>
+              </button>
+              <button type="button" class="toolbar-btn" @click="insertTag('s')" title="删除线">
+                <s>S</s>
+              </button>
               <button type="button" class="toolbar-btn" @click="insertLink" title="链接">🔗</button>
-              <button type="button" class="toolbar-btn" @click="insertTag('h3')" title="标题">H</button>
+              <button type="button" class="toolbar-btn" @click="insertTag('h3')" title="标题">
+                H
+              </button>
             </div>
-            <textarea ref="textareaRef" v-model="form.content" placeholder="请输入公告内容" rows="10"></textarea>
+            <textarea
+              ref="textareaRef"
+              v-model="form.content"
+              placeholder="请输入公告内容"
+              rows="10"
+            ></textarea>
           </div>
           <div class="form-group-checkbox">
             <label>
-              <input type="checkbox" v-model="form.isPinned">
+              <input type="checkbox" v-model="form.isPinned" />
               置顶该公告
             </label>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" @click="handleSubmit" :disabled="submitting">
-            {{ submitting ? '提交中...' : '确认' }}
+            {{ submitting ? "提交中..." : "确认" }}
           </button>
           <button class="btn" @click="closeModal">取消</button>
         </div>
@@ -123,7 +142,7 @@
 
     <!-- 删除确认弹窗 -->
     <div class="modal-overlay" v-if="showDeleteConfirm" @click="showDeleteConfirm = false">
-      <div class="modal" @click.stop style="max-width: 360px;">
+      <div class="modal" @click.stop style="max-width: 360px">
         <div class="modal-header">
           <span>确认删除</span>
           <button class="modal-close" @click="showDeleteConfirm = false">&times;</button>
@@ -133,7 +152,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-danger" @click="confirmDelete" :disabled="deleting">
-            {{ deleting ? '删除中...' : '确认删除' }}
+            {{ deleting ? "删除中..." : "确认删除" }}
           </button>
           <button class="btn" @click="showDeleteConfirm = false">取消</button>
         </div>
@@ -143,10 +162,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
-import API, { type BulletinInfo } from '@/utils/api'
-import Toast from '@/utils/toast'
-import LoadingOverlay from '@/components/LoadingOverlay.vue'
+import { ref, computed, onMounted, nextTick } from "vue"
+import API, { type BulletinInfo } from "@/utils/api"
+import Toast from "@/utils/toast"
+import LoadingOverlay from "@/components/LoadingOverlay.vue"
 
 const loading = ref(true)
 const bulletins = ref<BulletinInfo[]>([])
@@ -159,7 +178,8 @@ const pageSize = 10
 const pages = computed(() => {
   if (totalPage.value <= 3) return Array.from({ length: totalPage.value }, (_, i) => i + 1)
   if (currentPage.value <= 1) return [1, 2, 3]
-  if (currentPage.value >= totalPage.value - 1) return [totalPage.value - 2, totalPage.value - 1, totalPage.value]
+  if (currentPage.value >= totalPage.value - 1)
+    return [totalPage.value - 2, totalPage.value - 1, totalPage.value]
   return [currentPage.value - 1, currentPage.value, currentPage.value + 1]
 })
 
@@ -181,14 +201,14 @@ const showModal = ref(false)
 const editingId = ref<number | null>(null)
 const submitting = ref(false)
 const form = ref({
-  title: '',
-  content: '',
-  isPinned: false
+  title: "",
+  content: "",
+  isPinned: false,
 })
 
 const openCreateModal = () => {
   editingId.value = null
-  form.value = { title: '', content: '', isPinned: false }
+  form.value = { title: "", content: "", isPinned: false }
   showModal.value = true
 }
 
@@ -197,7 +217,7 @@ const openEditModal = (item: BulletinInfo) => {
   form.value = {
     title: item.title,
     content: item.content,
-    isPinned: item.isPinned
+    isPinned: item.isPinned,
   }
   showModal.value = true
 }
@@ -216,7 +236,7 @@ const insertTag = (tag: string) => {
   const end = ta.selectionEnd
   const text = form.value.content
   const selected = text.slice(start, end)
-  const replacement = `<${tag}>${selected || ''}</${tag}>`
+  const replacement = `<${tag}>${selected || ""}</${tag}>`
   form.value.content = text.slice(0, start) + replacement + text.slice(end)
   nextTick(() => {
     ta.focus()
@@ -230,8 +250,8 @@ const insertLink = () => {
   const start = ta.selectionStart
   const end = ta.selectionEnd
   const text = form.value.content
-  const selected = text.slice(start, end) || '链接文字'
-  const url = prompt('请输入链接地址', 'https://')
+  const selected = text.slice(start, end) || "链接文字"
+  const url = prompt("请输入链接地址", "https://")
   if (!url) return
   const replacement = `<a href="${url}" target="_blank">${selected}</a>`
   form.value.content = text.slice(0, start) + replacement + text.slice(end)
@@ -242,11 +262,11 @@ const insertLink = () => {
 
 const handleSubmit = async () => {
   if (!form.value.title.trim()) {
-    Toast.error('标题不能为空')
+    Toast.error("标题不能为空")
     return
   }
   if (!form.value.content.trim()) {
-    Toast.error('内容不能为空')
+    Toast.error("内容不能为空")
     return
   }
 
@@ -257,13 +277,13 @@ const handleSubmit = async () => {
       id: editingId.value,
       title: form.value.title,
       content: form.value.content,
-      isPinned: form.value.isPinned
+      isPinned: form.value.isPinned,
     })
   } else {
     response = await API.core.bulletin.create({
       title: form.value.title,
       content: form.value.content,
-      isPinned: form.value.isPinned
+      isPinned: form.value.isPinned,
     })
   }
   Toast.stdResponse(response)
@@ -278,7 +298,7 @@ const handleSubmit = async () => {
 // Delete
 const showDeleteConfirm = ref(false)
 const deletingId = ref(0)
-const deletingTitle = ref('')
+const deletingTitle = ref("")
 const deleting = ref(false)
 
 const handleDelete = (id: number, title: string) => {
@@ -299,12 +319,12 @@ const confirmDelete = async () => {
 }
 
 const formatTime = (timestamp: number): string => {
-  return new Date(timestamp * 1000).toLocaleString('sv-SE', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Date(timestamp * 1000).toLocaleString("sv-SE", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   })
 }
 
@@ -318,7 +338,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import '@/assets/css/navagation.css';
+@import "@/assets/css/navagation.css";
 
 .dashboardContent {
   height: 100%;
@@ -328,7 +348,7 @@ onMounted(() => {
   .section {
     border-radius: 6px;
 
-    >.header {
+    > .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -336,7 +356,7 @@ onMounted(() => {
       border-bottom: 1px solid var(--divider-color);
     }
 
-    >.content {
+    > .content {
       padding: 10px;
       overflow: auto;
 
@@ -373,7 +393,9 @@ onMounted(() => {
         font-size: var(--text-base);
         white-space: nowrap;
         cursor: pointer;
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition:
+          background-color 0.2s ease,
+          color 0.2s ease;
         -webkit-user-select: none;
         user-select: none;
 
@@ -408,7 +430,10 @@ onMounted(() => {
     color: var(--text-secondary-color);
     background-color: var(--background-color-2);
     font-family: inherit;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
     cursor: pointer;
   }
 
@@ -591,7 +616,10 @@ onMounted(() => {
   color: var(--text-secondary-color);
   background-color: var(--background-color-2);
   font-family: inherit;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   cursor: pointer;
 }
 
@@ -621,9 +649,9 @@ onMounted(() => {
   opacity: 0.9;
 }
 .empty-placeholder {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-light-color);
-    font-size: var(--text-base);
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light-color);
+  font-size: var(--text-base);
 }
 </style>
