@@ -33,10 +33,16 @@ run_sudo() {
 
 echo "Installing frontend dependencies..."
 cd "${repo_dir}"
-npm ci --include=dev
+npm ci --include=dev --no-audit
+
+echo "Checking production dependency audit..."
+npm audit --omit=dev --audit-level=high
 
 echo "Building frontend..."
 npm run build
+
+echo "Removing build-time dependencies..."
+rm -rf node_modules
 
 echo "Installing Nginx site..."
 tmp_conf="$(mktemp)"
