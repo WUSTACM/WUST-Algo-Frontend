@@ -12,7 +12,7 @@ if [[ ! -f "${deploy_dir}/.env" ]]; then
 fi
 
 set -a
-# shellcheck disable=SC1091
+# shellcheck disable=SC1090,SC1091
 source "${deploy_dir}/.env"
 set +a
 
@@ -46,6 +46,7 @@ rm -rf node_modules
 
 echo "Installing Nginx site..."
 tmp_conf="$(mktemp)"
+# shellcheck disable=SC2016
 envsubst '${DOMAIN} ${NGINX_PORT} ${APP_ROOT} ${BACKEND_UPSTREAM} ${USER_UPSTREAM} ${CORE_UPSTREAM} ${AGENT_UPSTREAM}' < "${deploy_dir}/nginx/wust-algo.conf.tpl" > "${tmp_conf}"
 run_sudo install -m 0644 "${tmp_conf}" "/etc/nginx/sites-available/${NGINX_SITE_NAME}"
 rm -f "${tmp_conf}"
