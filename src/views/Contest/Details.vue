@@ -517,16 +517,30 @@ onMounted(() => {
     padding: 0;
     border: none;
     background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
     font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
     text-align: left;
     cursor: pointer;
-    transition:
-      color 0.2s ease,
-      text-shadow 0.2s ease;
+    text-decoration: none;
+    transition: color 0.2s ease;
 
     &:hover:not(:disabled) {
       color: var(--neon-cyan);
-      text-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 24%, transparent);
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+    }
+
+    &:focus-visible {
+      color: var(--neon-cyan);
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 4px;
+      outline: none;
     }
 
     &:disabled {
@@ -752,12 +766,26 @@ thead .sticky-col {
     padding: 0;
     border: none;
     background: transparent;
+    appearance: none;
+    -webkit-appearance: none;
     color: inherit;
     font: inherit;
+    line-height: inherit;
     cursor: pointer;
+    border-radius: 0;
+    box-shadow: none;
+    outline: none;
+    text-decoration: none;
+    transition: color 0.2s ease;
 
     &:hover:not(:disabled) .problem-index {
       color: var(--neon-cyan);
+    }
+
+    &:focus-visible .problem-index {
+      color: var(--neon-cyan);
+      text-decoration: underline;
+      text-underline-offset: 3px;
     }
 
     &:disabled {
@@ -863,7 +891,7 @@ thead .sticky-col {
 }
 
 .problem-cell.is-clickable:hover span {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 42%, transparent);
+  color: var(--neon-cyan);
 }
 
 .problem-cell.is-contest-ac {
