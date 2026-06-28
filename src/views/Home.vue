@@ -534,6 +534,13 @@ const aiSummary = ref<string[]>([])
 
 const recentUpdates = [
   {
+    type: "更新",
+    tone: "new",
+    title: "比赛详情页更新",
+    description: "比赛详情页支持逐题矩阵、官方名次和团队信息展示，移动端横向查看更顺手。",
+    date: "06/28",
+  },
+  {
     type: "修复",
     tone: "fix",
     title: "分屏布局越界修复",

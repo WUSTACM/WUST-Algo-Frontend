@@ -8,7 +8,7 @@
         class="rankItem itemHover"
         @click="router.push(`/profile?id=${item.userId}`)"
       >
-        <div class="rank">#{{ item.rank }}</div>
+        <div class="rank">{{ formatRank(item.rank) }}</div>
         <div class="avatar">
           <img :src="item.avatar" alt="用户头像" />
         </div>
@@ -20,7 +20,7 @@
       </div>
       <div class="title" v-if="props.isJoined">我的排名 My-Rank</div>
       <div class="rankItem" v-if="props.isJoined">
-        <div class="rank">#{{ props.data.userRank }}</div>
+        <div class="rank">{{ formatRank(props.data.userRank) }}</div>
         <div class="name">{{ props.data.userName }}</div>
         <div class="score">{{ props.data.userScore }} {{ props.data.scoreUnit }}</div>
       </div>
@@ -64,6 +64,11 @@ const props = defineProps({
     default: false,
   },
 })
+
+const formatRank = (rank: number) => {
+  const value = Number(rank || 0)
+  return value > 0 ? `#${value}` : "-"
+}
 </script>
 
 <style scoped>

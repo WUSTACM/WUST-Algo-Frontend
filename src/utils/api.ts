@@ -33,10 +33,20 @@ export function normalizeApiError(error: any, fallback: string): string {
 
   const candidates = [data?.message, data?.error, data?.reason, data?.code, error?.message]
   const message = candidates.find((value) => typeof value === "string" && value.trim())
-  if (message) return String(message).trim()
+  if (message) {
+    const normalized = String(message).trim()
+    if (/jwt|token/i.test(normalized) && /parse|expired|invalid|unauthorized/i.test(normalized)) {
+      JWT.clearToken()
+      return "登录状态已失效，请重新登录"
+    }
+    return normalized
+  }
 
   const status = Number(error?.response?.status || 0)
-  if (status === 401) return "登录状态已失效，请重新登录"
+  if (status === 401) {
+    JWT.clearToken()
+    return "登录状态已失效，请重新登录"
+  }
   if (status === 403) return "权限不足，无法完成操作"
   if (status === 404) return "请求资源不存在"
   if (status >= 500) return "服务器开小差了，请稍后再试"
@@ -200,6 +210,17 @@ export interface SpiderJobsResponse {
   message: string
   data: SpiderJobInfo[]
   total: number
+  [property: string]: any
+}
+
+export interface SpiderHealthResponse {
+  code: number
+  message: string
+  status: "ok" | "warn" | "failed" | string
+  queued: number
+  running: number
+  failedToday: number
+  generatedAt: number
   [property: string]: any
 }
 
@@ -731,19 +752,44 @@ export interface CoreContestRankingResponse {
     contestUrl: string
     totalCount: number
     time: string
+    endTime: string
   }
   data: CoreContestRankingData[]
   total: number
+  problems: CoreContestProblemColumn[]
+  degradedReason: string
 }
 
 export interface CoreContestRankingData {
   rank: number
   userId: number
+  username: string
   name: string
   avatar: string
+  groupId: number
   score: number
   acCount: number
   totalCount: number
+  penalty: number
+  problemResults: CoreContestProblemResult[]
+}
+
+export interface CoreContestProblemColumn {
+  index: string
+  name: string
+  problemKey: string
+  contestAccepted: number
+  contestAttempted: number
+  upsolveAccepted: number
+}
+
+export interface CoreContestProblemResult {
+  problemKey: string
+  status: "contest_ac" | "contest_failed" | "upsolve_ac" | "none" | string
+  acceptedMinute: number
+  wrongBeforeAc: number
+  wrongAttempts: number
+  upsolved: boolean
 }
 
 // Bulletin types
@@ -1345,6 +1391,13 @@ export default class API {
         )
       },
       update: async (request: UserTeamUpdateRequest): Promise<stdResponse> => {
+        if (!JWT.isValid()) {
+          return {
+            message: "登录状态已失效，请重新登录",
+            success: false,
+            data: null,
+          }
+        }
         return apiCall(
           () =>
             axios.post("/api/user/team/update", request, {
@@ -1990,6 +2043,23 @@ export default class API {
           { code: 0, message: "", data: [], total: 0 },
         )
       },
+      health: async (): Promise<stdResponse<SpiderHealthResponse>> => {
+        return apiCall<SpiderHealthResponse>(
+          () =>
+            axios.get<SpiderHealthResponse>("/api/core/spider/health", {
+              headers: { Authorization: `Bearer ${JWT.token}` },
+            }),
+          (response) => {
+            if (response.status !== 200) return { message: "获取抓取队列状态失败" }
+            return {
+              data: response.data,
+              message: response.data.message || "抓取队列状态正常",
+            }
+          },
+          "获取抓取队列状态失败",
+          { code: 0, message: "", status: "failed", queued: 0, running: 0, failedToday: 0, generatedAt: 0 },
+        )
+      },
       retry: async (jobId: number): Promise<stdResponse<SpiderRetryResponse>> => {
         return apiCall<SpiderRetryResponse>(
           () =>
@@ -2283,7 +2353,18 @@ export default class API {
           (response) => {
             if (response.data.code !== "0") return { message: "获取比赛排名失败" }
             const time = Number(response.data.contest.time) * 1000
-            response.data.contest.time = new Date(time).toLocaleString()
+            response.data.contest.time = time > 0 ? new Date(time).toLocaleString() : ""
+            const endTime = Number(response.data.contest.endTime || 0) * 1000
+            response.data.contest.endTime = endTime > 0 ? new Date(endTime).toLocaleString() : ""
+            response.data.problems = response.data.problems || []
+            response.data.degradedReason = response.data.degradedReason || ""
+            response.data.data = (response.data.data || []).map((item: CoreContestRankingData) => ({
+              ...item,
+              username: item.username || "",
+              groupId: Number(item.groupId || 0),
+              penalty: Number(item.penalty || 0),
+              problemResults: item.problemResults || [],
+            }))
             return { data: response.data, message: "获取比赛排名成功" }
           },
           "获取比赛排名失败",
@@ -2299,9 +2380,12 @@ export default class API {
               avatar: "",
               totalCount: 0,
               time: "",
+              endTime: "",
             },
             data: [],
             total: 0,
+            problems: [],
+            degradedReason: "",
           },
         )
       },

@@ -533,6 +533,22 @@
                       <button class="sync-refresh-btn" @click="openPlatformDetail(item.platform)">
                         明细
                       </button>
+                      <button
+                        v-if="isSelfProfile"
+                        class="sync-refresh-btn"
+                        :title="
+                          isCodeforcesPlatform(item.platform)
+                            ? 'Codeforces 官方 API 限流严格，请不要频繁刷新。'
+                            : ''
+                        "
+                        :disabled="
+                          isRefreshingPlatform(item.platform) ||
+                          isPlatformRefreshCoolingDown(item.platform)
+                        "
+                        @click="updatePlatformLog(item.platform)"
+                      >
+                        {{ platformRefreshButtonLabel(item.platform) }}
+                      </button>
                     </div>
                   </div>
                 </template>

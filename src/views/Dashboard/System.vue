@@ -489,11 +489,17 @@ const loadOperationLogs = async () => {
   if (coreResult.status === "fulfilled" && coreResult.value.success) {
     rows.push(...(coreResult.value.data.data || []))
   }
-  const failed = [userResult, coreResult].some(
-    (item) => item.status === "fulfilled" && !item.value.success,
-  )
-  if (failed) {
-    Toast.error("部分操作日志获取失败")
+  const failedMessages = [userResult, coreResult]
+    .map((item) => {
+      if (item.status === "rejected") return String(item.reason || "请求失败")
+      if (!item.value.success) return item.value.message || "请求失败"
+      return ""
+    })
+    .filter(Boolean)
+  if (rows.length === 0 && failedMessages.length > 0) {
+    Toast.error("操作日志获取失败")
+  } else if (failedMessages.length > 0) {
+    console.warn("部分操作日志获取失败，已降级显示可用日志：", failedMessages)
   }
   operationLogs.value = rows
     .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
@@ -536,9 +542,9 @@ const loadServiceStatuses = async () => {
     status: "checking",
   }))
   const [userResult, coreResult, spiderResult] = await Promise.allSettled([
-    API.user.system.getRegisterInviteCode(),
+    API.user.profile.list(1),
     API.core.statistic.explanation(),
-    API.core.spider.jobs({ scope: "all", page: 1, pageSize: 1 }),
+    API.core.spider.health(),
   ])
 
   setServiceStatus(
@@ -551,7 +557,11 @@ const loadServiceStatuses = async () => {
   )
   setServiceStatus(
     "spider",
-    spiderResult.status === "fulfilled" && spiderResult.value.success ? "ok" : "failed",
+    spiderResult.status === "fulfilled" &&
+      spiderResult.value.success &&
+      spiderResult.value.data.status !== "failed"
+      ? "ok"
+      : "failed",
   )
 }
 
