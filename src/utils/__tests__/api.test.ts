@@ -1,7 +1,29 @@
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { normalizeApiError } from "../api"
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {}
+  return {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = String(value)
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    },
+  }
+})()
+
+vi.stubGlobal("localStorage", localStorageMock)
+
 describe("normalizeApiError", () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   it("uses non-empty plain string response bodies first", () => {
     expect(normalizeApiError({ response: { data: "  邀请码无效  " } }, "操作失败")).toBe(
       "邀请码无效",

@@ -778,6 +778,7 @@ export interface CoreContestProblemColumn {
   index: string
   name: string
   problemKey: string
+  problemUrl: string
   contestAccepted: number
   contestAttempted: number
   upsolveAccepted: number
@@ -2057,7 +2058,15 @@ export default class API {
             }
           },
           "获取抓取队列状态失败",
-          { code: 0, message: "", status: "failed", queued: 0, running: 0, failedToday: 0, generatedAt: 0 },
+          {
+            code: 0,
+            message: "",
+            status: "failed",
+            queued: 0,
+            running: 0,
+            failedToday: 0,
+            generatedAt: 0,
+          },
         )
       },
       retry: async (jobId: number): Promise<stdResponse<SpiderRetryResponse>> => {

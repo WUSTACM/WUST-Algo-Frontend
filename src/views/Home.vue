@@ -476,7 +476,7 @@
             </div>
 
             <div class="section-secondary-container update-feed">
-              <div class="update-item" v-for="item in recentUpdates" :key="item.title">
+              <div class="update-item" v-for="item in visibleRecentUpdates" :key="item.title">
                 <div class="update-marker" :class="`tone-${item.tone}`">
                   {{ item.type }}
                 </div>
@@ -569,6 +569,8 @@ const recentUpdates = [
     date: "06/09",
   },
 ]
+
+const visibleRecentUpdates = computed(() => recentUpdates.slice(0, 4))
 
 const submitData = ref<HeatmapData[]>([])
 const acData = ref<HeatmapData[]>([])

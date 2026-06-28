@@ -6,16 +6,20 @@
       <section class="contestInfo" style="position: relative">
         <LoadingOverlay :show="loadingInfo" />
         <div class="platform">{{ info.platform || "加载中" }}</div>
-        <div class="title">{{ info.contestName || "加载中" }}</div>
+        <button
+          v-if="info.contestUrl"
+          class="title contest-title-link"
+          type="button"
+          :disabled="loadingInfo"
+          @click="openExternal(info.contestUrl)"
+        >
+          {{ info.contestName || "加载中" }}
+        </button>
+        <div v-else class="title">{{ info.contestName || "加载中" }}</div>
         <div class="time">
           <span>{{ info.time || "1970/1/1 00:00:00" }}</span>
           <span v-if="info.endTime" class="time-separator">至</span>
           <span v-if="info.endTime">{{ info.endTime }}</span>
-        </div>
-        <div class="actions">
-          <AppButton size="sm" :disabled="loadingInfo || !info.contestUrl" @click="toContest(info.contestUrl)">
-            跳转到比赛主页
-          </AppButton>
         </div>
       </section>
 
@@ -67,8 +71,15 @@
                     class="problem-col"
                     :title="problem.name || problem.index"
                   >
-                    <span class="problem-index">{{ problem.index || "-" }}</span>
-                    <small>{{ problem.contestAccepted }} / {{ problem.contestAttempted }}</small>
+                    <button
+                      class="problem-header-button"
+                      type="button"
+                      :disabled="!problem.problemUrl"
+                      @click="openProblem(problem)"
+                    >
+                      <span class="problem-index">{{ problem.index || "-" }}</span>
+                      <small>{{ problem.contestAccepted }} / {{ problem.contestAttempted }}</small>
+                    </button>
                   </th>
                 </tr>
               </thead>
@@ -82,23 +93,85 @@
                       <span>@{{ formatUserHandle(row) }}</span>
                     </div>
                   </td>
-                  <td class="sticky-col sticky-group group-cell" :title="formatGroupName(row.groupId)">
+                  <td
+                    class="sticky-col sticky-group group-cell"
+                    :title="formatGroupName(row.groupId)"
+                  >
                     {{ formatGroupName(row.groupId) }}
                   </td>
                   <td class="sticky-col sticky-accepted score-cell">{{ row.acCount }}</td>
-                  <td class="sticky-col sticky-penalty score-cell">{{ formatPenalty(row.penalty) }}</td>
+                  <td class="sticky-col sticky-penalty score-cell">
+                    {{ formatPenalty(row.penalty) }}
+                  </td>
                   <td
                     v-for="problem in problems"
                     :key="`${row.userId}-${problem.problemKey}`"
                     class="problem-cell"
-                    :class="problemCellClass(getProblemResult(row, problem.problemKey))"
+                    :class="[
+                      problemCellClass(getProblemResult(row, problem.problemKey)),
+                      { 'is-clickable': Boolean(problem.problemUrl) },
+                    ]"
                     :title="problemCellTitle(getProblemResult(row, problem.problemKey), problem)"
+                    @click="openProblem(problem)"
                   >
                     <span>{{ formatProblemCell(getProblemResult(row, problem.problemKey)) }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <div class="contest-mobile-list" aria-label="比赛逐题卡片">
+            <article
+              class="contest-mobile-card"
+              v-for="row in rankRows"
+              :key="`mobile-${row.userId}`"
+            >
+              <div class="mobile-card-header">
+                <button class="mobile-user" type="button" @click="toProfile(row.userId)">
+                  <img :src="row.avatar || '/images/defaultAvatar.png'" alt="" />
+                  <span>
+                    <strong>{{ row.name || "未知用户" }}</strong>
+                    <small>{{ formatUserHandle(row) }}</small>
+                  </span>
+                </button>
+                <div class="mobile-rank">{{ formatRank(row.rank) }}</div>
+              </div>
+
+              <div class="mobile-score-grid">
+                <div>
+                  <strong>{{ row.acCount }}</strong>
+                  <span>通过</span>
+                </div>
+                <div>
+                  <strong>{{ formatPenalty(row.penalty) }}</strong>
+                  <span>罚时</span>
+                </div>
+                <div>
+                  <strong>{{ formatGroupName(row.groupId) }}</strong>
+                  <span>团队</span>
+                </div>
+              </div>
+
+              <div class="mobile-problem-strip">
+                <button
+                  v-for="problem in problems"
+                  :key="`${row.userId}-mobile-${problem.problemKey}`"
+                  class="mobile-problem-chip"
+                  :class="problemCellClass(getProblemResult(row, problem.problemKey))"
+                  type="button"
+                  :disabled="!problem.problemUrl"
+                  :title="problemCellTitle(getProblemResult(row, problem.problemKey), problem)"
+                  @click="openProblem(problem)"
+                >
+                  <span>{{ problem.index || "-" }}</span>
+                  <strong>{{
+                    formatProblemCell(getProblemResult(row, problem.problemKey)) || "-"
+                  }}</strong>
+                  <small>{{ problem.contestAccepted }}/{{ problem.contestAttempted }}</small>
+                </button>
+              </div>
+            </article>
           </div>
         </template>
         <div v-else-if="!loadingRank" class="empty-placeholder">暂无排行数据</div>
@@ -154,7 +227,6 @@ import { computed, onMounted, ref } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import BaseLayout from "@/components/BaseLayout.vue"
 import LoadingOverlay from "@/components/LoadingOverlay.vue"
-import AppButton from "@/components/ui/AppButton.vue"
 import API from "@/utils/api"
 import type {
   CoreContestProblemColumn,
@@ -228,14 +300,14 @@ const groups = ref<{ id: number; name: string }[]>([])
 const loadGroups = async () => {
   const collected: { id: number; name: string }[] = []
   let page = 1
-  let totalPage = 1
-  do {
+  while (true) {
     const resp = await API.user.group.list(page)
     if (!resp.success) break
     collected.push(...resp.data.list.map((g: any) => ({ id: Number(g.id), name: g.name })))
-    totalPage = Math.max(1, Number(resp.data.totalPage || 1))
+    const totalPage = Math.max(1, Number(resp.data.totalPage || 1))
+    if (page >= totalPage) break
     page += 1
-  } while (page <= totalPage)
+  }
   groups.value = collected
 }
 
@@ -257,7 +329,7 @@ const formatGroupName = (groupId?: number) => {
 }
 
 const formatUserHandle = (row: CoreContestRankingData) => {
-  return row.username || row.name || String(row.userId)
+  return row.name || row.username || String(row.userId)
 }
 
 const switchGroup = (groupId: number) => {
@@ -386,9 +458,15 @@ const toProfile = (userId: number) => {
   router.push(`/profile?id=${userId}`)
 }
 
-const toContest = (url: string) => {
+const openExternal = (url: string) => {
   if (!loadingInfo.value && url) {
-    window.open(url)
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+}
+
+const openProblem = (problem: CoreContestProblemColumn) => {
+  if (problem.problemUrl) {
+    window.open(problem.problemUrl, "_blank", "noopener,noreferrer")
   }
 }
 
@@ -433,6 +511,29 @@ onMounted(() => {
     overflow-wrap: anywhere;
   }
 
+  > .contest-title-link {
+    width: fit-content;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      text-shadow 0.2s ease;
+
+    &:hover:not(:disabled) {
+      color: var(--neon-cyan);
+      text-shadow: 0 0 16px color-mix(in srgb, var(--neon-cyan) 24%, transparent);
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
   > .time {
     display: flex;
     flex-wrap: wrap;
@@ -443,13 +544,6 @@ onMounted(() => {
 
   .time-separator {
     color: var(--text-secondary-color);
-  }
-
-  > .actions {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
   }
 }
 
@@ -653,6 +747,24 @@ thead .sticky-col {
   min-width: 88px;
   text-align: center;
 
+  .problem-header-button {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) .problem-index {
+      color: var(--neon-cyan);
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
   .problem-index {
     display: block;
     max-width: 68px;
@@ -746,6 +858,14 @@ thead .sticky-col {
   }
 }
 
+.problem-cell.is-clickable {
+  cursor: pointer;
+}
+
+.problem-cell.is-clickable:hover span {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--neon-cyan) 42%, transparent);
+}
+
 .problem-cell.is-contest-ac {
   background-color: color-mix(in srgb, #22c55e 14%, var(--background-color-1));
 
@@ -775,6 +895,192 @@ thead .sticky-col {
   padding: 40px 20px;
   color: var(--text-light-color);
   font-size: var(--text-base);
+}
+
+.contest-mobile-list {
+  display: none;
+}
+
+.contest-mobile-card {
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  background-color: var(--background-color-1);
+  padding: 12px;
+}
+
+.mobile-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mobile-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-default-color);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  img {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--divider-color);
+  }
+
+  span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  strong,
+  small {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+  }
+}
+
+.mobile-rank {
+  flex: 0 0 auto;
+  color: var(--neon-cyan);
+  font-size: var(--text-base);
+  font-weight: 900;
+}
+
+.mobile-score-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+
+  div {
+    min-width: 0;
+    padding: 8px;
+    border-radius: var(--control-radius);
+    background-color: var(--section-background-color);
+  }
+
+  strong,
+  span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--text-default-color);
+    font-size: var(--text-base);
+  }
+
+  span {
+    margin-top: 2px;
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+  }
+}
+
+.mobile-problem-strip {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neon-cyan) var(--background-color-3);
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-problem-strip::-webkit-scrollbar {
+  height: 7px;
+}
+
+.mobile-problem-strip::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background-color: var(--neon-cyan);
+}
+
+.mobile-problem-strip::-webkit-scrollbar-track {
+  background-color: var(--background-color-3);
+}
+
+.mobile-problem-chip {
+  min-width: 72px;
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  border: 1px solid var(--divider-color);
+  border-radius: var(--control-radius);
+  background-color: var(--section-background-color);
+  color: var(--text-secondary-color);
+  font-family: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+
+  span,
+  strong,
+  small {
+    display: block;
+    text-align: center;
+  }
+
+  span {
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+  }
+
+  strong {
+    margin: 4px 0;
+    color: var(--text-default-color);
+    font-size: var(--text-base);
+  }
+
+  small {
+    color: var(--text-light-color);
+    font-size: var(--text-xs);
+    font-weight: 500;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--neon-cyan);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.mobile-problem-chip.is-contest-ac {
+  background-color: color-mix(in srgb, #22c55e 14%, var(--section-background-color));
+}
+
+.mobile-problem-chip.is-contest-failed {
+  background-color: color-mix(in srgb, #ef4444 12%, var(--section-background-color));
+}
+
+.mobile-problem-chip.is-upsolve-ac {
+  background-color: color-mix(in srgb, var(--neon-cyan) 14%, var(--section-background-color));
 }
 
 @media (max-width: 900px) {
@@ -816,59 +1122,13 @@ thead .sticky-col {
     flex: 0 0 auto;
   }
 
-  .sticky-rank {
-    width: 48px;
-    min-width: 48px;
-  }
-
-  .sticky-user {
-    left: 48px;
-    width: 148px;
-    min-width: 148px;
-  }
-
-  .sticky-group {
+  .matrix-scroll {
     display: none;
   }
 
-  .sticky-accepted {
-    left: 196px;
-    width: 58px;
-    min-width: 58px;
-  }
-
-  .sticky-penalty {
-    left: 254px;
-    width: 58px;
-    min-width: 58px;
-  }
-
-  .matrix-table th,
-  .matrix-table td {
-    height: 54px;
-    padding: 8px;
-  }
-
-  .problem-col,
-  .problem-cell {
-    min-width: 72px;
-  }
-
-  .user-cell {
-    gap: 8px;
-
-    img {
-      width: 30px;
-      height: 30px;
-    }
-
-    .user-meta strong {
-      max-width: 92px;
-    }
-
-    .user-meta span {
-      max-width: 92px;
-    }
+  .contest-mobile-list {
+    display: grid;
+    gap: 12px;
   }
 
   .pageNavigation {
@@ -900,58 +1160,9 @@ thead .sticky-col {
     white-space: normal;
   }
 
-  .sticky-user {
-    width: 132px;
-    min-width: 132px;
-  }
-
-  .sticky-accepted {
-    left: 180px;
-    width: 52px;
-    min-width: 52px;
-  }
-
-  .sticky-penalty {
-    left: 232px;
-    width: 52px;
-    min-width: 52px;
-  }
-
-  .problem-cell span {
-    min-width: 34px;
-  }
-
-  .matrix-table {
-    font-size: var(--text-xs);
-  }
-
-  .matrix-table th,
-  .matrix-table td {
-    height: 50px;
-    padding: 7px 6px;
-  }
-
-  .sticky-rank {
-    width: 42px;
-    min-width: 42px;
-  }
-
-  .sticky-user {
-    left: 42px;
-  }
-
-  .user-cell {
-    gap: 6px;
-  }
-
-  .user-cell img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .user-cell .user-meta strong,
-  .user-cell .user-meta span {
-    max-width: 82px;
+  .mobile-user strong,
+  .mobile-user small {
+    max-width: 150px;
   }
 
   .pageButtons {
@@ -964,26 +1175,13 @@ thead .sticky-col {
 }
 
 @media (max-width: 390px) {
-  .sticky-user {
-    width: 122px;
-    min-width: 122px;
+  .mobile-score-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .sticky-accepted {
-    left: 164px;
-    width: 50px;
-    min-width: 50px;
-  }
-
-  .sticky-penalty {
-    left: 214px;
-    width: 50px;
-    min-width: 50px;
-  }
-
-  .user-cell .user-meta strong,
-  .user-cell .user-meta span {
-    max-width: 72px;
+  .mobile-user strong,
+  .mobile-user small {
+    max-width: 128px;
   }
 }
 </style>
