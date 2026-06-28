@@ -6,15 +6,16 @@
       <section class="contestInfo" style="position: relative">
         <LoadingOverlay :show="loadingInfo" />
         <div class="platform">{{ info.platform || "加载中" }}</div>
-        <button
+        <a
           v-if="info.contestUrl"
           class="title contest-title-link"
-          type="button"
-          :disabled="loadingInfo"
-          @click="openExternal(info.contestUrl)"
+          :href="info.contestUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-disabled="loadingInfo"
         >
           {{ info.contestName || "加载中" }}
-        </button>
+        </a>
         <div v-else class="title">{{ info.contestName || "加载中" }}</div>
         <div class="time">
           <span>{{ info.time || "1970/1/1 00:00:00" }}</span>
@@ -71,15 +72,20 @@
                     class="problem-col"
                     :title="problem.name || problem.index"
                   >
-                    <button
-                      class="problem-header-button"
-                      type="button"
-                      :disabled="!problem.problemUrl"
-                      @click="openProblem(problem)"
+                    <a
+                      v-if="problem.problemUrl"
+                      class="problem-header-link"
+                      :href="problem.problemUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <span class="problem-index">{{ problem.index || "-" }}</span>
                       <small>{{ problem.contestAccepted }} / {{ problem.contestAttempted }}</small>
-                    </button>
+                    </a>
+                    <span v-else class="problem-header-link is-disabled">
+                      <span class="problem-index">{{ problem.index || "-" }}</span>
+                      <small>{{ problem.contestAccepted }} / {{ problem.contestAttempted }}</small>
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -329,7 +335,7 @@ const formatGroupName = (groupId?: number) => {
 }
 
 const formatUserHandle = (row: CoreContestRankingData) => {
-  return row.name || row.username || String(row.userId)
+  return row.username || row.name || String(row.userId)
 }
 
 const switchGroup = (groupId: number) => {
@@ -512,13 +518,13 @@ onMounted(() => {
   }
 
   > .contest-title-link {
+    display: inline;
     width: fit-content;
     max-width: 100%;
     padding: 0;
     border: none;
     background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
+    color: var(--text-default-color);
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
@@ -530,20 +536,16 @@ onMounted(() => {
 
     &:hover:not(:disabled) {
       color: var(--neon-cyan);
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
+      text-decoration: none;
     }
 
     &:focus-visible {
       color: var(--neon-cyan);
-      text-decoration: underline;
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
+      text-decoration: none;
       outline: none;
     }
 
-    &:disabled {
+    &[aria-disabled="true"] {
       cursor: default;
     }
   }
@@ -761,34 +763,31 @@ thead .sticky-col {
   min-width: 88px;
   text-align: center;
 
-  .problem-header-button {
-    width: 100%;
+  .problem-header-link {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 76px;
     padding: 0;
     border: none;
     background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
     color: inherit;
     font: inherit;
     line-height: inherit;
     cursor: pointer;
-    border-radius: 0;
-    box-shadow: none;
-    outline: none;
     text-decoration: none;
     transition: color 0.2s ease;
 
-    &:hover:not(:disabled) .problem-index {
+    &:hover .problem-index {
       color: var(--neon-cyan);
     }
 
     &:focus-visible .problem-index {
       color: var(--neon-cyan);
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
 
-    &:disabled {
+    &.is-disabled {
       cursor: default;
     }
   }
