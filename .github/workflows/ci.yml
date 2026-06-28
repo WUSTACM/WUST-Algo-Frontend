@@ -21,9 +21,9 @@ jobs:
           cache: npm
 
       - name: Secret scan
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: docker://zricethezav/gitleaks:latest
+        with:
+          args: detect --source /github/workspace --no-git --redact --verbose
 
       - name: Install dependencies
         run: npm ci --include=dev

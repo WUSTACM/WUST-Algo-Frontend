@@ -512,7 +512,7 @@ onMounted(() => {
 
   > .title {
     color: var(--text-default-color);
-    font-size: var(--text-2xl);
+    font-size: clamp(22px, 1.8vw, 30px);
     font-weight: bold;
     overflow-wrap: anywhere;
   }
@@ -779,14 +779,6 @@ thead .sticky-col {
     text-decoration: none;
     transition: color 0.2s ease;
 
-    &:hover .problem-index {
-      color: var(--neon-cyan);
-    }
-
-    &:focus-visible .problem-index {
-      color: var(--neon-cyan);
-    }
-
     &.is-disabled {
       cursor: default;
     }
@@ -798,6 +790,8 @@ thead .sticky-col {
     margin: 0 auto;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-default-color);
+    font-weight: 900;
   }
 
   small {
@@ -1130,7 +1124,7 @@ thead .sticky-col {
   }
 
   .contestInfo > .title {
-    font-size: var(--text-xl);
+    font-size: clamp(20px, 5vw, 24px);
   }
 
   .group-filter {
