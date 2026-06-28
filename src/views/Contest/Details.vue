@@ -512,8 +512,9 @@ onMounted(() => {
 
   > .title {
     color: var(--text-default-color);
-    font-size: clamp(22px, 1.8vw, 30px);
+    font-size: clamp(28px, 2.2vw, 38px);
     font-weight: bold;
+    line-height: 1.18;
     overflow-wrap: anywhere;
   }
 
@@ -526,9 +527,6 @@ onMounted(() => {
     background: transparent;
     color: var(--text-default-color);
     font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    line-height: inherit;
     text-align: left;
     cursor: pointer;
     text-decoration: none;
@@ -1124,7 +1122,7 @@ thead .sticky-col {
   }
 
   .contestInfo > .title {
-    font-size: clamp(20px, 5vw, 24px);
+    font-size: clamp(24px, 6vw, 30px);
   }
 
   .group-filter {
